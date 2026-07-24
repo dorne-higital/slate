@@ -279,7 +279,7 @@ async function handleTogglePublish() {
         display: flex;
         flex-wrap: wrap;
         gap: $space-3;
-        max-width: 12rem;
+        max-width: 11rem;
     }
 
     &__preview-toggle {

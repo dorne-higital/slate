@@ -19,7 +19,6 @@ defineProps<{ blocks: Block[] }>()
 .block-renderer {
     display: flex;
     flex-direction: column;
-    gap: $space-5;
 
     &__unknown {
         background: $color-danger-bg;
