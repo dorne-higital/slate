@@ -90,6 +90,20 @@ export default defineEventHandler(async (event) => {
     // middleware runs and does not re-resolve it afterward, so Vue
     // Router's auth guard still saw the original path and redirected to
     // /login even though event.path itself read back correctly.)
+    //
+    // The rendered HTML's hydration payload legitimately says its route
+    // is /preview/{slug}/... — that's the page Nuxt actually matched,
+    // and Vue Router needs that to stay intact so client-side hydration
+    // resolves to the SAME component the server rendered. (An earlier
+    // version of this middleware blanked that field out to fix the
+    // address bar — that broke hydration instead: Vue Router then
+    // re-resolved the real browser path against the route table, which
+    // matches pages/index.vue, not this preview page, so real visitors
+    // got a flash of site content immediately replaced by the admin
+    // app's own '/' page and its redirect to /login. The address bar is
+    // fixed cosmetically instead, client-side only, in
+    // pages/preview/[siteSlug]/[...path].vue via history.replaceState —
+    // see the comment there for why that's safe.)
     const response = await event.fetch(rewrittenPath + url.search)
 
     setResponseStatus(event, response.status)
@@ -97,43 +111,5 @@ export default defineEventHandler(async (event) => {
     if (contentType) {
         setResponseHeader(event, 'content-type', contentType)
     }
-
-    const body = await response.text()
-    if (!contentType?.includes('text/html')) {
-        return body
-    }
-
-    return stripInnerRouteFromPayload(body)
+    return await response.text()
 })
-
-// The rendered HTML's own route genuinely is /preview/{slug}/..., since
-// that's the page Nuxt actually matched — its hydration payload embeds
-// that path (nuxt/dist/app/nuxt.js: `payload.path = ssrContext.url`).
-// On the client, Vue Router's createCurrentLocation() (nuxt/dist/pages/
-// runtime/plugins/router.js) compares payload.path against the real
-// window.location and — finding them different — trusts payload.path
-// and pushes it into browser history, which is what visibly appended
-// /preview/{slug} to the address bar. Blanking that one field out (it's
-// only ever read as `!renderedPath ? displayedPath : ...`) makes it fall
-// back to the real, already-correct URL instead — everything else in
-// the payload (the fetched page content) is untouched.
-function stripInnerRouteFromPayload(html: string): string {
-    const match = html.match(/(<script[^>]*id="__NUXT_DATA__"[^>]*>)([\s\S]*?)(<\/script>)/)
-    const [whole, openTag, json, closeTag] = match ?? []
-    if (match?.index === undefined || whole === undefined || openTag === undefined || json === undefined || closeTag === undefined) return html
-
-    try {
-        const payload = JSON.parse(json) as unknown[]
-        const meta = payload.find(
-            (item): item is { path: number } =>
-                Boolean(item) && typeof item === 'object' && !Array.isArray(item) && 'serverRendered' in (item as object) && typeof (item as { path?: unknown }).path === 'number'
-        )
-        if (!meta) return html
-
-        payload[meta.path] = ''
-
-        return html.slice(0, match.index) + openTag + JSON.stringify(payload) + closeTag + html.slice(match.index + whole.length)
-    } catch {
-        return html
-    }
-}
