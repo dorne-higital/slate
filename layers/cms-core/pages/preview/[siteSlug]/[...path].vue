@@ -43,12 +43,31 @@ const { data, pending, error } = await useFetch<SitePageResponse>('/api/public/s
 // request here invisibly and setting this header. Only the latter should
 // be indexable.
 const requestEvent = useRequestEvent()
-const viaCustomDomain = computed(() => Boolean(requestEvent?.node.req.headers['x-slate-tenant-domain']))
+const tenantHost = computed(() => {
+    const header = requestEvent?.node.req.headers['x-slate-tenant-domain']
+    return typeof header === 'string' ? header : undefined
+})
+const viaCustomDomain = computed(() => Boolean(tenantHost.value))
+
+// route.path here is this component's own /preview/{siteSlug}/... route
+// — real visitors never see that, they hit tenantHost at this page's
+// path segments directly, so canonical/OG URLs need to be built from
+// those instead or they'd point search engines/crawlers at a URL that
+// doesn't actually exist for them.
+const realPath = computed(() => `/${pathSegments.join('/')}`)
+const canonicalUrl = computed(() =>
+    tenantHost.value ? `https://${tenantHost.value}${realPath.value === '/' ? '' : realPath.value}` : undefined
+)
+
+useHead({
+    link: () => (canonicalUrl.value ? [{ rel: 'canonical', href: canonicalUrl.value }] : [])
+})
 
 useSeoMeta({
     title: () => data.value?.page.seo_title || data.value?.page.title,
     description: () => data.value?.page.seo_description ?? undefined,
-    robots: () => (viaCustomDomain.value ? 'index, follow' : 'noindex, nofollow')
+    robots: () => (viaCustomDomain.value ? 'index, follow' : 'noindex, nofollow'),
+    ogUrl: () => canonicalUrl.value
 })
 </script>
 
