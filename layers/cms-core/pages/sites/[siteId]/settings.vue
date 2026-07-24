@@ -13,7 +13,7 @@
             <div class="field">
                 <label class="field__label" for="site-slug">Slug</label>
                 <input id="site-slug" v-model="slug" class="field__input" type="text" required>
-                <p class="field__hint">Used in the preview URL: /preview/{{ slug }}/…</p>
+                <p class="field__hint">{{ slugHint }}</p>
             </div>
 
             <div class="field">
@@ -50,6 +50,13 @@ const site = computed(() => data.value?.site ?? null)
 const name = ref('')
 const slug = ref('')
 const customDomain = ref('')
+
+const { public: { baseDomain } } = useRuntimeConfig()
+const slugHint = computed(() =>
+    baseDomain
+        ? `Also used in the site's live subdomain: ${slug.value}.${baseDomain}`
+        : `Used in the preview URL: /preview/${slug.value}/…`
+)
 
 watch(site, (value) => {
     if (!value) return

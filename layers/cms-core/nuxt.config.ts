@@ -64,13 +64,17 @@ export default defineNuxtConfig({
         }
     },
 
-    // Set via NUXT_BASE_DOMAIN once you own a real domain and have wired
-    // up wildcard DNS + a wildcard cert on your host (see README.md
-    // "Wildcard subdomains per site"). Server-only — never exposed to the
-    // client — since it's only ever read in
-    // server/middleware/resolve-tenant-domain.ts.
+    // Set via NUXT_PUBLIC_BASE_DOMAIN once you own a real domain and have
+    // wired up wildcard DNS + a wildcard cert on your host (see README.md
+    // "Wildcard subdomains per site"). Public — not a secret, it's a
+    // domain name that's necessarily visible in the URL bar the moment
+    // it's used — needed both server-side (resolve-tenant-domain.ts) and
+    // client-side (SiteSidebar's live-site link, built without a round
+    // trip to the server).
     runtimeConfig: {
-        baseDomain: ''
+        public: {
+            baseDomain: ''
+        }
     },
 
     // The whole cms-core app (admin + site dashboards) is authenticated

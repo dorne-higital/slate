@@ -24,7 +24,7 @@ SUPABASE_URL=...                  # not secret — ships in the client bundle ei
 SUPABASE_KEY=...                  # anon/public key — also not secret, safety comes from RLS, not from hiding this
 SUPABASE_SERVICE_ROLE_KEY=...     # SECRET. Bypasses RLS entirely. Only for migration tooling / one-off admin scripts —
                                    # never referenced by request-serving routes, so don't set this on your deploy target at all.
-NUXT_BASE_DOMAIN=                 # optional, see "Going live: domains" below
+NUXT_PUBLIC_BASE_DOMAIN=          # optional, see "Going live: domains" below
 ```
 
 ### Database
@@ -58,7 +58,7 @@ yarn build
 
 Every site can be reached three ways, in increasing order of "real":
 
-1. **`/preview/{site-slug}/{page-path}`** — works everywhere, no setup. Nested pages just extend the path (`/preview/portfolio/about`). A site's sidebar has a "Preview site ↗" link straight to this.
+1. **`/preview/{site-slug}/{page-path}`** — works everywhere, no setup. Nested pages just extend the path (`/preview/portfolio/about`). Same-origin with the admin app, so a logged-in site member's session carries over and they see unpublished drafts too (there's an RLS policy for site members that ignores `published` status), unlike the other two options below, which only ever show published content. The site sidebar's own link falls back to this only while a site has neither a custom domain nor a wildcard subdomain configured yet — see below.
 2. **`{site-slug}.localhost:3000`** — local dev only. Browsers resolve any `*.localhost` address to your own machine automatically (RFC 6761), no `/etc/hosts` editing needed. Same rendering path as `/preview/...`, just reached via subdomain instead of a URL prefix — useful for testing how subdomain-style URLs will actually behave.
 3. **A real domain** — either a fully custom domain per site (below), or a free `{slug}.` subdomain of a domain *you* own (further below). Both go through `server/middleware/resolve-tenant-domain.ts`, which checks the incoming request's `Host` header on every request and transparently serves that site's content — the visitor's address bar never changes, they just silently get the site instead of the admin dashboard.
 
@@ -72,7 +72,7 @@ Direct mutation of `event._path`/`event.node.req.url` (to avoid the inner render
 
 ### Custom domain per site
 
-Site dashboard → **Settings** → Custom domain. Once set, any request arriving with that hostname gets served that site's content automatically — no further app-side config, on any host.
+Site dashboard → **Settings** → Custom domain. Once set, any request arriving with that hostname gets served that site's content automatically — no further app-side config, on any host. The site sidebar's "View live site ↗" link automatically switches from `/preview/{slug}` to this domain (or, if unset, the `{slug}.{base domain}` wildcard subdomain once that's configured) as soon as one exists.
 
 ### Deploying to Vercel
 
@@ -90,7 +90,7 @@ Site dashboard → **Settings** → Custom domain. Once set, any request arrivin
    - `ENABLE_EXPERIMENTAL_COREPACK=1` — **required**, not optional. Without it, Vercel ignores the `packageManager` field entirely and installs with plain Yarn 1 just because it sees a `yarn.lock`, which silently breaks — `.yarnrc.yml` and `nodeLinker: node-modules` only mean anything to Yarn Berry.
    - `SUPABASE_URL`
    - `SUPABASE_KEY`
-   - `NUXT_BASE_DOMAIN` — once you've done the wildcard DNS/cert setup below.
+   - `NUXT_PUBLIC_BASE_DOMAIN` — once you've done the wildcard DNS/cert setup below.
 5. Deploy, then confirm `/login` loads before touching DNS.
 
 **If the build fails trying to resolve `@slate/cms-core` or reach anything under `layers/`:** Vercel restricts a project to files inside its Root Directory by default; genuine workspace monorepos (which this is, per the dependency declared above) are meant to be exempted from that automatically, but if it still trips, look for a monorepo/"include files outside the Root Directory" option in the project's settings and enable it.
@@ -101,7 +101,7 @@ Site dashboard → **Settings** → Custom domain. Once set, any request arrivin
 2. In Vercel, add the domain to your project, then follow its prompt to delegate the domain's **nameservers to Vercel** (find the exact nameservers under the domain's DNS settings once added).
 3. At your registrar (Hostinger, in this case) — change `slatecms.co.uk`'s nameservers to Vercel's. No need to move registration, just the nameservers. Allow up to 24 hours to propagate.
 4. Add `*.slatecms.co.uk` as a wildcard domain on the same project.
-5. Once its certificate shows active, set `NUXT_BASE_DOMAIN=slatecms.co.uk` and redeploy.
+5. Once its certificate shows active, set `NUXT_PUBLIC_BASE_DOMAIN=slatecms.co.uk` and redeploy.
 
 ## Access control model, in plain terms
 

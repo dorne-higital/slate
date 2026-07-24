@@ -12,8 +12,8 @@
             </span>
         </div>
 
-        <a :href="`/preview/${siteSlug}`" target="_blank" rel="noopener" class="site-sidebar__preview">
-            Preview site &nearr;
+        <a :href="siteUrl" target="_blank" rel="noopener" class="site-sidebar__preview">
+            {{ siteUrlLabel }} &nearr;
         </a>
 
         <div v-for="group in groups" :key="group.label" class="site-sidebar__group">
@@ -47,9 +47,28 @@ const props = defineProps<{
     siteId: string
     siteName: string
     siteSlug: string
+    customDomain: string | null
     roleLabel: string
     isPlatformAdmin: boolean
 }>()
+
+// Links to the real, live domain once the site has one (custom_domain,
+// or a {slug}.{baseDomain} wildcard subdomain) — /preview/{slug} only as
+// a fallback while neither is configured yet. Note this trades away
+// draft-preview: /preview/{slug} is same-origin with this admin app, so
+// a logged-in editor's session cookie carries over and RLS lets them see
+// unpublished drafts there; the live domain is a different origin, no
+// session cookie is sent, so only published content is visible through
+// this link either way once a real domain exists.
+const { public: { baseDomain } } = useRuntimeConfig()
+
+const siteUrl = computed(() => {
+    if (props.customDomain) return `https://${props.customDomain}`
+    if (baseDomain) return `https://${props.siteSlug}.${baseDomain}`
+    return `/preview/${props.siteSlug}`
+})
+
+const siteUrlLabel = computed(() => (props.customDomain || baseDomain ? 'View live site' : 'Preview site'))
 
 const groups = computed(() => [
     {

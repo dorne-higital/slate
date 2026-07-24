@@ -13,6 +13,7 @@
                 :site-id="site.id"
                 :site-name="site.name"
                 :site-slug="site.slug"
+                :custom-domain="site.custom_domain"
                 :role-label="roleLabel"
                 :is-platform-admin="isPlatformAdmin"
             />

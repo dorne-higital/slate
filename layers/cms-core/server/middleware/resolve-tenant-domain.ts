@@ -8,7 +8,7 @@ import type { Database } from '../../types/database.types'
  *
  * Runs on every request. If the incoming Host header matches a site's
  * `custom_domain` (set on the Settings page), or its hostname is
- * `{slug}.localhost` for any port, or (once NUXT_BASE_DOMAIN is
+ * `{slug}.localhost` for any port, or (once NUXT_PUBLIC_BASE_DOMAIN is
  * configured — see README.md "Wildcard subdomains per site")
  * `{slug}.{baseDomain}`, the request is rewritten in place to the
  * /preview/[siteSlug]/... renderer before Nuxt's router ever sees it —
@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
 
     const hostname = host.split(':')[0] ?? host
     const client = await serverSupabaseClient<Database>(event)
-    const { baseDomain } = useRuntimeConfig(event)
+    const { baseDomain } = useRuntimeConfig(event).public
 
     const subdomainSuffix = hostname.endsWith('.localhost')
         ? '.localhost'
