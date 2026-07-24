@@ -18,18 +18,21 @@ defineProps<{
 
 <style lang="scss" scoped>
 .block-testimonial {
-    background: $color-surface;
-    border-left: 3px solid $color-primary;
+    background: var(--site-bg-surface, #{$color-surface});
+    border-left: 3px solid var(--site-brand-primary, #{$color-primary});
     border-radius: $radius-sm;
     margin: 0;
     padding: $space-5;
 
+    // Site theming is light-mode only (see _site-theme.scss) — dark mode
+    // keeps the app's own fixed dark palette regardless of a site's
+    // custom colors.
     @media (prefers-color-scheme: dark) {
         background: $color-surface-dark;
     }
 
     &__quote {
-        color: $color-text;
+        color: var(--site-text-primary, #{$color-text});
         font-size: $font-size-lg;
         font-style: italic;
         margin: 0 0 $space-3;
@@ -45,7 +48,7 @@ defineProps<{
     }
 
     &__name {
-        color: $color-text;
+        color: var(--site-text-primary, #{$color-text});
         font-weight: 700;
 
         @media (prefers-color-scheme: dark) {
@@ -54,7 +57,7 @@ defineProps<{
     }
 
     &__role {
-        color: $color-text-muted;
+        color: var(--site-text-secondary, #{$color-text-muted});
         font-size: $font-size-sm;
     }
 }

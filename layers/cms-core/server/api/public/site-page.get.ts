@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
     const { data: site, error: siteError } = await client
         .from('sites')
-        .select('id, name, slug')
+        .select('id, name, slug, theme')
         .eq('slug', siteSlug)
         .single()
 

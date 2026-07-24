@@ -25,12 +25,15 @@ const urls = computed(() => {
     &__tile {
         align-items: center;
         aspect-ratio: 4 / 3;
-        background: $color-surface;
+        background: var(--site-bg-surface, #{$color-surface});
         border-radius: $radius-sm;
         display: flex;
         justify-content: center;
         overflow: hidden;
 
+        // Site theming is light-mode only (see _site-theme.scss) — dark
+        // mode keeps the app's own fixed dark palette regardless of a
+        // site's custom colors.
         @media (prefers-color-scheme: dark) {
             background: $color-surface-dark;
         }
@@ -46,12 +49,12 @@ const urls = computed(() => {
         align-items: center;
         background-image: repeating-linear-gradient(
             45deg,
-            $color-border,
-            $color-border 2px,
+            var(--site-border, #{$color-border}),
+            var(--site-border, #{$color-border}) 2px,
             transparent 2px,
             transparent 10px
         );
-        color: $color-text-muted;
+        color: var(--site-text-secondary, #{$color-text-muted});
         display: flex;
         font-size: $font-size-sm;
         height: 100%;

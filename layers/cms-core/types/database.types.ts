@@ -42,6 +42,7 @@ export interface Database {
                     slug: string
                     status: 'active' | 'paused' | 'archived'
                     custom_domain: string | null
+                    theme: unknown
                     created_at: string
                     updated_at: string
                 }
@@ -51,6 +52,7 @@ export interface Database {
                     slug: string
                     status?: 'active' | 'paused' | 'archived'
                     custom_domain?: string | null
+                    theme?: unknown
                     created_at?: string
                     updated_at?: string
                 }
@@ -60,6 +62,7 @@ export interface Database {
                     slug?: string
                     status?: 'active' | 'paused' | 'archived'
                     custom_domain?: string | null
+                    theme?: unknown
                     created_at?: string
                     updated_at?: string
                 }

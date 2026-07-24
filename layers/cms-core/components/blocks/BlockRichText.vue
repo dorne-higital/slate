@@ -13,9 +13,12 @@ const sanitizedHtml = computed(() => (props.html ? DOMPurify.sanitize(props.html
 
 <style lang="scss" scoped>
 .block-rich-text {
-    color: $color-text;
+    color: var(--site-text-primary, #{$color-text});
     line-height: $line-height-base;
 
+    // Site theming is light-mode only (see _site-theme.scss) — dark mode
+    // keeps the app's own fixed dark palette regardless of a site's
+    // custom colors.
     @media (prefers-color-scheme: dark) {
         color: $color-text-dark;
     }
@@ -27,7 +30,11 @@ const sanitizedHtml = computed(() => (props.html ? DOMPurify.sanitize(props.html
     }
 
     :deep(a) {
-        color: $color-primary;
+        color: var(--site-link, #{$color-primary});
+
+        &:hover {
+            color: var(--site-link-hover, #{$color-primary-hover});
+        }
     }
 }
 </style>

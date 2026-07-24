@@ -1,0 +1,34 @@
+// Default values for a site's color theme (see utils/siteTheme.ts and
+// pages/sites/[siteId]/themes.vue) — every value here matches the
+// existing SCSS token it replaces, so a site with no customization
+// (theme: null, the default for every site) looks pixel-identical to
+// before this existed. A site's own values, where set, are applied as
+// inline CSS custom properties on BlockRenderer's root element
+// (BlockRenderer.vue), which only need to override the specific
+// variables below since :root here is what every block's var(--site-*,
+// $fallback) falls back to otherwise.
+
+// Deliberately CSS custom properties, not SCSS variables — SCSS
+// variables are resolved once at build time and shared by the whole
+// app; a value that needs to differ per site, set from data in the
+// database, has to be something the browser can still substitute at
+// render time.
+
+// @use, not the Vite additionalData prelude — this file is only reached
+// via main.scss's own @use, which is one level removed from Vite's
+// direct preprocessing, so (same reasoning as _mixins.scss) it needs its
+// own import of the bare variables it references below.
+@use 'variables' as *;
+
+:root {
+    --site-brand-primary: #{$color-primary};
+    --site-brand-primary-hover: #{$color-primary-hover};
+    --site-brand-contrast: #{$color-primary-contrast};
+    --site-text-primary: #{$color-text};
+    --site-text-secondary: #{$color-text-muted};
+    --site-bg-surface: #{$color-surface};
+    --site-bg-surface-accent: #{$color-surface-active};
+    --site-link: #{$color-primary};
+    --site-link-hover: #{$color-primary-hover};
+    --site-border: #{$color-border};
+}

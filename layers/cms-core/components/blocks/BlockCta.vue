@@ -20,7 +20,7 @@ defineProps<{
 <style lang="scss" scoped>
 .block-cta {
     align-items: center;
-    background: $color-surface-active;
+    background: var(--site-bg-surface-accent, #{$color-surface-active});
     border-radius: $radius-md;
     display: flex;
     flex-direction: column;
@@ -28,6 +28,9 @@ defineProps<{
     padding: $space-6;
     text-align: center;
 
+    // Site theming is light-mode only (see _site-theme.scss) — dark mode
+    // keeps the app's own fixed dark palette regardless of a site's
+    // custom colors.
     @media (prefers-color-scheme: dark) {
         background: $color-surface-active-dark;
     }
@@ -35,7 +38,7 @@ defineProps<{
     &__heading {
         @include heading-font;
 
-        color: $color-text;
+        color: var(--site-text-primary, #{$color-text});
         font-size: $font-size-xl;
         margin: 0;
 
@@ -45,21 +48,21 @@ defineProps<{
     }
 
     &__body {
-        color: $color-text-muted;
+        color: var(--site-text-secondary, #{$color-text-muted});
         margin: 0;
         max-width: 32rem;
     }
 
     &__button {
-        background: $color-primary;
+        background: var(--site-brand-primary, #{$color-primary});
         border-radius: $radius-sm;
-        color: $color-primary-contrast;
+        color: var(--site-brand-contrast, #{$color-primary-contrast});
         font-weight: 700;
         padding: $space-3 $space-5;
         text-decoration: none;
 
         &:hover {
-            background: $color-primary-hover;
+            background: var(--site-brand-primary-hover, #{$color-primary-hover});
         }
     }
 }

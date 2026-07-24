@@ -8,12 +8,32 @@ export interface Profile {
     created_at: string
 }
 
+/**
+ * A site's color customization. Every field is optional — an unset field
+ * (or a null/absent `theme` altogether) means "use the built-in
+ * default," not "use an empty/invalid color." See utils/siteTheme.ts for
+ * the canonical field list, CSS variable names, and default values.
+ */
+export interface SiteTheme {
+    brandPrimary?: string
+    brandPrimaryHover?: string
+    brandContrast?: string
+    textPrimary?: string
+    textSecondary?: string
+    bgSurface?: string
+    bgSurfaceAccent?: string
+    link?: string
+    linkHover?: string
+    border?: string
+}
+
 export interface Site {
     id: string
     name: string
     slug: string
     status: 'active' | 'paused' | 'archived'
     custom_domain: string | null
+    theme: SiteTheme | null
     created_at: string
     updated_at: string
 }

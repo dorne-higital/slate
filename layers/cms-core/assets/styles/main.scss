@@ -1,6 +1,8 @@
 // Global base styles. Loaded once via the `css` array in nuxt.config, so it
 // receives the same auto-injected variables/mixins as every component.
 
+@use 'site-theme';
+
 *,
 *::before,
 *::after {

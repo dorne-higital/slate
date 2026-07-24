@@ -7,17 +7,17 @@
             <p>This page doesn't exist, or hasn't been published yet.</p>
         </div>
 
-        <BlockRenderer v-else-if="data" :blocks="data.page.blocks" />
+        <BlockRenderer v-else-if="data" :blocks="data.page.blocks" :theme="data.site.theme" />
     </div>
 </template>
 
 <script setup lang="ts">
-import type { Block } from '../../../types'
+import type { Block, SiteTheme } from '../../../types'
 
 definePageMeta({ layout: 'preview' })
 
 interface SitePageResponse {
-    site: { id: string, name: string, slug: string }
+    site: { id: string, name: string, slug: string, theme: SiteTheme | null }
     page: {
         id: string
         parent_id: string | null
