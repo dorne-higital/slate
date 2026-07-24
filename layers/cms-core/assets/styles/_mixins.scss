@@ -1,0 +1,58 @@
+// Shared mixins, auto-injected alongside _variables.scss.
+// @use creates an isolated module scope per file — a mixin's body
+// resolves bare variables lexically from where it's *defined*, not where
+// it's called, so this file needs its own @use of _variables.scss even
+// though every caller already has it injected via additionalData.
+@use 'variables' as *;
+
+@mixin visible-focus-ring {
+    &:focus-visible {
+        border-radius: $radius-sm;
+        outline: 3px solid $color-focus-ring;
+        outline-offset: 2px;
+    }
+}
+
+@mixin visually-hidden {
+    border: 0;
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+@mixin card {
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    padding: $space-4;
+
+    @media (prefers-color-scheme: dark) {
+        background: $color-surface-dark;
+        border-color: $color-border-dark;
+    }
+}
+
+@mixin truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@mixin heading-font {
+    font-family: $font-family-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+@mixin eyebrow {
+    color: $color-primary;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}

@@ -1,0 +1,19 @@
+{
+    "name": "@slate/cms-core",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "./nuxt.config.ts",
+    "dependencies": {
+        "@nuxtjs/seo": "^5.3.6",
+        "@nuxtjs/supabase": "^1.4.6",
+        "@supabase/supabase-js": "^2.48.1",
+        "isomorphic-dompurify": "^2.20.0",
+        "nuxt-security": "^2.2.0",
+        "vuedraggable": "^4.1.0"
+    },
+    "devDependencies": {
+        "nuxt": "^4.0.0",
+        "sass": "^1.83.4"
+    }
+}

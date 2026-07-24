@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# nuxt / nitro build output
+.nuxt/
+.output/
+.data/
+dist/
+
+# env
+.env
+.env.*
+!.env.example
+
+# editor / os
+.DS_Store
+*.log
+.idea/
+
+# supabase local
+.supabase/

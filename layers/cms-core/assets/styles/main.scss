@@ -1,0 +1,60 @@
+// Global base styles. Loaded once via the `css` array in nuxt.config, so it
+// receives the same auto-injected variables/mixins as every component.
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    text-size-adjust: 100%;
+}
+
+body {
+    background: $color-bg;
+    color: $color-text;
+    font-family: $font-family-base;
+    font-size: $font-size-base;
+    line-height: $line-height-base;
+    margin: 0;
+
+    @media (prefers-color-scheme: dark) {
+        background: $color-bg-dark;
+        color: $color-text-dark;
+    }
+}
+
+a {
+    color: $color-primary;
+
+    @include visible-focus-ring;
+}
+
+button,
+input,
+select,
+textarea {
+    @include visible-focus-ring;
+
+    font-family: inherit;
+}
+
+.skip-link {
+    background: $color-primary;
+    color: $color-primary-contrast;
+    left: $space-2;
+    padding: $space-2 $space-4;
+    position: absolute;
+    top: -100%;
+    transition: top $transition-fast;
+    z-index: $z-index-skip-link;
+
+    &:focus {
+        top: $space-2;
+    }
+}
+
+.visually-hidden {
+    @include visually-hidden;
+}

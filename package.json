@@ -1,0 +1,37 @@
+{
+    "name": "slate",
+    "private": true,
+    "packageManager": "yarn@4.5.3",
+    "engines": {
+        "node": ">=22"
+    },
+    "workspaces": [
+        "layers/*",
+        "app"
+    ],
+    "scripts": {
+        "dev": "yarn workspace @slate/app dev",
+        "build": "yarn workspace @slate/app build",
+        "generate": "yarn workspace @slate/app generate",
+        "postinstall": "yarn workspace @slate/app prepare",
+        "lint": "yarn lint:js && yarn lint:css",
+        "lint:js": "eslint .",
+        "lint:js:fix": "eslint . --fix",
+        "lint:css": "stylelint \"**/*.{scss,vue}\" --ignore-path .gitignore",
+        "lint:css:fix": "stylelint \"**/*.{scss,vue}\" --ignore-path .gitignore --fix",
+        "typecheck": "yarn workspace @slate/app typecheck"
+    },
+    "devDependencies": {
+        "@nuxt/eslint": "^1.3.0",
+        "@stylistic/stylelint-plugin": "^5.2.1",
+        "eslint": "^10.0.0",
+        "eslint-plugin-vuejs-accessibility": "^2.4.1",
+        "postcss-html": "^1.7.0",
+        "sass": "^1.83.4",
+        "stylelint": "^17.14.1",
+        "stylelint-config-standard-scss": "^17.0.0",
+        "stylelint-order": "^8.1.1",
+        "typescript": "^5.7.3",
+        "vue-tsc": "^2.2.0"
+    }
+}
