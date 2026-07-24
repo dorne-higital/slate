@@ -20,9 +20,11 @@ yarn install        # also runs `nuxt prepare` for app/ via postinstall
 Copy `app/.env.example` to **`app/.env`** — not the workspace root. Nuxt/Nitro only reads `.env` from the app's own root directory (where `nuxt.config.ts` lives and where `yarn workspace @slate/app dev` runs), so a `.env` at the repo root is silently ignored.
 
 ```
-SUPABASE_URL=...
-SUPABASE_KEY=...                  # anon/public key
-SUPABASE_SERVICE_ROLE_KEY=...     # only for migration tooling / future admin scripts, never used in request-serving routes
+SUPABASE_URL=...                  # not secret — ships in the client bundle either way
+SUPABASE_KEY=...                  # anon/public key — also not secret, safety comes from RLS, not from hiding this
+SUPABASE_SERVICE_ROLE_KEY=...     # SECRET. Bypasses RLS entirely. Only for migration tooling / one-off admin scripts —
+                                   # never referenced by request-serving routes, so don't set this on your deploy target at all.
+NUXT_BASE_DOMAIN=                 # optional, see "Going live: domains" below
 ```
 
 ### Database
@@ -51,6 +53,49 @@ yarn lint             # eslint + stylelint
 yarn typecheck
 yarn build
 ```
+
+## Going live: domains
+
+Every site can be reached three ways, in increasing order of "real":
+
+1. **`/preview/{site-slug}/{page-path}`** — works everywhere, no setup. Nested pages just extend the path (`/preview/portfolio/about`). A site's sidebar has a "Preview site ↗" link straight to this.
+2. **`{site-slug}.localhost:3000`** — local dev only. Browsers resolve any `*.localhost` address to your own machine automatically (RFC 6761), no `/etc/hosts` editing needed. Same rendering path as `/preview/...`, just reached via subdomain instead of a URL prefix — useful for testing how subdomain-style URLs will actually behave.
+3. **A real domain** — either a fully custom domain per site (below), or a free `{slug}.` subdomain of a domain *you* own (further below). Both go through `server/middleware/resolve-tenant-domain.ts`, which checks the incoming request's `Host` header on every request and transparently serves that site's content — the visitor's address bar never changes, they just silently get the site instead of the admin dashboard.
+
+The domain-routing middleware resolves the tenant and renders its response entirely **in-process**, via Nitro's `event.fetch` (see `resolve-tenant-domain.ts`) — not by the server dialing itself over a network port. An earlier version used a real HTTP self-proxy, which worked locally but would have quietly broken on any serverless host (Netlify Functions, Vercel) where a single invocation has no listening port to call back into. `event.fetch` never opens a socket at all, so this holds regardless of hosting platform — confirmed by running it with the server's actual listening port deliberately mismatched from what the code was told, which still worked.
+
+### Custom domain per site
+
+Site dashboard → **Settings** → Custom domain. Once set, any request arriving with that hostname gets served that site's content automatically — no further app-side config, on any host.
+
+### Deploying to Vercel
+
+**Repo side — already done, documented here so it isn't re-discovered the hard way:**
+
+- `app/package.json` explicitly depends on `"@slate/cms-core": "workspace:*"` and declares `"engines": {"node": ">=22"}`. Both matter specifically for Vercel: its monorepo dependency-graph detection requires workspace dependencies to be *stated*, not just implied by `extends: [...]` in `nuxt.config.ts`; the `engines` field is a fallback path to the right Node version alongside picking it explicitly in Project Settings (below).
+- No `vercel.json` needed — Nitro auto-detects the Vercel build environment and produces Vercel's expected serverless output format on its own.
+
+**Vercel project setup:**
+
+1. Import the repo as a new Vercel project.
+2. **Root Directory**: `app` (Project Settings → Build and Deployment → Root Directory → Edit → select `app`). Framework Preset should auto-detect as **Nuxt.js** once this is set.
+3. **Node.js Version**: Build and Deployment → Node.js Version → **22.x**.
+4. **Environment variables** (Project Settings → Environment Variables):
+   - `ENABLE_EXPERIMENTAL_COREPACK=1` — **required**, not optional. Without it, Vercel ignores the `packageManager` field entirely and installs with plain Yarn 1 just because it sees a `yarn.lock`, which silently breaks — `.yarnrc.yml` and `nodeLinker: node-modules` only mean anything to Yarn Berry.
+   - `SUPABASE_URL`
+   - `SUPABASE_KEY`
+   - `NUXT_BASE_DOMAIN` — once you've done the wildcard DNS/cert setup below.
+5. Deploy, then confirm `/login` loads before touching DNS.
+
+**If the build fails trying to resolve `@slate/cms-core` or reach anything under `layers/`:** Vercel restricts a project to files inside its Root Directory by default; genuine workspace monorepos (which this is, per the dependency declared above) are meant to be exempted from that automatically, but if it still trips, look for a monorepo/"include files outside the Root Directory" option in the project's settings and enable it.
+
+**Wildcard subdomains per site, on Vercel:** gives every site a free `{slug}.{your-domain}` URL automatically, the same way `{slug}.localhost` already works in dev. Wildcard domains are supported on **every Vercel plan including the free Hobby tier** (this was the whole reason for choosing Vercel over paying for Netlify Pro) — you just need Vercel managing DNS for the certificate challenge:
+
+1. Own a real domain — e.g. `slatecms.co.uk`.
+2. In Vercel, add the domain to your project, then follow its prompt to delegate the domain's **nameservers to Vercel** (find the exact nameservers under the domain's DNS settings once added).
+3. At your registrar (Hostinger, in this case) — change `slatecms.co.uk`'s nameservers to Vercel's. No need to move registration, just the nameservers. Allow up to 24 hours to propagate.
+4. Add `*.slatecms.co.uk` as a wildcard domain on the same project.
+5. Once its certificate shows active, set `NUXT_BASE_DOMAIN=slatecms.co.uk` and redeploy.
 
 ## Access control model, in plain terms
 
@@ -94,8 +139,10 @@ These are deliberate calls, flagged inline in `layers/cms-core/supabase/migratio
 - The RLS policies have been reasoned through carefully (see above) but not run against adversarial test cases (e.g., a logged-in `viewer` attempting a write, a member of site A requesting site B's data). Write a couple of policy tests before trusting this in production.
 - `vuedraggable` reordering, the schema-driven side panel, and the draft/published toggle are implemented but only reviewed, not interacted with in a browser.
 - Rich Text is a plain sanitized `<textarea>`, not a real WYSIWYG editor — sanitization (via `isomorphic-dompurify`) is real and tested logically, but there's no editor UI beyond raw HTML entry yet.
-- Image fields are a raw URL input — there's no upload/asset-storage flow.
-- "New site" creation asks for the owner's raw Supabase user ID (find it in Auth → Users) rather than looking them up by email, to avoid adding a service-role code path for this first pass.
+- ~~Image fields are a raw URL input~~ — superseded: there's now a real media library (Supabase Storage bucket + `media` table, RLS-scoped per site) with an image picker modal in the block settings panel.
+- ~~"New site" creation asks for the owner's raw Supabase user ID~~ — superseded: it's a dropdown of existing users now (`GET /api/admin/users`, platform-admin only — see `layers/cms-core/server/api/admin/users.get.ts`). Still can't invite someone who hasn't signed up yet.
+
+This list reflects the very first pass and hasn't been kept current since — treat it as historical, not authoritative, for anything not cross-checked against the actual code.
 
 ## Tooling notes
 

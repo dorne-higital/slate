@@ -64,6 +64,15 @@ export default defineNuxtConfig({
         }
     },
 
+    // Set via NUXT_BASE_DOMAIN once you own a real domain and have wired
+    // up wildcard DNS + a wildcard cert on your host (see README.md
+    // "Wildcard subdomains per site"). Server-only — never exposed to the
+    // client — since it's only ever read in
+    // server/middleware/resolve-tenant-domain.ts.
+    runtimeConfig: {
+        baseDomain: ''
+    },
+
     // The whole cms-core app (admin + site dashboards) is authenticated
     // tooling, not public content — default every route to noindex.
     // Client-facing site rendering (a future layer) overrides this
