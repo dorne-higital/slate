@@ -21,6 +21,10 @@
                 </div>
 
                 <div class="builder__header-actions">
+                    <button type="button" class="builder__seo-toggle" @click="seoModalOpen = true">
+                        SEO
+                    </button>
+
                     <button type="button" class="builder__preview-toggle" @click="previewMode = !previewMode">
                         {{ previewMode ? 'Edit' : 'Preview' }}
                     </button>
@@ -34,6 +38,18 @@
                     </button>
                 </div>
             </div>
+
+            <Modal v-model="seoModalOpen" title="Page SEO">
+                <div class="field">
+                    <label class="field__label" for="seo-title">SEO title</label>
+                    <input id="seo-title" v-model="seoTitle" class="field__input" type="text">
+                </div>
+
+                <div class="field">
+                    <label class="field__label" for="seo-description">SEO description</label>
+                    <textarea id="seo-description" v-model="seoDescription" class="field__input" rows="4" />
+                </div>
+            </Modal>
 
             <p v-if="saveError" role="alert" class="builder__error">{{ saveError }}</p>
             <p v-if="saveStatus" role="status" class="builder__status-message">{{ saveStatus }}</p>
@@ -56,20 +72,6 @@
                         :site-id="siteId"
                         @update:model-value="handleBlockUpdate"
                     />
-
-                    <div class="seo-panel">
-                        <p class="seo-panel__title">Page SEO</p>
-
-                        <div class="field">
-                            <label class="field__label" for="seo-title">SEO title</label>
-                            <input id="seo-title" v-model="seoTitle" class="field__input" type="text">
-                        </div>
-
-                        <div class="field">
-                            <label class="field__label" for="seo-description">SEO description</label>
-                            <textarea id="seo-description" v-model="seoDescription" class="field__input" rows="4" />
-                        </div>
-                    </div>
                 </div>
             </div>
         </template>
@@ -112,6 +114,7 @@ watch(page, (value) => {
 
 const selectedBlockId = ref<string | null>(null)
 const previewMode = ref(false)
+const seoModalOpen = ref(false)
 const saving = ref(false)
 const saveError = ref('')
 const saveStatus = ref('')
@@ -191,6 +194,7 @@ async function handleTogglePublish() {
         color: $color-primary;
         flex-shrink: 0;
         font-weight: 600;
+        margin-bottom: auto;
         text-decoration: none;
 
         &:hover {
@@ -210,38 +214,72 @@ async function handleTogglePublish() {
         align-items: center;
         display: flex;
         gap: $space-3;
+        justify-content: space-between;
     }
 
+    // A plain borderless input reads as static text, not something you can
+    // click into — a visible box (matching .field__input elsewhere in the
+    // app) plus a hover state is what signals "editable" before the user
+    // ever focuses it.
     &__title-input {
         @include heading-font;
-
-        background: none;
-        border: none;
-        color: $color-text;
-        font-size: $font-size-xl;
-        padding: $space-1 0;
-
         @include visible-focus-ring;
 
+        background: $color-surface-raised;
+        border: 1px solid $color-border;
+        border-radius: $radius-sm;
+        color: $color-text;
+        flex-grow:1;
+        font-size: $font-size-xl;
+        padding: $space-2 $space-3;
+        transition: border-color $transition-fast;
+
+        &:hover {
+            border-color: $color-text-muted;
+        }
+
         @media (prefers-color-scheme: dark) {
+            background: $color-surface-raised-dark;
+            border-color: $color-border-dark;
             color: $color-text-dark;
+
+            &:hover {
+                border-color: $color-text-muted;
+            }
         }
     }
 
     &__slug-input {
-        background: none;
-        border: none;
+        @include visible-focus-ring;
+
+        background: $color-surface-raised;
+        border: 1px solid $color-border;
+        border-radius: $radius-sm;
         color: $color-text-muted;
         font-size: $font-size-sm;
-        padding: 0;
+        padding: $space-1 $space-3;
+        transition: border-color $transition-fast;
 
-        @include visible-focus-ring;
+        &:hover {
+            border-color: $color-text-muted;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            background: $color-surface-raised-dark;
+            border-color: $color-border-dark;
+
+            &:hover {
+                border-color: $color-text-muted;
+            }
+        }
     }
 
     &__header-actions {
         align-items: center;
         display: flex;
+        flex-wrap: wrap;
         gap: $space-3;
+        max-width: 12rem;
     }
 
     &__preview-toggle {
@@ -250,6 +288,7 @@ async function handleTogglePublish() {
         border-radius: $radius-sm;
         color: $color-text;
         cursor: pointer;
+        flex: 1;
         padding: $space-2 $space-3;
 
         @media (prefers-color-scheme: dark) {
@@ -264,6 +303,7 @@ async function handleTogglePublish() {
         border-radius: $radius-sm;
         color: $color-text;
         cursor: pointer;
+        flex: 1;
         padding: $space-2 $space-3;
 
         &:disabled {
@@ -283,6 +323,7 @@ async function handleTogglePublish() {
         border-radius: $radius-sm;
         color: $color-primary-contrast;
         cursor: pointer;
+        flex: 1;
         font-weight: 700;
         padding: $space-2 $space-4;
 
@@ -304,6 +345,21 @@ async function handleTogglePublish() {
         padding: $space-3;
     }
 
+    &__seo-toggle {
+        background: none;
+        border: 1px solid $color-border;
+        border-radius: $radius-sm;
+        color: $color-text;
+        cursor: pointer;
+        flex: 1;
+        padding: $space-2 $space-3;
+
+        @media (prefers-color-scheme: dark) {
+            border-color: $color-border-dark;
+            color: $color-text-dark;
+        }
+    }
+
     &__editor {
         display: flex;
         gap: $space-5;
@@ -315,20 +371,6 @@ async function handleTogglePublish() {
         flex-shrink: 0;
         gap: $space-4;
         width: 18rem;
-    }
-}
-
-.seo-panel {
-    @include card;
-
-    display: flex;
-    flex-direction: column;
-    gap: $space-3;
-
-    &__title {
-        @include eyebrow;
-
-        margin: 0;
     }
 }
 

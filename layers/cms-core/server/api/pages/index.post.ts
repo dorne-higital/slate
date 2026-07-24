@@ -5,6 +5,8 @@ interface CreatePageBody {
     title: string
     slug: string
     parentId?: string | null
+    seoTitle?: string | null
+    seoDescription?: string | null
 }
 
 export default defineEventHandler(async (event) => {
@@ -34,7 +36,9 @@ export default defineEventHandler(async (event) => {
             title: body.title.trim(),
             slug,
             status: 'draft',
-            blocks: []
+            blocks: [],
+            seo_title: body.seoTitle ?? null,
+            seo_description: body.seoDescription ?? null
         })
         .select()
         .single()
