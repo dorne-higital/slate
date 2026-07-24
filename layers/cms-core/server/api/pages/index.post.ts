@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const parentId = body.parentId ?? null
-    const slug = (body.slug ?? '').trim()
+    const slug = normalizePageSlug(body.slug ?? '')
 
     // Empty slug means "home page" (see server/api/public/site-page.get.ts),
     // which only makes sense for a top-level page — the DB's unique

@@ -9,6 +9,9 @@
         "layers/*",
         "app"
     ],
+    "resolutions": {
+        "jsdom": "27.3.0"
+    },
     "scripts": {
         "dev": "yarn workspace @slate/app dev",
         "build": "yarn workspace @slate/app build",

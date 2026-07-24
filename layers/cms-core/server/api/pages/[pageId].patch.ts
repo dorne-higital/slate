@@ -23,10 +23,12 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: 'pageId and siteId are required' })
     }
 
+    const slug = body.slug !== undefined ? normalizePageSlug(body.slug) : undefined
+
     // Empty slug means "home page" (see server/api/public/site-page.get.ts)
     // — only valid for a top-level page. This only catches the case where
     // both are changed together; the create route is the primary guard.
-    if (body.slug !== undefined && body.slug.trim() === '' && body.parentId) {
+    if (slug === '' && body.parentId) {
         throw createError({ statusCode: 400, statusMessage: 'Only a top-level page can have a blank slug' })
     }
 
@@ -35,7 +37,7 @@ export default defineEventHandler(async (event) => {
     const update: PageUpdate = {}
 
     if (body.title !== undefined) update.title = body.title.trim()
-    if (body.slug !== undefined) update.slug = body.slug.trim()
+    if (slug !== undefined) update.slug = slug
     if (body.parentId !== undefined) update.parent_id = body.parentId
     if (body.status !== undefined) update.status = body.status
     if (body.seoTitle !== undefined) update.seo_title = body.seoTitle
