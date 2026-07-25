@@ -1,12 +1,9 @@
-// Default values for a site's color theme (see utils/siteTheme.ts and
-// pages/sites/[siteId]/themes.vue) — every value here matches the
-// existing SCSS token it replaces, so a site with no customization
-// (theme: null, the default for every site) looks pixel-identical to
-// before this existed. A site's own values, where set, are applied as
-// inline CSS custom properties on BlockRenderer's root element
-// (BlockRenderer.vue), which only need to override the specific
-// variables below since :root here is what every block's var(--site-*,
-// $fallback) falls back to otherwise.
+// Default values for a site's full design-token theme (see
+// utils/siteTheme.ts and pages/sites/[siteId]/themes.vue). A site's own
+// values, where set, are applied as inline CSS custom properties on
+// BlockRenderer's root element (BlockRenderer.vue), which only need to
+// override the specific variables below since :root here is what every
+// block's var(--site-*, $fallback) falls back to otherwise.
 
 // Deliberately CSS custom properties, not SCSS variables — SCSS
 // variables are resolved once at build time and shared by the whole
@@ -21,14 +18,104 @@
 @use 'variables' as *;
 
 :root {
-    --site-brand-primary: #{$color-primary};
-    --site-brand-primary-hover: #{$color-primary-hover};
-    --site-brand-contrast: #{$color-primary-contrast};
+    // Backgrounds
+    --site-bg-primary: #{$color-bg};
+    --site-bg-secondary: #{$color-surface-raised};
+
+    // Text
     --site-text-primary: #{$color-text};
     --site-text-secondary: #{$color-text-muted};
-    --site-bg-surface: #{$color-surface};
-    --site-bg-surface-accent: #{$color-surface-active};
+    --site-text-inverse: #{$color-primary-contrast};
+
+    // Brand — the core palette
+    --site-brand-primary: #{$color-primary};
+    --site-brand-secondary: #{$color-primary-hover};
+    --site-brand-accent: #{$color-surface-active};
+
+    // Semantic — each -bg defaults to a tint of its own color rather than
+    // a separate hardcoded value, so overriding e.g. --site-error alone
+    // (without also setting --site-error-bg) still produces a matching
+    // tint automatically.
+    --site-success: #{$color-success};
+    --site-success-bg: color-mix(in srgb, var(--site-success) 15%, var(--site-bg-secondary) 85%);
+    --site-error: #{$color-danger};
+    --site-error-bg: color-mix(in srgb, var(--site-error) 15%, var(--site-bg-secondary) 85%);
+    --site-warning: #{$color-warning};
+    --site-warning-bg: color-mix(in srgb, var(--site-warning) 15%, var(--site-bg-secondary) 85%);
+    --site-info: #{$color-primary};
+    --site-info-bg: color-mix(in srgb, var(--site-info) 15%, var(--site-bg-secondary) 85%);
+
+    // Links
     --site-link: #{$color-primary};
     --site-link-hover: #{$color-primary-hover};
+
+    // Borders
     --site-border: #{$color-border};
+    --site-border-strong: #b8b5ad;
+
+    // Buttons — see components/layout/_site-buttons.scss for the actual
+    // .btn.primary/.secondary/.tertiary/.outline classes these drive.
+    // Deriving these from the brand/text/border tokens above (rather
+    // than repeating literal colors) means changing e.g. --site-border
+    // alone still keeps the secondary button's border in sync, without
+    // that also needing to be set explicitly.
+    --site-button-primary-bg: var(--site-brand-primary);
+    --site-button-primary-text: var(--site-text-inverse);
+    --site-button-primary-hover-bg: var(--site-brand-secondary);
+    --site-button-secondary-bg: var(--site-brand-accent);
+    --site-button-secondary-text: var(--site-brand-primary);
+    --site-button-secondary-border: var(--site-border);
+    --site-button-secondary-hover-bg: color-mix(in srgb, var(--site-brand-accent) 80%, var(--site-brand-primary) 20%);
+    --site-button-tertiary-text: var(--site-text-primary);
+    --site-button-tertiary-hover-bg: var(--site-bg-secondary);
+    --site-button-outline-text: var(--site-brand-primary);
+    --site-button-outline-border: var(--site-brand-primary);
+    --site-button-outline-hover-bg: color-mix(in srgb, var(--site-brand-primary) 12%, transparent);
+
+    // Radius
+    --site-border-radius-sm: #{$radius-sm};
+    --site-border-radius-md: #{$radius-md};
+    --site-border-radius-lg: #{$radius-lg};
+    --site-border-radius-pill: 999px;
+
+    // Shadows — not used by the admin dashboard's own chrome anywhere
+    // (it has no $shadow-* tokens), introduced here specifically for
+    // site content; see the block components for where these apply.
+    --site-shadow-sm: 0 1px 2px rgb(0 0 0 / 8%);
+    --site-shadow-md: 0 4px 10px rgb(0 0 0 / 12%);
+    --site-shadow-lg: 0 10px 24px rgb(0 0 0 / 16%);
+
+    // Fonts
+    --site-heading-font-family: #{$font-family-serif};
+    --site-body-font-family: #{$font-family-base};
+
+    // Type scale — deliberately its own scale, independent of the admin
+    // dashboard's $font-size-* tokens (which stay exactly as they are
+    // for the dashboard's own UI); these are noticeably larger, matching
+    // the reference design this theme system is modeled on.
+    --site-hero-size: clamp(3.5rem, 7vw, 4.5rem);
+    --site-h1-size: 3.5rem;
+    --site-h2-size: 2.5rem;
+    --site-h3-size: 1.75rem;
+    --site-h4-size: 1.25rem;
+    --site-h5-size: 1.0625rem;
+    --site-h6-size: 0.9375rem;
+    --site-eyebrow-size: 0.9375rem;
+    --site-button-size: 0.9375rem;
+    --site-navigation-size: 0.9375rem;
+    --site-body-size: 1.0625rem;
+
+    // Font weights
+    --site-heading-font-weight: 700;
+    --site-button-font-weight: 600;
+    --site-navigation-font-weight: 600;
+    --site-body-font-weight: 400;
+
+    // Spacing — site content's own scale, independent of the admin
+    // dashboard's $space-* tokens.
+    --site-padding-xs: 0.5rem;
+    --site-padding-sm: 1rem;
+    --site-padding-md: 1.5rem;
+    --site-padding-lg: 2.5rem;
+    --site-padding-xl: 4rem;
 }

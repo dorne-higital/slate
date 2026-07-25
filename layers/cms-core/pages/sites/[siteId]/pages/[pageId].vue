@@ -54,13 +54,14 @@
             <p v-if="saveError" role="alert" class="builder__error">{{ saveError }}</p>
             <p v-if="saveStatus" role="status" class="builder__status-message">{{ saveStatus }}</p>
 
-            <BlockRenderer v-if="previewMode" :blocks="blocks" />
+            <BlockRenderer v-if="previewMode" :blocks="blocks" :theme="site?.theme" />
 
             <div v-else class="builder__editor">
                 <PageBuilderCanvas
                     v-model="blocks"
                     :registry="registry"
                     :selected-block-id="selectedBlockId"
+                    :theme="site?.theme"
                     @update:selected-block-id="selectedBlockId = $event"
                 />
 
@@ -79,7 +80,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Block, ComponentDefinition, Page, PageStatus } from '../../../../types'
+import type { Block, ComponentDefinition, Page, PageStatus, Site } from '../../../../types'
+import { googleFontLinksFor } from '../../../../utils/siteFonts'
 
 definePageMeta({ layout: 'site' })
 
@@ -91,9 +93,19 @@ const { data, pending } = await useFetch<{ page: Page }>(`/api/pages/${pageId}`,
     query: { siteId }
 })
 const { data: registryData } = await useFetch<{ componentRegistry: ComponentDefinition[] }>('/api/component-registry')
+// Only its theme is used here — the canvas and Preview toggle render
+// blocks with this site's own colors/type-scale/etc, same as a visitor
+// would see, while the rest of this page (toolbar, palette, SEO modal)
+// stays on the admin app's own fixed design system.
+const { data: siteData } = await useFetch<{ site: Site }>(`/api/sites/${siteId}`)
+
+// So the canvas and Preview toggle actually render a selected Google
+// Font, not just its fallback.
+useHead({ link: () => googleFontLinksFor(siteData.value?.site.theme) })
 
 const page = computed(() => data.value?.page ?? null)
 const registry = computed(() => registryData.value?.componentRegistry ?? [])
+const site = computed(() => siteData.value?.site ?? null)
 
 const title = ref(page.value?.title ?? '')
 const slug = ref(page.value?.slug ?? '')

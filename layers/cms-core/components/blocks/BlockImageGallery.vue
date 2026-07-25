@@ -19,14 +19,15 @@ const urls = computed(() => {
 <style lang="scss" scoped>
 .block-gallery {
     display: grid;
-    gap: $space-4;
+    gap: var(--site-padding-sm, #{$space-4});
     grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
 
     &__tile {
         align-items: center;
         aspect-ratio: 4 / 3;
-        background: var(--site-bg-surface, #{$color-surface});
-        border-radius: $radius-sm;
+        background: var(--site-bg-secondary, #{$color-surface});
+        border-radius: var(--site-border-radius-sm, #{$radius-sm});
+        box-shadow: var(--site-shadow-sm, none);
         display: flex;
         justify-content: center;
         overflow: hidden;
@@ -56,7 +57,8 @@ const urls = computed(() => {
         );
         color: var(--site-text-secondary, #{$color-text-muted});
         display: flex;
-        font-size: $font-size-sm;
+        font-family: var(--site-body-font-family, #{$font-family-base});
+        font-size: var(--site-eyebrow-size, #{$font-size-sm});
         height: 100%;
         justify-content: center;
         width: 100%;

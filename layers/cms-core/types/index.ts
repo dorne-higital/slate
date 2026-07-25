@@ -9,22 +9,89 @@ export interface Profile {
 }
 
 /**
- * A site's color customization. Every field is optional — an unset field
- * (or a null/absent `theme` altogether) means "use the built-in
- * default," not "use an empty/invalid color." See utils/siteTheme.ts for
- * the canonical field list, CSS variable names, and default values.
+ * A site's full design-token customization — colors, radius, shadows,
+ * typography, and spacing. Every field is optional — an unset field (or
+ * a null/absent `theme` altogether) means "use the built-in default,"
+ * not "use an empty/invalid value." See utils/siteTheme.ts for the
+ * canonical field list, CSS variable names, grouping, and defaults.
  */
 export interface SiteTheme {
-    brandPrimary?: string
-    brandPrimaryHover?: string
-    brandContrast?: string
+    bgPrimary?: string
+    bgSecondary?: string
+
     textPrimary?: string
     textSecondary?: string
-    bgSurface?: string
-    bgSurfaceAccent?: string
+    textInverse?: string
+
+    brandPrimary?: string
+    brandSecondary?: string
+    brandAccent?: string
+
+    success?: string
+    successBg?: string
+    error?: string
+    errorBg?: string
+    warning?: string
+    warningBg?: string
+    info?: string
+    infoBg?: string
+
     link?: string
     linkHover?: string
+
     border?: string
+    borderStrong?: string
+
+    buttonPrimaryBg?: string
+    buttonPrimaryText?: string
+    buttonPrimaryHoverBg?: string
+
+    buttonSecondaryBg?: string
+    buttonSecondaryText?: string
+    buttonSecondaryBorder?: string
+    buttonSecondaryHoverBg?: string
+
+    buttonTertiaryText?: string
+    buttonTertiaryHoverBg?: string
+
+    buttonOutlineText?: string
+    buttonOutlineBorder?: string
+    buttonOutlineHoverBg?: string
+
+    borderRadiusSm?: string
+    borderRadiusMd?: string
+    borderRadiusLg?: string
+    borderRadiusPill?: string
+
+    shadowSm?: string
+    shadowMd?: string
+    shadowLg?: string
+
+    headingFontFamily?: string
+    bodyFontFamily?: string
+
+    heroSize?: string
+    h1Size?: string
+    h2Size?: string
+    h3Size?: string
+    h4Size?: string
+    h5Size?: string
+    h6Size?: string
+    eyebrowSize?: string
+    buttonSize?: string
+    navigationSize?: string
+    bodySize?: string
+
+    headingFontWeight?: string
+    buttonFontWeight?: string
+    navigationFontWeight?: string
+    bodyFontWeight?: string
+
+    paddingXs?: string
+    paddingSm?: string
+    paddingMd?: string
+    paddingLg?: string
+    paddingXl?: string
 }
 
 export interface Site {

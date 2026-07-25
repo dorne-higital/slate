@@ -1,0 +1,91 @@
+// Global button system for site content — <a class="btn primary"> (or
+// secondary/tertiary/outline). Not scoped to any one block component so
+// any block's markup can use it directly, and it only ever needs one
+// definition to stay in sync with a site's theme (see _site-theme.scss
+// for the --site-button-* variables these classes read, and
+// utils/siteTheme.ts's "Buttons" field group for where a site
+// customizes them).
+@use 'variables' as *;
+
+.btn {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--site-border-radius-pill, 999px);
+    box-shadow: var(--site-shadow-sm, none);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: var(--site-body-font-family, #{$font-family-base});
+    font-size: var(--site-button-size, #{$font-size-base});
+    font-weight: var(--site-button-font-weight, 700);
+    gap: 0.5rem;
+    justify-content: center;
+    padding: var(--site-padding-sm, #{$space-3}) var(--site-padding-md, #{$space-5});
+    text-decoration: none;
+    transition:
+        background $transition-fast,
+        border-color $transition-fast,
+        box-shadow $transition-fast,
+        color $transition-fast,
+        transform $transition-fast;
+
+    &:hover {
+        box-shadow: var(--site-shadow-md, none);
+        transform: translateY(-2px);
+    }
+
+    &:active {
+        box-shadow: var(--site-shadow-sm, none);
+        transform: scale(0.96);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--site-brand-primary, #{$color-primary});
+        outline-offset: 3px;
+    }
+
+    &.primary {
+        background: var(--site-button-primary-bg);
+        color: var(--site-button-primary-text);
+
+        &:hover {
+            background: var(--site-button-primary-hover-bg);
+        }
+    }
+
+    &.secondary {
+        background: var(--site-button-secondary-bg);
+        border-color: var(--site-button-secondary-border);
+        color: var(--site-button-secondary-text);
+
+        &:hover {
+            background: var(--site-button-secondary-hover-bg);
+        }
+    }
+
+    // Lower emphasis than primary/secondary — no lift or shadow on
+    // hover, just a background wash, same as the outline variant below.
+    &.tertiary {
+        background: transparent;
+        box-shadow: none;
+        color: var(--site-button-tertiary-text);
+
+        &:hover {
+            background: var(--site-button-tertiary-hover-bg);
+            box-shadow: none;
+            transform: none;
+        }
+    }
+
+    &.outline {
+        background: transparent;
+        border-color: var(--site-button-outline-border);
+        box-shadow: none;
+        color: var(--site-button-outline-text);
+
+        &:hover {
+            background: var(--site-button-outline-hover-bg);
+            box-shadow: none;
+            transform: none;
+        }
+    }
+}

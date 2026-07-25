@@ -13,6 +13,7 @@
 
 <script setup lang="ts">
 import type { Block, SiteTheme } from '../../../types'
+import { googleFontLinksFor } from '../../../utils/siteFonts'
 
 definePageMeta({ layout: 'preview' })
 
@@ -63,6 +64,11 @@ const canonicalUrl = computed(() => (tenantHost.value ? `https://${tenantHost.va
 useHead({
     link: () => (canonicalUrl.value ? [{ rel: 'canonical', href: canonicalUrl.value }] : [])
 })
+
+// If this site's theme picked a Google Font, real visitors need it
+// actually loaded — same call the theme editor's own live preview and
+// the page builder canvas make for their theme.
+useHead({ link: () => googleFontLinksFor(data.value?.site.theme) })
 
 useSeoMeta({
     title: () => data.value?.page.seo_title || data.value?.page.title,

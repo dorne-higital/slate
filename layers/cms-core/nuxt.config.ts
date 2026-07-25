@@ -122,9 +122,14 @@ export default defineNuxtConfig({
                 // nonce for <style> tags, allow inline style attributes
                 // specifically. style-src stays as the fallback for
                 // browsers that don't support the split directives.
-                'style-src': ["'self'", "'nonce-{{nonce}}'"],
+                // fonts.googleapis.com: a site's theme can pick a Google
+                // Font (utils/siteFonts.ts), loaded via a plain <link
+                // rel="stylesheet"> — the actual font files it references
+                // come from fonts.gstatic.com, already covered by the
+                // font-src https: above.
+                'style-src': ["'self'", "'nonce-{{nonce}}'", 'https://fonts.googleapis.com'],
                 'style-src-attr': ["'self'", "'unsafe-inline'"],
-                'style-src-elem': ["'self'", "'nonce-{{nonce}}'"],
+                'style-src-elem': ["'self'", "'nonce-{{nonce}}'", 'https://fonts.googleapis.com'],
                 'upgrade-insecure-requests': true
             },
             crossOriginEmbedderPolicy: 'unsafe-none',

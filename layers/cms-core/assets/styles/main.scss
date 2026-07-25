@@ -2,6 +2,7 @@
 // receives the same auto-injected variables/mixins as every component.
 
 @use 'site-theme';
+@use 'site-buttons';
 
 *,
 *::before,

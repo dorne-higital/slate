@@ -71,11 +71,7 @@
                         </div>
 
                         <div class="canvas-block__preview">
-                            <component
-                                :is="resolveBlockComponent(block.type)"
-                                v-if="resolveBlockComponent(block.type)"
-                                v-bind="block.props"
-                            />
+                            <BlockRenderer v-if="resolveBlockComponent(block.type)" :blocks="[block]" :theme="theme" />
                             <p v-else class="canvas-block__unknown">
                                 Unknown block type "{{ block.type }}"
                             </p>
@@ -95,12 +91,13 @@
 
 <script setup lang="ts">
 import draggable from 'vuedraggable'
-import type { Block, BlockFieldSchema, ComponentDefinition } from '../../types'
+import type { Block, BlockFieldSchema, ComponentDefinition, SiteTheme } from '../../types'
 
 const props = defineProps<{
     modelValue: Block[]
     registry: ComponentDefinition[]
     selectedBlockId: string | null
+    theme?: SiteTheme | null
 }>()
 
 const emit = defineEmits<{
