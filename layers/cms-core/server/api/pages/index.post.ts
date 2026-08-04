@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
             parent_id: parentId,
             title: body.title.trim(),
             slug,
-            status: 'draft',
+            status: 'published',
             blocks: [],
             seo_title: body.seoTitle ?? null,
             seo_description: body.seoDescription ?? null

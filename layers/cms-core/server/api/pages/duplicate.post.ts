@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
             parent_id: original.parent_id,
             title: `${original.title} (Copy)`,
             slug: `${original.slug}-copy-${Date.now().toString(36)}`,
-            status: 'draft',
+            status: 'published',
             seo_title: original.seo_title,
             seo_description: original.seo_description,
             blocks: original.blocks

@@ -13,14 +13,6 @@
                     <span class="visually-hidden">Search pages</span>
                     <input v-model="search" type="search" placeholder="Search pages…">
                 </label>
-                <button
-                    type="button"
-                    class="pages-view__publish-all"
-                    :disabled="publishingAll || draftCount === 0"
-                    @click="handlePublishAll"
-                >
-                    {{ publishingAll ? 'Publishing…' : `Publish All${draftCount ? ` (${draftCount})` : ''}` }}
-                </button>
                 <button type="button" class="pages-view__new" @click="newPageModalOpen = true">
                     New Page
                 </button>
@@ -270,24 +262,6 @@ const parentOptions = computed(() => {
     return flattenPageTree(fullTree.value, allIds)
 })
 
-const draftCount = computed(() => pages.value.filter(page => page.status === 'draft').length)
-const publishingAll = ref(false)
-
-async function handlePublishAll() {
-    if (!window.confirm(`Publish all ${draftCount.value} draft page${draftCount.value === 1 ? '' : 's'}?`)) return
-
-    publishingAll.value = true
-    try {
-        await $fetch('/api/pages/publish-all', {
-            method: 'POST',
-            body: { siteId }
-        })
-        await refresh()
-    } finally {
-        publishingAll.value = false
-    }
-}
-
 const newPageModalOpen = ref(false)
 const creating = ref(false)
 const createError = ref('')
@@ -424,32 +398,6 @@ async function handleDelete(page: Page) {
 
         @media (prefers-color-scheme: dark) {
             color: $color-primary-contrast-dark;
-        }
-    }
-
-    &__publish-all {
-        background: none;
-        border: 1px solid $color-border;
-        border-radius: $radius-sm;
-        color: $color-text;
-        cursor: pointer;
-        font-weight: 600;
-        padding: $space-3 $space-4;
-
-        &:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        &:hover:not(:disabled) {
-            border-color: $color-primary;
-            color: $color-primary;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            border: 1px solid $color-border-dark;
-            border-color: $color-border-dark;
-            color: $color-text-dark;
         }
     }
 
