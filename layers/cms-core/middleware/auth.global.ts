@@ -5,33 +5,25 @@
  * RLS), so a stale or bypassed redirect here can misroute a user but
  * can't leak data.
  *
- * Public routes (the marketing site, /login) opt in via
- * `definePageMeta({ public: true })` rather than a hardcoded path list
- * here — cms-core stays agnostic to which of a consuming app's own pages
- * are public.
+ * Public routes opt in via `definePageMeta({ public: true })` in the
+ * general case, but that alone isn't reliable here: `to.meta.public`
+ * defined on a page in the *app* layer (app/pages/*.vue) does not
+ * reliably resolve inside global middleware defined in the *cms-core*
+ * layer, even though the build's static route manifest has the meta
+ * correct on both sides — verified in production by instrumenting this
+ * exact file with response headers (path=/, meta from an app-layer page,
+ * consistently read back as undefined; path=/login, meta from a
+ * cms-core-layer page, read back correctly). Root cause not identified,
+ * but reliably reproducible, so PUBLIC_PATHS below is the actual access
+ * boundary for top-level public pages, with meta kept as a secondary/
+ * future-proofing check for pages not listed here (e.g. /preview/*).
  */
-export default defineNuxtRouteMiddleware(async (to) => {
-    // TEMPORARY diagnostic — remove once the production redirect bug is
-    // root-caused. Surfaces what this middleware actually saw for a
-    // given request as response headers, visible via curl -I, without
-    // needing Vercel runtime log access. Raw Node req/res APIs only,
-    // deliberately avoiding H3/Nitro auto-imports that may not resolve
-    // in this (app-level route middleware, not server/) context.
-    if (import.meta.server) {
-        const event = useRequestEvent()
-        if (event?.node?.res && !event.node.res.headersSent) {
-            // append, not set — this middleware can run more than once
-            // per response (a server-side redirect re-enters it for the
-            // new target), and overwriting would hide every pass but the
-            // last. Each value shows up as a separate x-debug-pass header
-            // in the response, in order.
-            event.node.res.appendHeader('x-debug-pass', `path=${to.path} public=${JSON.stringify(to.meta.public ?? null)} host=${String(event.node.req.headers['x-forwarded-host'] ?? event.node.req.headers.host ?? 'unknown')} tenant=${String(event.node.req.headers['x-slate-tenant-domain'] ?? 'none')}`)
-        }
-    }
+const PUBLIC_PATHS = new Set(['/', '/register', '/about', '/contact', '/guides', '/login', '/confirm'])
 
+export default defineNuxtRouteMiddleware(async (to) => {
     // The public site renderer is meant for anonymous visitors by
     // design — see supabase/migrations/0005_public_site_access.sql.
-    if (to.meta.public || to.path.startsWith('/preview/')) {
+    if (to.meta.public || PUBLIC_PATHS.has(to.path) || to.path.startsWith('/preview/')) {
         return
     }
 
