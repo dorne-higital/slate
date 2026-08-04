@@ -20,10 +20,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (import.meta.server) {
         const event = useRequestEvent()
         if (event?.node?.res && !event.node.res.headersSent) {
-            event.node.res.setHeader('x-debug-to-path', to.path)
-            event.node.res.setHeader('x-debug-meta-public', JSON.stringify(to.meta.public ?? null))
-            event.node.res.setHeader('x-debug-host', String(event.node.req.headers['x-forwarded-host'] ?? event.node.req.headers.host ?? 'unknown'))
-            event.node.res.setHeader('x-debug-tenant-header', String(event.node.req.headers['x-slate-tenant-domain'] ?? 'none'))
+            // append, not set — this middleware can run more than once
+            // per response (a server-side redirect re-enters it for the
+            // new target), and overwriting would hide every pass but the
+            // last. Each value shows up as a separate x-debug-pass header
+            // in the response, in order.
+            event.node.res.appendHeader('x-debug-pass', `path=${to.path} public=${JSON.stringify(to.meta.public ?? null)} host=${String(event.node.req.headers['x-forwarded-host'] ?? event.node.req.headers.host ?? 'unknown')} tenant=${String(event.node.req.headers['x-slate-tenant-domain'] ?? 'none')}`)
         }
     }
 
