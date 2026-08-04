@@ -98,7 +98,7 @@
                 {{ freeSiteUrl }} the whole time either way.
             </p>
 
-            <button type="button" class="go-live__recheck" :disabled="checkingDomain" @click="checkDomainStatus">
+            <button type="button" class="go-live__recheck" :disabled="checkingDomain" @click="() => checkDomainStatus()">
                 {{ checkingDomain ? 'Checking…' : 'Recheck' }}
             </button>
         </section>
@@ -135,13 +135,7 @@ watch(site, (value) => {
     name.value = value.name
     slug.value = value.slug
     customDomain.value = value.custom_domain ?? ''
-    if (value.custom_domain) checkDomainStatus()
 }, { immediate: true })
-
-const saving = ref(false)
-const saveError = ref('')
-const saveStatus = ref('')
-const vercelWarning = ref('')
 
 interface DomainStatus {
     hasDomain: boolean
@@ -153,20 +147,18 @@ interface DomainStatus {
     counterpartRecord?: { type: string, name: string, value: string }
 }
 
-const domainStatus = ref<DomainStatus | null>(null)
-const checkingDomain = ref(false)
+// useFetch (not a plain ref + manual $fetch) so this loads automatically
+// on every visit to this page — server-rendered on first load, and its
+// result travels in the SSR payload so the client doesn't even have to
+// re-fetch it on hydration. Nothing here depends on clicking Save.
+const { data: domainStatus, pending: checkingDomain, refresh: checkDomainStatus } = await useFetch<DomainStatus>(
+    `/api/sites/${siteId}/domain-status`
+)
 
-async function checkDomainStatus() {
-    checkingDomain.value = true
-
-    try {
-        domainStatus.value = await $fetch<DomainStatus>(`/api/sites/${siteId}/domain-status`)
-    } catch {
-        // Leave the previous status showing rather than blank the panel over a transient check failure.
-    } finally {
-        checkingDomain.value = false
-    }
-}
+const saving = ref(false)
+const saveError = ref('')
+const saveStatus = ref('')
+const vercelWarning = ref('')
 
 async function handleSave() {
     saving.value = true
@@ -185,12 +177,7 @@ async function handleSave() {
         })
         saveStatus.value = 'Saved.'
         vercelWarning.value = result.vercelWarning ?? ''
-
-        if (customDomain.value) {
-            await checkDomainStatus()
-        } else {
-            domainStatus.value = null
-        }
+        await checkDomainStatus()
     } catch (error) {
         saveError.value = error instanceof Error ? error.message : 'Failed to save settings'
     } finally {
