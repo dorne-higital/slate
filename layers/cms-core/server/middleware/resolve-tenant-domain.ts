@@ -56,7 +56,6 @@ export default defineEventHandler(async (event) => {
     if (!host) return
 
     const hostname = host.split(':')[0] ?? host
-    const client = await serverSupabaseClient<Database>(event)
     const { baseDomain } = useRuntimeConfig(event).public
 
     const subdomainSuffix = hostname.endsWith('.localhost')
@@ -81,61 +80,71 @@ export default defineEventHandler(async (event) => {
     // subdomain), same as if this middleware had never run — real,
     // already-working top-level routes like /login must resolve
     // identically no matter which host reached them.
-    if (label === 'admin') {
-        if (!atRoot) return
-    }
+    if (label === 'admin' && !atRoot) return
 
     let targetPath: string
 
-    if (label === 'admin') {
-        targetPath = '/admin'
-    } else {
-        let site: { id: string, slug: string } | null = null
-        let viaSubdomain = false
+    try {
+        if (label === 'admin') {
+            targetPath = '/admin'
+        } else {
+            const client = await serverSupabaseClient<Database>(event)
+            let site: { id: string, slug: string } | null = null
+            let viaSubdomain = false
 
-        if (label) {
-            const { data } = await client
-                .from('sites')
-                .select('id, slug')
-                .eq('slug', label)
-                .eq('status', 'active')
-                .maybeSingle()
-            site = data
-            viaSubdomain = Boolean(site)
-        }
+            if (label) {
+                const { data } = await client
+                    .from('sites')
+                    .select('id, slug')
+                    .eq('slug', label)
+                    .eq('status', 'active')
+                    .maybeSingle()
+                site = data
+                viaSubdomain = Boolean(site)
+            }
 
-        if (!site) {
-            const { data } = await client
-                .from('sites')
-                .select('id, slug')
-                .eq('custom_domain', hostname)
-                .eq('status', 'active')
-                .maybeSingle()
-            site = data
-        }
+            if (!site) {
+                const { data } = await client
+                    .from('sites')
+                    .select('id, slug')
+                    .eq('custom_domain', hostname)
+                    .eq('status', 'active')
+                    .maybeSingle()
+                site = data
+            }
 
-        if (!site) return
+            if (!site) return
 
-        targetPath = `/preview/${site.slug}${subPath}`
+            targetPath = `/preview/${site.slug}${subPath}`
 
-        if (viaSubdomain && atRoot) {
-            // serverSupabaseUser() throws (rather than returning null) when
-            // there's no session at all ("Auth session missing!") — the
-            // normal case for an anonymous visitor to a site's subdomain,
-            // not a failure, so it's treated the same as "not logged in".
-            const user = await serverSupabaseUser(event).catch(() => null)
+            if (viaSubdomain && atRoot) {
+                // serverSupabaseUser() throws (rather than returning null) when
+                // there's no session at all ("Auth session missing!") — the
+                // normal case for an anonymous visitor to a site's subdomain,
+                // not a failure, so it's treated the same as "not logged in".
+                const user = await serverSupabaseUser(event).catch(() => null)
 
-            if (user) {
-                const { data: hasAccess } = await client.rpc('has_site_role', {
-                    target_site_id: site.id,
-                    min_role: 'viewer'
-                })
+                if (user) {
+                    const { data: hasAccess } = await client.rpc('has_site_role', {
+                        target_site_id: site.id,
+                        min_role: 'viewer'
+                    })
 
-                if (hasAccess) {
-                    targetPath = `/sites/${site.id}`
+                    if (hasAccess) {
+                        targetPath = `/sites/${site.id}`
+                    }
                 }
             }
         }
+    } catch (error) {
+        // This middleware is a pure enhancement (a nicer URL for tenant
+        // sites/admin) — if anything above fails unexpectedly (a Supabase
+        // connectivity blip, whatever), the safe fallback is to let the
+        // request through to normal routing untouched, exactly as if no
+        // site/label had matched, not to take the whole request down with
+        // it. Logged so a real, recurring failure is still visible.
+        console.error('[resolve-tenant-domain] falling through after error:', error)
+        return
     }
 
     // Forwarded automatically to the inner call below (h3's

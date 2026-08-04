@@ -9,7 +9,10 @@ import type { Database } from '../../../types/database.types'
  * the sole access boundary, which is exactly what it's designed for.
  */
 export default defineEventHandler(async (event) => {
-    const user = await serverSupabaseUser(event)
+    // serverSupabaseUser() throws (rather than returning null) when
+    // there's no session at all ("Auth session missing!") - an
+    // unauthenticated caller, not a server failure.
+    const user = await serverSupabaseUser(event).catch(() => null)
 
     if (!user) {
         throw createError({ statusCode: 401, statusMessage: 'Authentication required' })
