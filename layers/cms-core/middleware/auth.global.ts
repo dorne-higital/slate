@@ -11,6 +11,22 @@
  * are public.
  */
 export default defineNuxtRouteMiddleware(async (to) => {
+    // TEMPORARY diagnostic — remove once the production redirect bug is
+    // root-caused. Surfaces what this middleware actually saw for a
+    // given request as response headers, visible via curl -I, without
+    // needing Vercel runtime log access. Raw Node req/res APIs only,
+    // deliberately avoiding H3/Nitro auto-imports that may not resolve
+    // in this (app-level route middleware, not server/) context.
+    if (import.meta.server) {
+        const event = useRequestEvent()
+        if (event?.node?.res && !event.node.res.headersSent) {
+            event.node.res.setHeader('x-debug-to-path', to.path)
+            event.node.res.setHeader('x-debug-meta-public', JSON.stringify(to.meta.public ?? null))
+            event.node.res.setHeader('x-debug-host', String(event.node.req.headers['x-forwarded-host'] ?? event.node.req.headers.host ?? 'unknown'))
+            event.node.res.setHeader('x-debug-tenant-header', String(event.node.req.headers['x-slate-tenant-domain'] ?? 'none'))
+        }
+    }
+
     // The public site renderer is meant for anonymous visitors by
     // design — see supabase/migrations/0005_public_site_access.sql.
     if (to.meta.public || to.path.startsWith('/preview/')) {
