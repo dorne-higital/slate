@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
     const { data: site, error: siteError } = await client
         .from('sites')
-        .select('id, name, slug, theme')
+        .select('id, name, slug, theme, layout')
         .eq('slug', siteSlug)
         .single()
 
@@ -53,5 +53,17 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 404, statusMessage: 'Page not found' })
     }
 
-    return { site, page: match }
+    // Whichever slots the site's chosen header/footer styles actually
+    // render — not every site has all three menus set up, and a style
+    // component treats a missing one as "no items" rather than an error.
+    const { data: menus, error: menusError } = await client
+        .from('menus')
+        .select('id, name, slug, slot, items')
+        .eq('site_id', site.id)
+
+    if (menusError) {
+        throw createError({ statusCode: 500, statusMessage: menusError.message })
+    }
+
+    return { site, page: match, menus: menus ?? [] }
 })

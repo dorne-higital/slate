@@ -43,6 +43,7 @@ export interface Database {
                     status: 'active' | 'paused' | 'archived'
                     custom_domain: string | null
                     theme: unknown
+                    layout: unknown
                     created_at: string
                     updated_at: string
                 }
@@ -53,6 +54,7 @@ export interface Database {
                     status?: 'active' | 'paused' | 'archived'
                     custom_domain?: string | null
                     theme?: unknown
+                    layout?: unknown
                     created_at?: string
                     updated_at?: string
                 }
@@ -63,6 +65,7 @@ export interface Database {
                     status?: 'active' | 'paused' | 'archived'
                     custom_domain?: string | null
                     theme?: unknown
+                    layout?: unknown
                     created_at?: string
                     updated_at?: string
                 }
@@ -283,6 +286,47 @@ export interface Database {
                         columns: ['uploaded_by']
                         isOneToOne: false
                         referencedRelation: 'profiles'
+                        referencedColumns: ['id']
+                    }
+                ]
+            }
+            menus: {
+                Row: {
+                    id: string
+                    site_id: string
+                    name: string
+                    slug: string
+                    slot: 'header_main' | 'footer_main' | 'footer_legal'
+                    items: unknown
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    site_id: string
+                    name: string
+                    slug: string
+                    slot: 'header_main' | 'footer_main' | 'footer_legal'
+                    items?: unknown
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    site_id?: string
+                    name?: string
+                    slug?: string
+                    slot?: 'header_main' | 'footer_main' | 'footer_legal'
+                    items?: unknown
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'menus_site_id_fkey'
+                        columns: ['site_id']
+                        isOneToOne: false
+                        referencedRelation: 'sites'
                         referencedColumns: ['id']
                     }
                 ]

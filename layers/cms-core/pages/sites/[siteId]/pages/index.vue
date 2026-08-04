@@ -90,7 +90,6 @@
                     <thead>
                         <tr>
                             <th scope="col">Title</th>
-                            <th scope="col">Status</th>
                             <th scope="col">SEO title</th>
                             <th scope="col">SEO description</th>
                             <th scope="col">Last edited</th>
@@ -116,12 +115,6 @@
                                         {{ row.title }}
                                     </NuxtLink>
                                 </div>
-                            </td>
-                            <td>
-                                <StatusPill
-                                    :label="row.status === 'published' ? 'Published' : 'Draft'"
-                                    :variant="row.status === 'published' ? 'info' : 'outline'"
-                                />
                             </td>
                             <td>
                                 <span v-if="row.seo_title" :title="row.seo_title">
@@ -156,14 +149,18 @@
                                     </button>
                                     <button
                                         type="button"
-                                        class="pages-table__icon-button"
+                                        class="pages-table__icon-button pages-table__icon-button--danger"
                                         :aria-label="`Delete ${row.title}`"
                                         @click="handleDelete(row)"
                                     >
                                         <IconTrash />
                                     </button>
-                                    <NuxtLink :to="`/sites/${siteId}/pages/${row.id}`" class="pages-table__edit">
-                                        Edit
+                                    <NuxtLink
+                                        :to="`/sites/${siteId}/pages/${row.id}`"
+                                        class="pages-table__edit"
+                                        :aria-label="`Edit ${row.title}`"
+                                    >
+                                        <IconPencil />
                                     </NuxtLink>
                                 </div>
                             </td>
@@ -630,20 +627,43 @@ async function handleDelete(page: Page) {
         }
     }
 
-    &__edit {
-        background: $color-primary;
-        border-radius: $radius-sm;
-        color: $color-primary-contrast;
-        font-weight: 600;
-        padding: $space-2 $space-4;
-        text-decoration: none;
+    &__icon-button--danger {
+        color: $color-danger;
 
         &:hover {
-            background: $color-primary-hover;
+            color: $color-danger;
+            opacity: 0.7;
         }
 
         @media (prefers-color-scheme: dark) {
-            color: $color-primary-contrast-dark;
+            color: $color-danger-dark;
+        }
+    }
+
+    &__edit {
+        align-items: center;
+        background: $color-success-bg;
+        border: 1px solid $color-success;
+        border-radius: $radius-sm;
+        color: $color-success;
+        display: inline-flex;
+        justify-content: center;
+        padding: $space-2;
+
+        &:hover {
+            background: $color-success;
+            color: $color-primary-contrast;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            background: $color-success-bg-dark;
+            border-color: $color-success-dark;
+            color: $color-success-dark;
+
+            &:hover {
+                background: $color-success-dark;
+                color: $color-primary-contrast-dark;
+            }
         }
     }
 }

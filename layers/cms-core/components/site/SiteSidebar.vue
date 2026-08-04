@@ -82,7 +82,8 @@ const groups = computed(() => [
         label: 'Content',
         items: [
             { label: 'Pages', to: `/sites/${props.siteId}/pages` },
-            { label: 'Menus' },
+            { label: 'Menus', to: `/sites/${props.siteId}/menus` },
+            { label: 'Layout', to: `/sites/${props.siteId}/layout` },
             { label: 'Blog' },
             { label: 'Forms' },
             { label: 'Uploads' }

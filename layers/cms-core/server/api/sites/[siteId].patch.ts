@@ -1,7 +1,8 @@
 import { requireSiteAccess } from '../../utils/requireSiteAccess'
 import type { Database } from '../../../types/database.types'
-import type { SiteTheme } from '../../../types'
+import type { SiteLayout, SiteTheme } from '../../../types'
 import { SITE_THEME_FIELDS } from '../../../utils/siteTheme'
+import { HEADER_STYLES, FOOTER_STYLES } from '../../../utils/siteLayoutStyles'
 import { addDomainToVercel, domainCounterpart, removeDomainFromVercel } from '../../utils/vercelDomains'
 
 interface UpdateSiteBody {
@@ -9,11 +10,27 @@ interface UpdateSiteBody {
     slug?: string
     customDomain?: string | null
     theme?: SiteTheme | null
+    layout?: SiteLayout | null
 }
 
 type SiteUpdate = Database['public']['Tables']['sites']['Update']
 
 const THEME_KEYS = new Set(SITE_THEME_FIELDS.map(field => field.key))
+const HEADER_STYLE_KEYS = new Set(HEADER_STYLES.map(style => style.key))
+const FOOTER_STYLE_KEYS = new Set(FOOTER_STYLES.map(style => style.key))
+
+// Same "unset means built-in default" convention as normalizeTheme below
+// — an unknown/blank style key is dropped rather than saved, so a style
+// removed from utils/siteLayoutStyles.ts later doesn't leave a site
+// permanently pointed at nothing.
+function normalizeLayout(layout: SiteLayout | null): SiteLayout | null {
+    if (!layout) return null
+
+    const normalized: SiteLayout = {}
+    if (layout.header && HEADER_STYLE_KEYS.has(layout.header)) normalized.header = layout.header
+    if (layout.footer && FOOTER_STYLE_KEYS.has(layout.footer)) normalized.footer = layout.footer
+    return Object.keys(normalized).length > 0 ? normalized : null
+}
 
 // Trims every value and drops any key that isn't a known theme field —
 // values themselves aren't validated as real CSS colors, since they're
@@ -51,6 +68,7 @@ export default defineEventHandler(async (event) => {
         update.custom_domain = body.customDomain ? body.customDomain.trim().toLowerCase() : null
     }
     if (body.theme !== undefined) update.theme = normalizeTheme(body.theme)
+    if (body.layout !== undefined) update.layout = normalizeLayout(body.layout)
 
     let previousDomain: string | null = null
     let vercelWarning: string | undefined

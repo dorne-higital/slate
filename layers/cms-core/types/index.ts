@@ -101,6 +101,48 @@ export interface Site {
     status: 'active' | 'paused' | 'archived'
     custom_domain: string | null
     theme: SiteTheme | null
+    layout: SiteLayout | null
+    created_at: string
+    updated_at: string
+}
+
+/**
+ * Which header/footer style renders on the public site — an unset key
+ * (or `layout` being null altogether) means "use the built-in default",
+ * same convention as Site.theme. Keys are style keys from
+ * utils/siteLayoutStyles.ts, not the menu slots those styles render —
+ * see MenuSlot for those.
+ */
+export interface SiteLayout {
+    header?: string
+    footer?: string
+}
+
+/**
+ * Which part of a header/footer style a menu fills. A style's own
+ * component looks up its site's menu for each slot it needs (e.g. the
+ * "default" footer renders 'footer_main' and 'footer_legal') — one menu
+ * per slot per site (see supabase/migrations/0009_menus_and_layout.sql),
+ * so there's never ambiguity about which menu a style means.
+ */
+export type MenuSlot = 'header_main' | 'footer_main' | 'footer_legal'
+
+/** A single entry in a Menu's `items` tree — see Menu. */
+export interface MenuItem {
+    id: string
+    label: string
+    url: string
+    newTab: boolean
+    children: MenuItem[]
+}
+
+export interface Menu {
+    id: string
+    site_id: string
+    name: string
+    slug: string
+    slot: MenuSlot
+    items: MenuItem[]
     created_at: string
     updated_at: string
 }
@@ -222,4 +264,10 @@ export interface MediaItem {
     uploaded_by: string | null
     created_at: string
     url: string
+}
+
+/** A single transient message shown by <Toast>, e.g. after a save. */
+export interface ToastMessage {
+    message: string
+    variant?: 'success' | 'error'
 }

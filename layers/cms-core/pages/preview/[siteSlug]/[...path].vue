@@ -1,24 +1,42 @@
 <template>
     <div class="preview">
-        <p v-if="pending" class="preview__status" role="status">Loading…</p>
+        <component
+            :is="headerComponent"
+            v-if="!pending && !error && data"
+            :site-name="data.site.name"
+            :items="headerMainItems"
+        />
 
-        <div v-else-if="error" class="preview__status" role="alert">
-            <h1 class="preview__error-title">Page not found</h1>
-            <p>This page doesn't exist, or hasn't been published yet.</p>
+        <div class="preview__content">
+            <p v-if="pending" class="preview__status" role="status">Loading…</p>
+
+            <div v-else-if="error" class="preview__status" role="alert">
+                <h1 class="preview__error-title">Page not found</h1>
+                <p>This page doesn't exist, or hasn't been published yet.</p>
+            </div>
+
+            <BlockRenderer v-else-if="data" :blocks="data.page.blocks" :theme="data.site.theme" />
         </div>
 
-        <BlockRenderer v-else-if="data" :blocks="data.page.blocks" :theme="data.site.theme" />
+        <component
+            :is="footerComponent"
+            v-if="!pending && !error && data"
+            :site-name="data.site.name"
+            :main-items="footerMainItems"
+            :legal-items="footerLegalItems"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
-import type { Block, SiteTheme } from '../../../types'
+import type { Block, Menu, MenuItem, MenuSlot, SiteLayout, SiteTheme } from '../../../types'
 import { googleFontLinksFor } from '../../../utils/siteFonts'
+import { resolveFooterStyleComponent, resolveHeaderStyleComponent } from '../../../utils/siteLayoutComponents'
 
 definePageMeta({ layout: 'preview' })
 
 interface SitePageResponse {
-    site: { id: string, name: string, slug: string, theme: SiteTheme | null }
+    site: { id: string, name: string, slug: string, theme: SiteTheme | null, layout: SiteLayout | null }
     page: {
         id: string
         parent_id: string | null
@@ -28,6 +46,7 @@ interface SitePageResponse {
         seo_description: string | null
         blocks: Block[]
     }
+    menus: Menu[]
 }
 
 const route = useRoute()
@@ -37,6 +56,17 @@ const pathSegments = Array.isArray(route.params.path) ? route.params.path : []
 const { data, pending, error } = await useFetch<SitePageResponse>('/api/public/site-page', {
     query: { siteSlug, path: pathSegments.join('/') }
 })
+
+const headerComponent = computed(() => resolveHeaderStyleComponent(data.value?.site.layout?.header))
+const footerComponent = computed(() => resolveFooterStyleComponent(data.value?.site.layout?.footer))
+
+function menuItemsFor(slot: MenuSlot): MenuItem[] {
+    return data.value?.menus.find(menu => menu.slot === slot)?.items ?? []
+}
+
+const headerMainItems = computed(() => menuItemsFor('header_main'))
+const footerMainItems = computed(() => menuItemsFor('footer_main'))
+const footerLegalItems = computed(() => menuItemsFor('footer_legal'))
 
 // This route is reachable two ways: directly at /preview/... (a staging
 // URL, kept out of search results) and — once a site has a custom_domain
@@ -71,9 +101,17 @@ useSeoMeta({
 
 <style lang="scss" scoped>
 .preview {
-    margin: 0 auto;
-    max-width: 72rem;
-    padding: $space-6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+
+    &__content {
+        flex: 1;
+        margin: 0 auto;
+        max-width: 72rem;
+        padding: $space-6;
+        width: 100%;
+    }
 
     &__status {
         color: $color-text-muted;

@@ -25,6 +25,23 @@
         </div>
 
         <div class="canvas__body">
+            <div class="canvas__insert">
+                <button
+                    type="button"
+                    class="canvas__insert-button"
+                    aria-label="Add block at the top"
+                    @click="toggleInserter(0)"
+                >
+                    <IconPlus />
+                </button>
+                <BlockInserter
+                    v-if="insertIndex === 0"
+                    :registry="registry"
+                    @close="insertIndex = null"
+                    @select="insertBlock(0, $event)"
+                />
+            </div>
+
             <draggable
                 v-model="blocks"
                 :group="{ name: 'canvas-blocks', pull: true, put: true }"
@@ -34,47 +51,66 @@
                 :class="{ 'canvas__list--empty': blocks.length === 0 }"
                 tag="div"
             >
-                <template #item="{ element: block }">
-                    <div
-                        class="canvas-block"
-                        :class="{ 'canvas-block--selected': block.id === selectedBlockId }"
-                        role="button"
-                        tabindex="0"
-                        :aria-pressed="block.id === selectedBlockId"
-                        :aria-label="`Select ${labelFor(block.type)} block`"
-                        @click="$emit('update:selectedBlockId', block.id)"
-                        @keydown.enter="$emit('update:selectedBlockId', block.id)"
-                        @keydown.space.prevent="$emit('update:selectedBlockId', block.id)"
-                    >
-                        <div class="canvas-block__toolbar">
-                            <span class="canvas-block__label">
-                                {{ labelFor(block.type) }}{{ block.id === selectedBlockId ? ' — Selected' : '' }}
-                            </span>
-                            <span class="canvas-block__tools">
-                                <button
-                                    type="button"
-                                    class="canvas-block__handle"
-                                    aria-label="Drag to reorder"
-                                    @click.stop
-                                >
-                                    ⠿
-                                </button>
-                                <button
-                                    type="button"
-                                    class="canvas-block__remove"
-                                    :aria-label="`Remove ${labelFor(block.type)} block`"
-                                    @click.stop="removeBlock(block.id)"
-                                >
-                                    Remove
-                                </button>
-                            </span>
+                <template #item="{ element: block, index }">
+                    <div class="canvas__item">
+                        <div
+                            class="canvas-block"
+                            :class="{ 'canvas-block--selected': block.id === selectedBlockId }"
+                            role="button"
+                            tabindex="0"
+                            :aria-pressed="block.id === selectedBlockId"
+                            :aria-label="`Select ${labelFor(block.type)} block`"
+                            @click="$emit('update:selectedBlockId', block.id)"
+                            @keydown.enter="$emit('update:selectedBlockId', block.id)"
+                            @keydown.space.prevent="$emit('update:selectedBlockId', block.id)"
+                        >
+                            <div class="canvas-block__toolbar">
+                                <span class="canvas-block__label">
+                                    {{ labelFor(block.type) }}{{ block.id === selectedBlockId ? ' — Selected' : '' }}
+                                </span>
+                                <span class="canvas-block__tools">
+                                    <button
+                                        type="button"
+                                        class="canvas-block__handle"
+                                        aria-label="Drag to reorder"
+                                        @click.stop
+                                    >
+                                        ⠿
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="canvas-block__remove"
+                                        :aria-label="`Remove ${labelFor(block.type)} block`"
+                                        @click.stop="removeBlock(block.id)"
+                                    >
+                                        Remove
+                                    </button>
+                                </span>
+                            </div>
+
+                            <div class="canvas-block__preview">
+                                <BlockRenderer v-if="resolveBlockComponent(block.type)" :blocks="[block]" :theme="theme" />
+                                <p v-else class="canvas-block__unknown">
+                                    Unknown block type "{{ block.type }}"
+                                </p>
+                            </div>
                         </div>
 
-                        <div class="canvas-block__preview">
-                            <BlockRenderer v-if="resolveBlockComponent(block.type)" :blocks="[block]" :theme="theme" />
-                            <p v-else class="canvas-block__unknown">
-                                Unknown block type "{{ block.type }}"
-                            </p>
+                        <div class="canvas__insert">
+                            <button
+                                type="button"
+                                class="canvas__insert-button"
+                                :aria-label="`Add block after ${labelFor(block.type)}`"
+                                @click.stop="toggleInserter(index + 1)"
+                            >
+                                <IconPlus />
+                            </button>
+                            <BlockInserter
+                                v-if="insertIndex === index + 1"
+                                :registry="registry"
+                                @close="insertIndex = null"
+                                @select="insertBlock(index + 1, $event)"
+                            />
                         </div>
                     </div>
                 </template>
@@ -163,6 +199,24 @@ function removeBlock(id: string) {
         emit('update:selectedBlockId', null)
     }
 }
+
+// Which gap's "+" the inserter popover is currently open for — index 0 is
+// above the first block, index N is below the Nth block, etc. Only one
+// open at a time.
+const insertIndex = ref<number | null>(null)
+
+function toggleInserter(index: number) {
+    insertIndex.value = insertIndex.value === index ? null : index
+}
+
+function insertBlock(index: number, type: string) {
+    const block = newBlockFor(type)
+    const next = [...blocks.value]
+    next.splice(index, 0, block)
+    blocks.value = next
+    emit('update:selectedBlockId', block.id)
+    insertIndex.value = null
+}
 </script>
 
 <style lang="scss" scoped>
@@ -170,12 +224,15 @@ function removeBlock(id: string) {
     display: flex;
     flex: 1;
     gap: $space-5;
+    height: 100%;
     min-width: 0;
 
     &__palette-wrap {
         display: flex;
         flex-direction: column;
         flex-shrink: 0;
+        height: 100%;
+        overflow-y: auto;
         width: 12rem;
     }
 
@@ -229,7 +286,10 @@ function removeBlock(id: string) {
 
     &__body {
         flex: 1;
+        height: 100%;
         min-width: 0;
+        overflow-y: auto;
+        padding: 0 $space-1;
     }
 
     &__empty {
@@ -246,7 +306,6 @@ function removeBlock(id: string) {
     &__list {
         display: flex;
         flex-direction: column;
-        gap: $space-4;
         min-height: 6rem;
 
         &--empty {
@@ -259,6 +318,61 @@ function removeBlock(id: string) {
             }
         }
     }
+
+    &__item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    // Centered on the seam between two blocks (and above the first/below
+    // the last) so it reads as "insert here" rather than belonging to
+    // either block — position: relative anchors the popover below it.
+    &__insert {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        margin: -$space-2 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    &__insert-button {
+        align-items: center;
+        background: $color-surface-raised;
+        border: 1px solid $color-border;
+        border-radius: 999px;
+        color: $color-text-muted;
+        cursor: pointer;
+        display: flex;
+        height: 1.5rem;
+        justify-content: center;
+        opacity: 0;
+        transition:
+            opacity $transition-fast,
+            border-color $transition-fast,
+            color $transition-fast;
+        width: 1.5rem;
+
+        .canvas__insert:hover &,
+        .canvas__list:hover &,
+        &:focus-visible {
+            opacity: 1;
+        }
+
+        &:hover,
+        &:focus-visible {
+            border-color: $color-primary;
+            color: $color-primary;
+        }
+
+        @include visible-focus-ring;
+
+        @media (prefers-color-scheme: dark) {
+            background: $color-surface-raised-dark;
+            border-color: $color-border-dark;
+            color: $color-text-muted-dark;
+        }
+    }
 }
 
 .canvas-block {
@@ -267,6 +381,7 @@ function removeBlock(id: string) {
     border: 2px solid transparent;
     border-radius: $radius-md;
     cursor: pointer;
+    margin: $space-2 0;
     padding: $space-1;
     transition: border-color $transition-fast;
 
