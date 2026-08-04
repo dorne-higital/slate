@@ -112,8 +112,21 @@ export default defineNuxtConfig({
     // Supabase Auth handles its own redirect flow via useAuthRedirect()
     // and middleware/auth.global.ts — the module's built-in redirect is
     // disabled to avoid the two systems fighting over navigation.
+    //
+    // cookieOptions.domain: without this, the session cookie defaults to
+    // host-only (scoped to the exact host that set it). resolveAuthDestination()
+    // does a full-page navigation straight from the host a user just signed
+    // in on (e.g. www.{baseDomain}) to a different subdomain (e.g.
+    // admin.{baseDomain}) — a host-only cookie simply isn't sent there, so
+    // that subdomain sees no session and bounces back to /login. A leading
+    // dot shares the cookie across every {subdomain}.{baseDomain}. Left
+    // unset in dev (no NUXT_PUBLIC_BASE_DOMAIN) since bare `localhost`
+    // doesn't accept a domain attribute at all.
     supabase: {
-        redirect: false
+        redirect: false,
+        cookieOptions: {
+            domain: process.env.NUXT_PUBLIC_BASE_DOMAIN ? `.${process.env.NUXT_PUBLIC_BASE_DOMAIN}` : undefined
+        }
     },
 
     security: {
