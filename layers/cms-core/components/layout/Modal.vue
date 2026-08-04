@@ -87,6 +87,7 @@ function handleBackdropClick(event: MouseEvent) {
         padding: $space-4;
 
         @media (prefers-color-scheme: dark) {
+            border-bottom: 1px solid $color-border-dark;
             border-color: $color-border-dark;
         }
     }
@@ -116,6 +117,10 @@ function handleBackdropClick(event: MouseEvent) {
 
         &:hover {
             color: $color-primary;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
         }
     }
 

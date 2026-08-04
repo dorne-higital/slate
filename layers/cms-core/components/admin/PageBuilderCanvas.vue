@@ -189,6 +189,10 @@ function removeBlock(id: string) {
         color: $color-text-muted;
         font-size: $font-size-sm;
         margin: 0 0 $space-3;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__palette {
@@ -217,6 +221,7 @@ function removeBlock(id: string) {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -232,6 +237,10 @@ function removeBlock(id: string) {
 
         color: $color-text-muted;
         text-align: center;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__list {
@@ -245,6 +254,7 @@ function removeBlock(id: string) {
             border-radius: $radius-md;
 
             @media (prefers-color-scheme: dark) {
+                border: 2px dashed $color-border-dark;
                 border-color: $color-border-dark;
             }
         }
@@ -262,6 +272,10 @@ function removeBlock(id: string) {
 
     &:hover {
         border-color: $color-border;
+
+        @media (prefers-color-scheme: dark) {
+            border-color: $color-border-dark;
+        }
     }
 
     &--selected {
@@ -295,6 +309,10 @@ function removeBlock(id: string) {
         border: none;
         color: $color-text-muted;
         cursor: grab;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__remove {

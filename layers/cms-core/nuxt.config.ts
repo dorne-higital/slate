@@ -60,7 +60,21 @@ export default defineNuxtConfig({
         head: {
             htmlAttrs: {
                 lang: 'en'
-            }
+            },
+            // Quicksand/Baloo 2 back this app's own admin chrome (and the
+            // marketing site) via $font-family-base / $font-baloo /
+            // @include heading-font in _variables.scss + _mixins.scss —
+            // loaded once, globally, here rather than per-layout so every
+            // layout (auth, admin, site, marketing, preview) gets it
+            // without duplicating the <link> tags.
+            link: [
+                { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+                { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' },
+                {
+                    rel: 'stylesheet',
+                    href: 'https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Baloo+2:wght@500;600;700;800&display=swap'
+                }
+            ]
         }
     },
 

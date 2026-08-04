@@ -26,3 +26,7 @@ dist/
 
 # supabase local
 .supabase/
+
+# lint caches (--cache flag in package.json's lint scripts)
+.eslintcache
+.stylelintcache

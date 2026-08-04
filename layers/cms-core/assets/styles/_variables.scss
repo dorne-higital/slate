@@ -1,40 +1,74 @@
 // Design tokens shared across cms-core and every consuming app.
 // Auto-injected into every <style lang="scss"> block via Vite's
 // css.preprocessorOptions.scss.additionalData — do not import manually.
-// Palette follows the reference UI — warm light-gray surfaces, a teal-blue
-// accent, serif headings over a sans UI, pill-shaped status badges.
+// Palette: pastel/OKLCH system (design_handoff_slatecms_landing) — warm
+// near-white surfaces, a pastel coral/red primary, pastel blue secondary,
+// warm peach accent. Serif headings stay for the existing admin app;
+// the marketing-only tokens further down (Quicksand/Baloo 2, its own
+// spacing/radius/shadow scale) are for app/pages/index.vue and
+// app/layouts/marketing.vue only — the admin app keeps its existing
+// scale, just recolored.
 
 // Color — base
-$color-bg: #f2f1ee;
-$color-surface: #eae9e5;
-$color-surface-raised: #fff;
-$color-surface-active: #e1f0f6;
-$color-border: #d9d7d1;
-$color-text: #1c1c1a;
-$color-text-muted: #6b6a65;
-$color-focus-ring: #1f6f8b;
+// $color-surface sits below $color-bg (recessed panels — sidebar, form
+// inputs); $color-surface-raised sits above it (elevated cards/panels).
+// That polarity carries over unchanged from before this palette swap.
+$color-bg: oklch(98.2% 0.004 264deg);
+$color-surface: oklch(96.3% 0.006 264deg);
+$color-surface-raised: oklch(99.4% 0.002 264deg);
+$color-surface-active: oklch(91% 0.05 25deg);
+$color-border: oklch(26% 0.02 264deg / 10%);
+$color-border-strong: oklch(26% 0.02 264deg / 20%);
+$color-text: oklch(26% 0.02 264deg);
+$color-text-muted: oklch(26% 0.02 264deg / 62%);
+$color-text-subtle: oklch(26% 0.02 264deg / 38%);
+$color-focus-ring: oklch(66% 0.13 25deg);
 
-// Color — accent
-$color-primary: #1f6f8b;
-$color-primary-hover: #175a70;
-$color-primary-contrast: #fff;
+// Color — brand
+$color-primary: oklch(66% 0.13 25deg);
+$color-primary-hover: oklch(58% 0.13 25deg);
+
+// Text drawn on a solid $color-primary fill (buttons, the closing CTA
+// panel) — flips to near-black in dark mode below, where the brand
+// colors lighten instead of darkening (a pastel system stays pastel in
+// both modes), so white text would lose contrast against it.
+$color-primary-contrast: oklch(99% 0.002 264deg);
+$color-primary-contrast-dark: oklch(16% 0.014 264deg);
+$color-secondary: oklch(72% 0.08 250deg);
+$color-secondary-soft: oklch(92% 0.04 250deg);
+$color-accent: oklch(85% 0.065 55deg);
+$color-accent-soft: oklch(94% 0.03 55deg);
 
 // Color — status
-$color-danger: #a8285a;
-$color-danger-bg: #fbe4ea;
-$color-success: #1f6f8b;
-$color-success-bg: #dcedf5;
-$color-warning: #8a6d1a;
-$color-warning-bg: #f6efd8;
+$color-danger: oklch(63% 0.13 22deg);
+$color-danger-bg: oklch(94% 0.04 22deg);
+$color-success: oklch(64% 0.1 152deg);
+$color-success-bg: oklch(94% 0.045 152deg);
+$color-warning: oklch(72% 0.12 75deg);
+$color-warning-bg: oklch(94% 0.05 75deg);
 
-// Dark mode surface tokens (used inside prefers-color-scheme blocks)
-$color-bg-dark: #17181a;
-$color-surface-dark: #202225;
-$color-surface-raised-dark: #26282c;
-$color-surface-active-dark: #1c3540;
-$color-border-dark: #35373b;
-$color-text-dark: #e9e8e4;
-$color-text-muted-dark: #9a9994;
+// Dark mode tokens (used inside prefers-color-scheme blocks)
+$color-bg-dark: oklch(20% 0.014 264deg);
+$color-surface-dark: oklch(17% 0.012 264deg);
+$color-surface-raised-dark: oklch(24% 0.015 264deg);
+$color-surface-active-dark: oklch(32% 0.055 25deg);
+$color-border-dark: oklch(95% 0.006 264deg / 12%);
+$color-border-strong-dark: oklch(95% 0.006 264deg / 22%);
+$color-text-dark: oklch(95% 0.006 264deg);
+$color-text-muted-dark: oklch(95% 0.006 264deg / 64%);
+$color-text-subtle-dark: oklch(95% 0.006 264deg / 40%);
+$color-primary-dark: oklch(74% 0.12 25deg);
+$color-primary-hover-dark: oklch(66% 0.12 25deg);
+$color-secondary-dark: oklch(78% 0.085 250deg);
+$color-secondary-soft-dark: oklch(30% 0.05 250deg);
+$color-accent-dark: oklch(80% 0.07 55deg);
+$color-accent-soft-dark: oklch(32% 0.04 55deg);
+$color-danger-dark: oklch(74% 0.12 22deg);
+$color-danger-bg-dark: oklch(30% 0.06 22deg);
+$color-success-dark: oklch(75% 0.11 152deg);
+$color-success-bg-dark: oklch(28% 0.05 152deg);
+$color-warning-dark: oklch(78% 0.11 75deg);
+$color-warning-bg-dark: oklch(30% 0.055 75deg);
 
 // Spacing scale
 $space-1: 0.25rem;
@@ -47,7 +81,14 @@ $space-7: 3rem;
 $space-8: 4rem;
 
 // Typography
-$font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+// Quicksand backs the whole app now (admin chrome included), matching
+// the marketing site — see $font-quicksand further down, loaded via the
+// same Google Fonts link (app.head.link in nuxt.config.ts). Duplicated
+// as a literal value rather than `$font-family-base: $font-quicksand`
+// because $font-quicksand is declared later in this file and Sass
+// resolves variable references at the point they're written, not after
+// the whole file loads.
+$font-family-base: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 $font-family-serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
 $font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 $font-size-sm: 0.875rem;
@@ -69,3 +110,45 @@ $z-index-skip-link: 2000;
 // Motion
 $transition-fast: 120ms ease;
 $transition-base: 200ms ease;
+
+// ---------------------------------------------------------------------
+// Marketing landing page only (app/pages/index.vue, app/layouts/marketing.vue)
+// ---------------------------------------------------------------------
+
+$font-quicksand: 'Quicksand', system-ui, -apple-system, sans-serif;
+$font-baloo: 'Baloo 2', system-ui, sans-serif;
+$text-hero: clamp(2.75rem, 5vw, 3.75rem);
+$text-h1: 2.25rem;
+$text-h2: 1.75rem;
+$text-h3: 1.375rem;
+$text-h4: 1.125rem;
+$text-h5: 1rem;
+$text-eyebrow: 0.8125rem;
+$text-small: 0.875rem;
+$text-micro: 0.75rem;
+$leading-tight: 1.15;
+$leading-normal: 1.6;
+$tracking-wide: 0.08em;
+$space-2xs: 0.375rem;
+$space-xs: 0.5rem;
+$space-sm: 0.75rem;
+$space-md: 1.25rem;
+$space-lg: 2rem;
+$space-xl: 3.25rem;
+$space-2xl: 5rem;
+$radius-marketing-sm: 8px;
+$radius-marketing-md: 14px;
+$radius-marketing-lg: 22px;
+$radius-pill: 999px;
+$shadow-sm: 0 1px 2px oklch(26% 0.02 264deg / 6%);
+$shadow-md: 0 6px 16px oklch(26% 0.02 264deg / 8%);
+$shadow-lg: 0 16px 36px oklch(26% 0.02 264deg / 10%);
+$shadow-focus: 0 0 0 3px oklch(91% 0.05 25deg);
+$shadow-sm-dark: 0 1px 2px oklch(0% 0 0deg / 30%);
+$shadow-md-dark: 0 6px 16px oklch(0% 0 0deg / 38%);
+$shadow-lg-dark: 0 16px 36px oklch(0% 0 0deg / 46%);
+$shadow-focus-dark: 0 0 0 3px oklch(32% 0.055 25deg);
+$transition-spring: 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+$container-md: 768px;
+$container-lg: 1080px;
+$container-xl: 1320px;

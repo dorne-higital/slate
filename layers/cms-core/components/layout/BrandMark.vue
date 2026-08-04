@@ -12,7 +12,7 @@ withDefaults(defineProps<{ initial?: string, label?: string }>(), {
 <style lang="scss" scoped>
 .brand-mark {
     color: $color-text;
-    font-family: $font-family-serif;
+    font-family: $font-family-base;
     font-size: 9rem;
     font-weight: 700;
     line-height: 1;

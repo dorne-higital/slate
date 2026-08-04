@@ -112,7 +112,9 @@
                                         {{ expandedIds.has(row.id) ? '▾' : '▸' }}
                                     </button>
                                     <span v-else class="pages-table__toggle-spacer" aria-hidden="true" />
-                                    <span class="pages-table__title">{{ row.title }}</span>
+                                    <NuxtLink :to="`/sites/${siteId}/pages/${row.id}`" class="pages-table__title">
+                                        {{ row.title }}
+                                    </NuxtLink>
                                 </div>
                             </td>
                             <td>
@@ -121,8 +123,26 @@
                                     :variant="row.status === 'published' ? 'info' : 'outline'"
                                 />
                             </td>
-                            <td class="pages-table__truncate">{{ row.seo_title || '—' }}</td>
-                            <td class="pages-table__truncate">{{ row.seo_description || '—' }}</td>
+                            <td>
+                                <span v-if="row.seo_title" :title="row.seo_title">
+                                    <IconCheck class="pages-table__check" />
+                                    <span class="visually-hidden">SEO title set</span>
+                                </span>
+                                <span v-else class="pages-table__muted">
+                                    &mdash;
+                                    <span class="visually-hidden">No SEO title</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span v-if="row.seo_description" :title="row.seo_description">
+                                    <IconCheck class="pages-table__check" />
+                                    <span class="visually-hidden">SEO description set</span>
+                                </span>
+                                <span v-else class="pages-table__muted">
+                                    &mdash;
+                                    <span class="visually-hidden">No SEO description</span>
+                                </span>
+                            </td>
                             <td class="pages-table__muted">{{ formatRelativeTime(row.updated_at) }}</td>
                             <td>
                                 <div class="pages-table__actions">
@@ -366,6 +386,10 @@ async function handleDelete(page: Page) {
         font-size: $font-size-sm;
         font-weight: 400;
         padding: $space-1 $space-3;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__actions {
@@ -382,6 +406,7 @@ async function handleDelete(page: Page) {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -390,14 +415,18 @@ async function handleDelete(page: Page) {
     &__new {
         background: $color-primary;
         border: none;
-        border-radius: $radius-sm;
+        border-radius: 999px;
         color: $color-primary-contrast;
         cursor: pointer;
         font-weight: 700;
-        padding: $space-3 $space-4;
+        padding: $space-3 $space-5;
 
         &:hover {
             background: $color-primary-hover;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-primary-contrast-dark;
         }
     }
 
@@ -421,6 +450,7 @@ async function handleDelete(page: Page) {
         }
 
         @media (prefers-color-scheme: dark) {
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -428,6 +458,10 @@ async function handleDelete(page: Page) {
 
     &__status {
         color: $color-text-muted;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 }
 
@@ -457,6 +491,7 @@ async function handleDelete(page: Page) {
         }
 
         @media (prefers-color-scheme: dark) {
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -465,6 +500,10 @@ async function handleDelete(page: Page) {
     &__status {
         color: $color-text-muted;
         font-size: $font-size-sm;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 }
 
@@ -485,6 +524,7 @@ async function handleDelete(page: Page) {
         white-space: nowrap;
 
         @media (prefers-color-scheme: dark) {
+            border-bottom: 1px solid $color-border-dark;
             border-color: $color-border-dark;
         }
     }
@@ -496,6 +536,7 @@ async function handleDelete(page: Page) {
         vertical-align: middle;
 
         @media (prefers-color-scheme: dark) {
+            border-bottom: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -516,9 +557,18 @@ async function handleDelete(page: Page) {
     }
 
     &__title {
-        @include heading-font;
-
+        color: $color-primary;
         font-size: $font-size-base;
+        font-weight: 600;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-primary-dark;
+        }
     }
 
     &__toggle,
@@ -532,18 +582,27 @@ async function handleDelete(page: Page) {
         border: none;
         color: $color-text-muted;
         cursor: pointer;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
-    &__truncate {
-        @include truncate;
+    &__check {
+        color: $color-success;
 
-        color: $color-text-muted;
-        max-width: 16rem;
+        @media (prefers-color-scheme: dark) {
+            color: $color-success-dark;
+        }
     }
 
     &__muted {
         color: $color-text-muted;
         white-space: nowrap;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__actions {
@@ -565,6 +624,10 @@ async function handleDelete(page: Page) {
         &:hover {
             color: $color-primary;
         }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__edit {
@@ -577,6 +640,10 @@ async function handleDelete(page: Page) {
 
         &:hover {
             background: $color-primary-hover;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-primary-contrast-dark;
         }
     }
 }
@@ -592,6 +659,7 @@ async function handleDelete(page: Page) {
 
         @media (prefers-color-scheme: dark) {
             border-color: $color-border-dark;
+            border-top: 1px solid $color-border-dark;
         }
 
         .field {
@@ -632,6 +700,10 @@ async function handleDelete(page: Page) {
             cursor: not-allowed;
             opacity: 0.7;
         }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-primary-contrast-dark;
+        }
     }
 
     &__cancel {
@@ -643,6 +715,7 @@ async function handleDelete(page: Page) {
         padding: $space-3 $space-4;
 
         @media (prefers-color-scheme: dark) {
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -658,6 +731,10 @@ async function handleDelete(page: Page) {
         color: $color-text-muted;
         font-size: $font-size-sm;
         margin: 0;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__label {
@@ -677,6 +754,7 @@ async function handleDelete(page: Page) {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }

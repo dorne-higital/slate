@@ -187,6 +187,23 @@ export interface AuditLogEntry {
     created_at: string
 }
 
+export type PlanKey = 'free' | 'pro' | 'business'
+export type SignupRequestStatus = 'new' | 'contacted' | 'converted' | 'dismissed'
+
+/** A row from `signup_requests` — a public "register interest" submission. */
+export interface SignupRequest {
+    id: string
+    first_name: string
+    last_name: string
+    email: string
+    phone: string | null
+    site_name: string
+    plan: PlanKey
+    status: SignupRequestStatus
+    converted_site_id: string | null
+    created_at: string
+}
+
 export interface SiteDashboardStats {
     pages: number
     publishedPages: number

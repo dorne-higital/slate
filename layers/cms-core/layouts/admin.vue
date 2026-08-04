@@ -15,6 +15,10 @@
     </div>
 </template>
 
+<script setup lang="ts">
+useTenantAddressBarFix('/admin')
+</script>
+
 <style lang="scss" scoped>
 .admin-layout {
     background: $color-bg;
@@ -38,7 +42,7 @@
 
     &__brand {
         color: $color-text;
-        font-family: $font-family-serif;
+        font-family: $font-family-base;
         font-size: $font-size-lg;
         font-weight: 700;
         text-decoration: none;

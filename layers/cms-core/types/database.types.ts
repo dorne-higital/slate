@@ -287,6 +287,53 @@ export interface Database {
                     }
                 ]
             }
+            signup_requests: {
+                Row: {
+                    id: string
+                    first_name: string
+                    last_name: string
+                    email: string
+                    phone: string | null
+                    site_name: string
+                    plan: 'free' | 'pro' | 'business'
+                    status: 'new' | 'contacted' | 'converted' | 'dismissed'
+                    converted_site_id: string | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    first_name: string
+                    last_name: string
+                    email: string
+                    phone?: string | null
+                    site_name: string
+                    plan: 'free' | 'pro' | 'business'
+                    status?: 'new' | 'contacted' | 'converted' | 'dismissed'
+                    converted_site_id?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    first_name?: string
+                    last_name?: string
+                    email?: string
+                    phone?: string | null
+                    site_name?: string
+                    plan?: 'free' | 'pro' | 'business'
+                    status?: 'new' | 'contacted' | 'converted' | 'dismissed'
+                    converted_site_id?: string | null
+                    created_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: 'signup_requests_converted_site_id_fkey'
+                        columns: ['converted_site_id']
+                        isOneToOne: false
+                        referencedRelation: 'sites'
+                        referencedColumns: ['id']
+                    }
+                ]
+            }
         }
         Views: Record<string, never>
         Functions: {

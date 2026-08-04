@@ -3053,6 +3053,7 @@ __metadata:
   dependencies:
     "@nuxt/eslint": "npm:^1.3.0"
     "@slate/cms-core": "workspace:*"
+    lucide-vue-next: "npm:^1.0.0"
     nuxt: "npm:^4.0.0"
     sass: "npm:^1.83.4"
   languageName: unknown
@@ -7504,6 +7505,15 @@ __metadata:
   dependencies:
     yallist: "npm:^3.0.2"
   checksum: 10c0/89b2ef2ef45f543011e38737b8a8622a2f8998cddf0e5437174ef8f1f70a8b9d14a918ab3e232cb3ba343b7abddffa667f0b59075b2b80e6b4d63c3de6127482
+  languageName: node
+  linkType: hard
+
+"lucide-vue-next@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "lucide-vue-next@npm:1.0.0"
+  peerDependencies:
+    vue: ">=3.0.1"
+  checksum: 10c0/28f6a7d83e5d06db34006214f1ee3fe2c67ba0ca58f6e8af0d9032c495bb419f5c632b2db66e10ba90a6376e9f8aa913bc2e56be7c3aa06089d6ad2a472d93aa
   languageName: node
   linkType: hard
 

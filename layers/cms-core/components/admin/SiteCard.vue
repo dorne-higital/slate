@@ -80,12 +80,20 @@ const statusVariant = computed(() => {
         color: $color-text-muted;
         font-size: $font-size-sm;
         margin: 0;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__updated {
         color: $color-text-muted;
         font-size: $font-size-sm;
         margin: 0 0 $space-2;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__open {
@@ -106,6 +114,7 @@ const statusVariant = computed(() => {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }

@@ -112,6 +112,10 @@ function inputType(kind: BlockFieldSchema['kind']) {
     &__empty {
         color: $color-text-muted;
         margin: 0;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 }
 
@@ -137,6 +141,7 @@ function inputType(kind: BlockFieldSchema['kind']) {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }

@@ -26,14 +26,16 @@
 }
 
 @mixin card {
-    background: $color-surface;
+    background: $color-surface-raised;
     border: 1px solid $color-border;
     border-radius: $radius-md;
+    box-shadow: $shadow-sm;
     padding: $space-4;
 
     @media (prefers-color-scheme: dark) {
-        background: $color-surface-dark;
+        background: $color-surface-raised-dark;
         border-color: $color-border-dark;
+        box-shadow: $shadow-sm-dark;
     }
 }
 
@@ -44,7 +46,7 @@
 }
 
 @mixin heading-font {
-    font-family: $font-family-serif;
+    font-family: $font-family-base;
     font-weight: 700;
     letter-spacing: -0.01em;
 }

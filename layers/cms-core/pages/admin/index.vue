@@ -24,6 +24,32 @@
             <StatTile label="Site memberships" :value="totalMemberships" />
         </div>
 
+        <section v-if="pendingSignupRequests.length" class="signup-requests" aria-labelledby="signup-requests-heading">
+            <h2 id="signup-requests-heading" class="signup-requests__title">Signup requests</h2>
+
+            <ul class="signup-requests__list">
+                <li v-for="req in pendingSignupRequests" :key="req.id" class="signup-requests__item">
+                    <div class="signup-requests__info">
+                        <p class="signup-requests__name">{{ req.first_name }} {{ req.last_name }}</p>
+                        <p class="signup-requests__detail">{{ req.email }}{{ req.phone ? ` · ${req.phone}` : '' }}</p>
+                        <p class="signup-requests__detail">"{{ req.site_name }}" &middot; {{ req.plan }} plan</p>
+                    </div>
+
+                    <div class="signup-requests__actions">
+                        <p v-if="convertErrors[req.id]" role="alert" class="signup-requests__error">{{ convertErrors[req.id] }}</p>
+                        <button
+                            type="button"
+                            class="signup-requests__convert"
+                            :disabled="convertingId === req.id"
+                            @click="handleConvert(req.id)"
+                        >
+                            {{ convertingId === req.id ? 'Creating…' : 'Create site & invite' }}
+                        </button>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
         <form v-if="showNewSiteForm" class="new-site" novalidate @submit.prevent="handleCreateSite">
             <h2 class="new-site__title">New site</h2>
 
@@ -72,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Profile, SiteWithMembers } from '../../types'
+import type { Profile, SignupRequest, SiteWithMembers } from '../../types'
 
 definePageMeta({ layout: 'admin' })
 
@@ -80,6 +106,28 @@ type SiteRow = SiteWithMembers & { pages?: Array<{ count: number }> }
 
 const { data, pending, refresh } = await useFetch<{ sites: SiteRow[] }>('/api/sites')
 const { data: usersData } = await useFetch<{ users: Pick<Profile, 'id' | 'email' | 'full_name'>[] }>('/api/admin/users')
+const { data: signupRequestsData, refresh: refreshSignupRequests } = await useFetch<{ signupRequests: SignupRequest[] }>('/api/admin/signup-requests')
+
+const pendingSignupRequests = computed(() =>
+    (signupRequestsData.value?.signupRequests ?? []).filter(req => req.status === 'new' || req.status === 'contacted')
+)
+
+const convertingId = ref<string | null>(null)
+const convertErrors = reactive<Record<string, string>>({})
+
+async function handleConvert(id: string) {
+    convertingId.value = id
+    convertErrors[id] = ''
+
+    try {
+        await $fetch(`/api/admin/signup-requests/${id}/convert`, { method: 'POST' })
+        await Promise.all([refresh(), refreshSignupRequests()])
+    } catch (error) {
+        convertErrors[id] = error instanceof Error ? error.message : 'Failed to convert this signup request'
+    } finally {
+        convertingId.value = null
+    }
+}
 
 const users = computed(() => usersData.value?.users ?? [])
 
@@ -168,6 +216,7 @@ async function handleCreateSite() {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -185,6 +234,10 @@ async function handleCreateSite() {
         &:hover {
             background: $color-primary-hover;
         }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-primary-contrast-dark;
+        }
     }
 
     &__stats {
@@ -196,6 +249,10 @@ async function handleCreateSite() {
 
     &__status {
         color: $color-text-muted;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__grid {
@@ -205,6 +262,104 @@ async function handleCreateSite() {
         list-style: none;
         margin: 0;
         padding: 0;
+    }
+}
+
+.signup-requests {
+    margin-bottom: $space-6;
+
+    &__title {
+        @include heading-font;
+
+        color: $color-text;
+        font-size: $font-size-lg;
+        margin: 0 0 $space-3;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-dark;
+        }
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: $space-3;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &__item {
+        @include card;
+
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: $space-4;
+        justify-content: space-between;
+    }
+
+    &__name {
+        color: $color-text;
+        font-weight: 700;
+        margin: 0;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-dark;
+        }
+    }
+
+    &__detail {
+        color: $color-text-muted;
+        font-size: $font-size-sm;
+        margin: 0;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
+    }
+
+    &__actions {
+        align-items: flex-end;
+        display: flex;
+        flex-direction: column;
+        gap: $space-2;
+    }
+
+    &__error {
+        color: $color-danger;
+        font-size: $font-size-sm;
+        margin: 0;
+        max-width: 20rem;
+        text-align: right;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-danger-dark;
+        }
+    }
+
+    &__convert {
+        background: $color-primary;
+        border: none;
+        border-radius: $radius-sm;
+        color: $color-primary-contrast;
+        cursor: pointer;
+        font-weight: 700;
+        padding: $space-3 $space-4;
+        white-space: nowrap;
+
+        &:hover {
+            background: $color-primary-hover;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-primary-contrast-dark;
+        }
     }
 }
 
@@ -256,6 +411,10 @@ async function handleCreateSite() {
             cursor: not-allowed;
             opacity: 0.7;
         }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-primary-contrast-dark;
+        }
     }
 
     &__cancel {
@@ -267,6 +426,7 @@ async function handleCreateSite() {
         padding: $space-3 $space-4;
 
         @media (prefers-color-scheme: dark) {
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -282,6 +442,10 @@ async function handleCreateSite() {
         color: $color-text-muted;
         font-size: $font-size-sm;
         margin: 0;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__label {
@@ -301,6 +465,7 @@ async function handleCreateSite() {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }

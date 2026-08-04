@@ -57,9 +57,11 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'auth' })
+import type { Database } from '../types/database.types'
 
-const client = useSupabaseClient()
+definePageMeta({ layout: 'auth', public: true })
+
+const client = useSupabaseClient<Database>()
 const route = useRoute()
 
 const email = ref('')
@@ -73,7 +75,7 @@ async function handleSubmit() {
     errorMessage.value = ''
     statusMessage.value = ''
 
-    const { error } = await client.auth.signInWithPassword({
+    const { data, error } = await client.auth.signInWithPassword({
         email: email.value,
         password: password.value
     })
@@ -85,14 +87,17 @@ async function handleSubmit() {
         return
     }
 
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+    const redirectParam = typeof route.query.redirect === 'string' ? route.query.redirect : null
+    const destination = redirectParam ?? (data.user
+        ? await resolveAuthDestination(client, data.user.id, useRequestURL().host, useRuntimeConfig().public.baseDomain)
+        : '/')
 
     // A same-app client-side navigateTo() here races the Supabase auth
     // cookie write against the middleware's next read of useSupabaseUser()
     // and can bounce straight back to /login. Forcing a full page load
     // means the next request hits the server fresh, cookie already set,
     // middleware resolves the real session deterministically.
-    await navigateTo(redirect, { external: true })
+    await navigateTo(destination, { external: true })
 }
 
 async function handleForgotPassword() {
@@ -160,6 +165,10 @@ async function handleForgotPassword() {
         margin: 0 0 $space-5;
         max-width: 22rem;
         width: 100%;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__form {
@@ -219,6 +228,10 @@ async function handleForgotPassword() {
         &:hover:not(:disabled) {
             background: $color-primary-hover;
         }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-primary-contrast-dark;
+        }
     }
 }
 
@@ -230,6 +243,10 @@ async function handleForgotPassword() {
     &__label {
         color: $color-text;
         font-size: $font-size-sm;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-dark;
+        }
     }
 
     &__input {

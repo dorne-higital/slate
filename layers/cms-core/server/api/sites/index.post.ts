@@ -1,4 +1,5 @@
 import { requirePlatformAdmin } from '../../utils/requireSiteAccess'
+import { isReservedSiteSlug } from '../../../utils/reservedSiteSlugs'
 
 interface CreateSiteBody {
     name: string
@@ -17,6 +18,10 @@ export default defineEventHandler(async (event) => {
 
     if (!body?.name?.trim() || !body?.slug?.trim() || !body?.ownerUserId) {
         throw createError({ statusCode: 400, statusMessage: 'name, slug and ownerUserId are required' })
+    }
+
+    if (isReservedSiteSlug(body.slug.trim())) {
+        throw createError({ statusCode: 400, statusMessage: `"${body.slug.trim()}" is a reserved slug and can't be used for a site` })
     }
 
     const { data: site, error: siteError } = await client

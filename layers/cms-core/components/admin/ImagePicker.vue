@@ -220,6 +220,7 @@ async function handleDelete(item: MediaItem) {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -292,6 +293,10 @@ async function handleDelete(item: MediaItem) {
         &:hover {
             color: $color-primary;
         }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__upload {
@@ -311,6 +316,7 @@ async function handleDelete(item: MediaItem) {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-dark;
+            border: 1px dashed $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -327,6 +333,10 @@ async function handleDelete(item: MediaItem) {
     &__status {
         color: $color-text-muted;
         margin: 0;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__grid {
@@ -360,6 +370,7 @@ async function handleDelete(item: MediaItem) {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
         }
     }
@@ -384,6 +395,7 @@ async function handleDelete(item: MediaItem) {
 
         @media (prefers-color-scheme: dark) {
             background: $color-bg-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
         }
     }

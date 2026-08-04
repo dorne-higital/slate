@@ -38,6 +38,8 @@ const site = computed(() => data.value?.site ?? null)
 
 const { isPlatformAdmin } = await useCurrentAccess()
 
+useTenantAddressBarFix(() => `/sites/${siteId.value}`)
+
 const roleLabel = computed(() => {
     if (isPlatformAdmin) return 'Platform Admin'
     const user = useSupabaseUser()
@@ -60,6 +62,10 @@ const roleLabel = computed(() => {
     &__status {
         color: $color-text-muted;
         padding: $space-6;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__main {

@@ -28,7 +28,10 @@ export async function requireSiteAccess(
         throw createError({ statusCode: 400, statusMessage: 'siteId is required' })
     }
 
-    const user = await serverSupabaseUser(event)
+    // serverSupabaseUser() throws (rather than returning null) when
+    // there's no session at all ("Auth session missing!") - an
+    // unauthenticated caller, not a server failure.
+    const user = await serverSupabaseUser(event).catch(() => null)
 
     if (!user) {
         throw createError({ statusCode: 401, statusMessage: 'Authentication required' })
@@ -76,7 +79,7 @@ export async function requireSiteAccess(
 
 /** Throws unless the caller is a platform admin. Used by /admin-only routes. */
 export async function requirePlatformAdmin(event: H3Event) {
-    const user = await serverSupabaseUser(event)
+    const user = await serverSupabaseUser(event).catch(() => null)
 
     if (!user) {
         throw createError({ statusCode: 401, statusMessage: 'Authentication required' })

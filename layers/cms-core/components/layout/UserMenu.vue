@@ -46,7 +46,8 @@ async function handleLogout() {
 
     &__avatar {
         align-items: center;
-        background: $color-surface-active;
+        background: none;
+        border: 1.5px solid $color-primary;
         border-radius: 999px;
         color: $color-primary;
         display: flex;
@@ -58,7 +59,8 @@ async function handleLogout() {
         width: 2rem;
 
         @media (prefers-color-scheme: dark) {
-            background: $color-surface-active-dark;
+            border-color: $color-primary-dark;
+            color: $color-primary-dark;
         }
     }
 
@@ -85,20 +87,28 @@ async function handleLogout() {
 
         color: $color-text-muted;
         font-size: 0.75rem;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__logout {
         background: none;
         border: none;
-        color: $color-text-muted;
+        color: $color-danger;
         cursor: pointer;
         flex-shrink: 0;
         font-size: $font-size-sm;
+        font-weight: 600;
         padding: $space-1;
-        text-decoration: underline;
 
         &:hover {
-            color: $color-primary;
+            text-decoration: underline;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-danger-dark;
         }
     }
 }

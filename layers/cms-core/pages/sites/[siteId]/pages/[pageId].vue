@@ -192,6 +192,10 @@ async function handleTogglePublish() {
     &__status,
     &__status-message {
         color: $color-text-muted;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__header {
@@ -252,11 +256,16 @@ async function handleTogglePublish() {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
 
             &:hover {
                 border-color: $color-text-muted;
+
+                @media (prefers-color-scheme: dark) {
+                    border-color: $color-text-muted-dark;
+                }
             }
         }
     }
@@ -278,10 +287,15 @@ async function handleTogglePublish() {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
 
             &:hover {
                 border-color: $color-text-muted;
+
+                @media (prefers-color-scheme: dark) {
+                    border-color: $color-text-muted-dark;
+                }
             }
         }
     }
@@ -304,6 +318,7 @@ async function handleTogglePublish() {
         padding: $space-2 $space-3;
 
         @media (prefers-color-scheme: dark) {
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -324,6 +339,7 @@ async function handleTogglePublish() {
         }
 
         @media (prefers-color-scheme: dark) {
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -347,6 +363,10 @@ async function handleTogglePublish() {
         &:hover:not(:disabled) {
             background: $color-primary-hover;
         }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-primary-contrast-dark;
+        }
     }
 
     &__error {
@@ -367,6 +387,7 @@ async function handleTogglePublish() {
         padding: $space-2 $space-3;
 
         @media (prefers-color-scheme: dark) {
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -408,6 +429,7 @@ async function handleTogglePublish() {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }

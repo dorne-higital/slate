@@ -9,6 +9,13 @@
             <StatTile label="Members" :value="stats.members" />
         </div>
 
+        <div class="dashboard__actions">
+            <NuxtLink :to="`/sites/${siteId}/pages`" class="dashboard__action">
+                <IconPlus />
+                New page
+            </NuxtLink>
+        </div>
+
         <section class="activity" aria-labelledby="activity-heading">
             <h2 id="activity-heading" class="activity__title">Recent activity</h2>
 
@@ -19,7 +26,11 @@
 
             <ul v-else class="activity__list">
                 <li v-for="entry in activity" :key="entry.id" class="activity__item">
-                    <span class="activity__dot" :class="`activity__dot--${entry.action}`" aria-hidden="true" />
+                    <span class="activity__icon" :class="`activity__icon--${entry.action}`" aria-hidden="true">
+                        <IconPlus v-if="entry.action === 'insert'" />
+                        <IconPencil v-else-if="entry.action === 'update'" />
+                        <IconTrash v-else />
+                    </span>
                     <span class="activity__text">
                         <strong>{{ entry.actor_email ?? 'Someone' }}</strong>
                         {{ verbFor(entry) }}
@@ -78,7 +89,43 @@ function verbFor(entry: AuditLogEntry) {
         display: grid;
         gap: $space-4;
         grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+        margin-bottom: $space-5;
+    }
+
+    &__actions {
+        display: flex;
+        gap: $space-3;
         margin-bottom: $space-6;
+    }
+
+    &__action {
+        align-items: center;
+        background: $color-surface-raised;
+        border: 1px solid $color-border;
+        border-radius: 999px;
+        color: $color-text;
+        display: inline-flex;
+        font-weight: 600;
+        gap: $space-2;
+        padding: $space-2 $space-4;
+        text-decoration: none;
+        transition: border-color $transition-fast;
+
+        &:hover {
+            border-color: $color-primary;
+            color: $color-primary;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            background: $color-surface-raised-dark;
+            border-color: $color-border-dark;
+            color: $color-text-dark;
+
+            &:hover {
+                border-color: $color-primary-dark;
+                color: $color-primary-dark;
+            }
+        }
     }
 }
 
@@ -97,6 +144,10 @@ function verbFor(entry: AuditLogEntry) {
 
     &__status {
         color: $color-text-muted;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__list {
@@ -115,26 +166,50 @@ function verbFor(entry: AuditLogEntry) {
         padding: $space-3 0;
 
         @media (prefers-color-scheme: dark) {
+            border-bottom: 1px solid $color-border-dark;
             border-color: $color-border-dark;
         }
     }
 
-    &__dot {
+    &__icon {
+        align-items: center;
         border-radius: 999px;
+        display: flex;
         flex-shrink: 0;
-        height: 0.5rem;
-        width: 0.5rem;
+        height: 1.75rem;
+        justify-content: center;
+        width: 1.75rem;
 
         &--insert {
-            background: $color-success;
+            background: $color-success-bg;
+            color: $color-success;
         }
 
         &--update {
-            background: $color-warning;
+            background: $color-warning-bg;
+            color: $color-warning;
         }
 
         &--delete {
-            background: $color-danger;
+            background: $color-danger-bg;
+            color: $color-danger;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            &--insert {
+                background: $color-success-bg-dark;
+                color: $color-success-dark;
+            }
+
+            &--update {
+                background: $color-warning-bg-dark;
+                color: $color-warning-dark;
+            }
+
+            &--delete {
+                background: $color-danger-bg-dark;
+                color: $color-danger-dark;
+            }
         }
     }
 
@@ -152,6 +227,10 @@ function verbFor(entry: AuditLogEntry) {
         color: $color-text-muted;
         flex-shrink: 0;
         font-size: $font-size-sm;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 }
 </style>

@@ -278,10 +278,18 @@ async function handleSave() {
         color: $color-text-muted;
         margin: 0;
         max-width: 40rem;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__status {
         color: $color-text-muted;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 }
 
@@ -296,6 +304,10 @@ async function handleSave() {
         color: $color-text-muted;
         font-size: $font-size-sm;
         margin-right: $space-1;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__button {
@@ -315,6 +327,7 @@ async function handleSave() {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -352,6 +365,10 @@ async function handleSave() {
     &__status {
         color: $color-text-muted;
         margin: 0;
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 
     &__buttons {
@@ -377,6 +394,10 @@ async function handleSave() {
         &:hover:not(:disabled) {
             background: $color-primary-hover;
         }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-primary-contrast-dark;
+        }
     }
 
     &__reset-all {
@@ -391,6 +412,10 @@ async function handleSave() {
             color: $color-primary;
             text-decoration: underline;
         }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 }
 
@@ -400,6 +425,7 @@ async function handleSave() {
 
     @media (prefers-color-scheme: dark) {
         border-color: $color-border-dark;
+        border-top: 1px solid $color-border-dark;
     }
 }
 
@@ -411,6 +437,7 @@ async function handleSave() {
     padding: 0 $space-4;
 
     @media (prefers-color-scheme: dark) {
+        border-bottom: 1px solid $color-border-dark;
         border-color: $color-border-dark;
     }
 
@@ -438,6 +465,10 @@ async function handleSave() {
         &--active {
             border-bottom-color: $color-primary;
             color: $color-primary;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
         }
     }
 }
@@ -474,6 +505,7 @@ async function handleSave() {
         width: 2.75rem;
 
         @media (prefers-color-scheme: dark) {
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
         }
     }
@@ -494,6 +526,7 @@ async function handleSave() {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
             color: $color-text-dark;
         }
@@ -517,6 +550,10 @@ async function handleSave() {
             color: $color-primary;
             text-decoration: underline;
         }
+
+        @media (prefers-color-scheme: dark) {
+            color: $color-text-muted-dark;
+        }
     }
 }
 
@@ -538,6 +575,7 @@ async function handleSave() {
 
         @media (prefers-color-scheme: dark) {
             background: $color-surface-raised-dark;
+            border: 1px solid $color-border-dark;
             border-color: $color-border-dark;
         }
     }
