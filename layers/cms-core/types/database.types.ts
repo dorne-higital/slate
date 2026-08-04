@@ -44,6 +44,8 @@ export interface Database {
                     custom_domain: string | null
                     theme: unknown
                     layout: unknown
+                    branding: unknown
+                    company_info: unknown
                     created_at: string
                     updated_at: string
                 }
@@ -55,6 +57,8 @@ export interface Database {
                     custom_domain?: string | null
                     theme?: unknown
                     layout?: unknown
+                    branding?: unknown
+                    company_info?: unknown
                     created_at?: string
                     updated_at?: string
                 }
@@ -66,6 +70,8 @@ export interface Database {
                     custom_domain?: string | null
                     theme?: unknown
                     layout?: unknown
+                    branding?: unknown
+                    company_info?: unknown
                     created_at?: string
                     updated_at?: string
                 }

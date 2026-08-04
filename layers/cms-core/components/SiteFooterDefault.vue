@@ -2,7 +2,10 @@
     <footer class="site-footer">
         <div class="site-footer__inner">
             <div class="site-footer__top">
-                <p class="site-footer__brand">{{ siteName }}</p>
+                <p class="site-footer__brand">
+                    <img v-if="logo" :src="logo" :alt="siteName" class="site-footer__logo">
+                    <template v-else>{{ siteName }}</template>
+                </p>
 
                 <nav v-if="mainItems.length" class="site-footer__nav" aria-label="Footer">
                     <ul class="site-footer__list">
@@ -47,6 +50,7 @@ import type { MenuItem } from '../types'
 
 defineProps<{
     siteName: string
+    logo?: string
     mainItems: MenuItem[]
     legalItems: MenuItem[]
 }>()
@@ -80,11 +84,19 @@ const currentYear = new Date().getFullYear()
     }
 
     &__brand {
+        align-items: center;
         color: var(--site-text-primary);
+        display: flex;
         font-family: var(--site-heading-font-family);
         font-size: 1.125rem;
         font-weight: var(--site-heading-font-weight, 700);
         margin: 0;
+    }
+
+    &__logo {
+        display: block;
+        height: 1.75rem;
+        width: auto;
     }
 
     &__list,

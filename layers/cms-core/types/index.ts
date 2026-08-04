@@ -102,8 +102,55 @@ export interface Site {
     custom_domain: string | null
     theme: SiteTheme | null
     layout: SiteLayout | null
+    branding: SiteBranding | null
+    company_info: SiteCompanyInfo | null
     created_at: string
     updated_at: string
+}
+
+/**
+ * Logo(s) and favicon — each a Media Library URL, same "unset means no
+ * override" convention as Site.theme. logoDark is optional and not
+ * rendered anywhere yet — only the light-background "default" header/
+ * footer style exists today (see utils/siteLayoutStyles.ts); it's
+ * stored now for when a dark-background style variant needs it.
+ */
+export interface SiteBranding {
+    logoLight?: string
+    logoDark?: string
+    favicon?: string
+}
+
+export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+
+export interface SocialLink {
+    id: string
+    platform: string
+    url: string
+}
+
+export interface SiteAddress {
+    businessName?: string
+    line1?: string
+    line2?: string
+    town?: string
+    city?: string
+    postcode?: string
+    email?: string
+    phone?: string
+}
+
+export interface DayHours {
+    closed?: boolean
+    open?: string
+    close?: string
+}
+
+/** Address, opening hours, and social links — purely informational storage; nothing renders this on the public site yet. */
+export interface SiteCompanyInfo {
+    address?: SiteAddress
+    openingHours?: Partial<Record<DayOfWeek, DayHours>>
+    socials?: SocialLink[]
 }
 
 /**

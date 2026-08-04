@@ -1,6 +1,6 @@
 import { requireSiteAccess } from '../../utils/requireSiteAccess'
 import type { Database } from '../../../types/database.types'
-import type { SiteLayout, SiteTheme } from '../../../types'
+import type { DayHours, DayOfWeek, SiteAddress, SiteBranding, SiteCompanyInfo, SiteLayout, SiteTheme, SocialLink } from '../../../types'
 import { SITE_THEME_FIELDS } from '../../../utils/siteTheme'
 import { HEADER_STYLES, FOOTER_STYLES } from '../../../utils/siteLayoutStyles'
 import { addDomainToVercel, domainCounterpart, removeDomainFromVercel } from '../../utils/vercelDomains'
@@ -11,6 +11,8 @@ interface UpdateSiteBody {
     customDomain?: string | null
     theme?: SiteTheme | null
     layout?: SiteLayout | null
+    branding?: SiteBranding | null
+    companyInfo?: SiteCompanyInfo | null
 }
 
 type SiteUpdate = Database['public']['Tables']['sites']['Update']
@@ -50,6 +52,68 @@ function normalizeTheme(theme: SiteTheme | null): SiteTheme | null {
     return Object.keys(normalized).length > 0 ? normalized : null
 }
 
+const BRANDING_KEYS = new Set<keyof SiteBranding>(['logoLight', 'logoDark', 'favicon'])
+
+// Same "trim, drop blanks" shape as normalizeTheme — values here are
+// Media Library URLs (via ImagePicker), not free text, but a value could
+// still arrive as an empty string when a picker's "Remove" was clicked.
+function normalizeBranding(branding: SiteBranding | null): SiteBranding | null {
+    if (!branding) return null
+
+    const normalized: SiteBranding = {}
+    for (const [key, value] of Object.entries(branding)) {
+        if (!BRANDING_KEYS.has(key as keyof SiteBranding)) continue
+        const trimmed = typeof value === 'string' ? value.trim() : ''
+        if (trimmed) normalized[key as keyof SiteBranding] = trimmed
+    }
+    return Object.keys(normalized).length > 0 ? normalized : null
+}
+
+const DAYS_OF_WEEK: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+const ADDRESS_KEYS = ['businessName', 'line1', 'line2', 'town', 'city', 'postcode', 'email', 'phone'] as const
+
+function normalizeCompanyInfo(companyInfo: SiteCompanyInfo | null): SiteCompanyInfo | null {
+    if (!companyInfo) return null
+
+    const normalized: SiteCompanyInfo = {}
+
+    const address: SiteAddress = {}
+    for (const key of ADDRESS_KEYS) {
+        const value = companyInfo.address?.[key]?.trim()
+        if (value) address[key] = value
+    }
+    if (Object.keys(address).length > 0) normalized.address = address
+
+    const openingHours: Partial<Record<DayOfWeek, DayHours>> = {}
+    for (const day of DAYS_OF_WEEK) {
+        const hours = companyInfo.openingHours?.[day]
+        if (!hours) continue
+
+        if (hours.closed) {
+            openingHours[day] = { closed: true }
+            continue
+        }
+
+        const open = hours.open?.trim()
+        const close = hours.close?.trim()
+        if (open || close) {
+            openingHours[day] = { ...(open ? { open } : {}), ...(close ? { close } : {}) }
+        }
+    }
+    if (Object.keys(openingHours).length > 0) normalized.openingHours = openingHours
+
+    const socials: SocialLink[] = (companyInfo.socials ?? [])
+        .map((social): SocialLink => ({
+            id: typeof social.id === 'string' && social.id ? social.id : crypto.randomUUID(),
+            platform: social.platform?.trim() ?? '',
+            url: social.url?.trim() ?? ''
+        }))
+        .filter(social => social.platform && social.url)
+    if (socials.length > 0) normalized.socials = socials
+
+    return Object.keys(normalized).length > 0 ? normalized : null
+}
+
 export default defineEventHandler(async (event) => {
     const siteId = getRouterParam(event, 'siteId')
 
@@ -69,6 +133,8 @@ export default defineEventHandler(async (event) => {
     }
     if (body.theme !== undefined) update.theme = normalizeTheme(body.theme)
     if (body.layout !== undefined) update.layout = normalizeLayout(body.layout)
+    if (body.branding !== undefined) update.branding = normalizeBranding(body.branding)
+    if (body.companyInfo !== undefined) update.company_info = normalizeCompanyInfo(body.companyInfo)
 
     let previousDomain: string | null = null
     let vercelWarning: string | undefined

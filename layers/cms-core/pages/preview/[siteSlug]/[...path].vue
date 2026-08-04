@@ -4,6 +4,7 @@
             :is="headerComponent"
             v-if="!pending && !error && data"
             :site-name="data.site.name"
+            :logo="data.site.branding?.logoLight"
             :items="headerMainItems"
         />
 
@@ -22,6 +23,7 @@
             :is="footerComponent"
             v-if="!pending && !error && data"
             :site-name="data.site.name"
+            :logo="data.site.branding?.logoLight"
             :main-items="footerMainItems"
             :legal-items="footerLegalItems"
         />
@@ -29,14 +31,14 @@
 </template>
 
 <script setup lang="ts">
-import type { Block, Menu, MenuItem, MenuSlot, SiteLayout, SiteTheme } from '../../../types'
+import type { Block, Menu, MenuItem, MenuSlot, SiteBranding, SiteLayout, SiteTheme } from '../../../types'
 import { googleFontLinksFor } from '../../../utils/siteFonts'
 import { resolveFooterStyleComponent, resolveHeaderStyleComponent } from '../../../utils/siteLayoutComponents'
 
 definePageMeta({ layout: 'preview' })
 
 interface SitePageResponse {
-    site: { id: string, name: string, slug: string, theme: SiteTheme | null, layout: SiteLayout | null }
+    site: { id: string, name: string, slug: string, theme: SiteTheme | null, layout: SiteLayout | null, branding: SiteBranding | null }
     page: {
         id: string
         parent_id: string | null
@@ -90,6 +92,10 @@ useHead({
 // actually loaded — same call the theme editor's own live preview and
 // the page builder canvas make for their theme.
 useHead({ link: () => googleFontLinksFor(data.value?.site.theme) })
+
+useHead({
+    link: () => (data.value?.site.branding?.favicon ? [{ rel: 'icon', href: data.value.site.branding.favicon }] : [])
+})
 
 useSeoMeta({
     title: () => data.value?.page.seo_title || data.value?.page.title,

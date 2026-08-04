@@ -1,7 +1,10 @@
 <template>
     <header class="site-header">
         <div class="site-header__inner">
-            <a href="/" class="site-header__brand">{{ siteName }}</a>
+            <a href="/" class="site-header__brand">
+                <img v-if="logo" :src="logo" :alt="siteName" class="site-header__logo">
+                <template v-else>{{ siteName }}</template>
+            </a>
 
             <nav v-if="items.length" class="site-header__nav" aria-label="Main">
                 <ul class="site-header__list">
@@ -39,6 +42,7 @@ import type { MenuItem } from '../types'
 
 defineProps<{
     siteName: string
+    logo?: string
     items: MenuItem[]
 }>()
 </script>
@@ -60,11 +64,19 @@ defineProps<{
     }
 
     &__brand {
+        align-items: center;
         color: var(--site-text-primary);
+        display: flex;
         font-family: var(--site-heading-font-family);
         font-size: 1.25rem;
         font-weight: var(--site-heading-font-weight, 700);
         text-decoration: none;
+    }
+
+    &__logo {
+        display: block;
+        height: 2.25rem;
+        width: auto;
     }
 
     &__list {

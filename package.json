@@ -10,7 +10,8 @@
         "app"
     ],
     "resolutions": {
-        "jsdom": "27.3.0"
+        "jsdom": "27.3.0",
+        "@asamuzakjp/css-color": "4.1.1"
     },
     "scripts": {
         "dev": "yarn workspace @slate/app dev",
