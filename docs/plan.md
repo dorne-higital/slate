@@ -33,13 +33,16 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
   integrations and sites; sites pause publicly when a trial ends unpaid. New site / Your sites page.
   Prices live in shared/utils/plans.ts; `yarn stripe:setup` syncs Stripe.
   **To take real money:** live secret key, run `yarn stripe:setup --webhook https://slatecms.co.uk/api/stripe/webhook`
-  with it, update the Worker secrets. Decide on VAT (Stripe Tax) first.
+  with it, update the Worker secrets. Not VAT registered yet (24 Nov 2026): no VAT charged or shown.
+- [x] Domain buying (name.com): search the name across .co.uk .uk .org.uk .com .org .net at flat yearly
+  prices (shared/utils/domainPrices.ts, only offered if renewal cost + margin fits); pay yearly via Stripe;
+  registered in the customer's name, ANAME/CNAME to Slate, connected with HTTPS. Simulated (nothing bought)
+  while Stripe is in test mode. Cancelling the domain subscription turns auto-renew off.
+  Later: admin view to retry failed orders, offer a domain during sign-up, transfer-out codes.
 
 ## Next, in order
 
-1. [ ] **Domain buying** (**needs Dan: registrar reseller account**): search + buy a domain during sign-up
-   and from Domains, auto-connect
-2. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
+1. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
 
 ## Housekeeping (as I go)
 

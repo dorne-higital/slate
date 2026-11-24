@@ -11,7 +11,9 @@ interface DomainsData {
     domains: { hostname: string, status: 'pending' | 'active' | 'error', detail: string | null, isMain: boolean, checkedAt: string | null }[]
 }
 
-const { data, error: loadError } = await useAsyncData(`domains-${siteId}`, () => fetcher<DomainsData>(`/api/sites/${siteId}/domains`))
+const { data, error: loadError, refresh: refreshDomains } = await useAsyncData(`domains-${siteId}`, () => fetcher<DomainsData>(`/api/sites/${siteId}/domains`))
+const { me } = useMe()
+const isOwner = computed(() => me.value?.sites.find(x => x.id === siteId)?.role === 'owner')
 useHead({ title: 'Domains · Slate' })
 
 const adding = ref(false)
@@ -98,6 +100,8 @@ onBeforeUnmount(() => clearInterval(timer))
 
         <p v-if="error" class="error-box" role="alert">{{ error }}</p>
         <p v-if="loadError" class="error-box" role="alert">Couldn’t load your domains. Refresh the page to try again.</p>
+
+        <DomainBuy :site-id="siteId" :can-buy="isOwner" :suggestion="me?.sites.find(x => x.id === siteId)?.slug" @bought="refreshDomains" />
 
         <form v-if="adding" class="panel add" @submit.prevent="connect">
             <h2>Connect a domain you own</h2>

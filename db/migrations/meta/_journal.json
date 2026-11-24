@@ -71,6 +71,13 @@
       "when": 1795520598670,
       "tag": "0009_fancy_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795522471757,
+      "tag": "0010_abandoned_lizard",
+      "breakpoints": true
     }
   ]
 }

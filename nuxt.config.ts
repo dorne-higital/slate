@@ -28,6 +28,8 @@ export default defineNuxtConfig({
         stripeSecretKey: '',
         stripeWebhookSecret: '',
         stripePortalConfig: '',
+        namecomUsername: '',
+        namecomToken: '',
         cloudflareZoneId: '',
         public: {
             // Host the CMS itself is served from. Any other host is treated as a client site.

@@ -38,5 +38,7 @@ export default defineEventHandler(async (event) => {
 /** "Studio plan, yearly" from the price's lookup key, falling back to Stripe's own wording. */
 function invoiceLine(line: Record<string, any> | undefined) {
     const m = /^slate_(starter|business|studio)_(monthly|yearly)$/.exec(line?.price?.lookup_key ?? '')
-    return m ? `${findPlan(m[1])!.name} plan, ${m[2]}` : line?.description ?? 'Slate subscription'
+    if (m) return `${findPlan(m[1])!.name} plan, ${m[2]}`
+    const domain = /Domain: (\S+)/.exec(line?.description ?? '')
+    return domain ? `Domain ${domain[1]}, yearly` : line?.description ?? 'Slate subscription'
 }

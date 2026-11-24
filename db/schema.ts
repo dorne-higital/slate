@@ -1,5 +1,6 @@
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import type { Block, MenuItem, MenuSlot, PageStatus, SiteIntegrations, SiteRole, SiteSeo, SiteTheme } from '../shared/types'
+import type { DomainOrderStatus } from '../shared/utils/domainPrices'
 import type { FormField } from '../shared/utils/forms'
 
 // ── Better Auth tables (shape required by better-auth's drizzle adapter) ──
@@ -246,3 +247,25 @@ export const billingAccounts = pgTable('billing_accounts', {
     stripeSubscriptionId: text('stripe_subscription_id'),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 })
+
+// Domains bought through Slate. Paid for yearly by a Stripe subscription; registered at name.com.
+export const domainOrders = pgTable('domain_orders', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    siteId: uuid('site_id').references(() => sites.id, { onDelete: 'set null' }),
+    userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+    domainName: text('domain_name').notNull(),
+    // Pence a year, fixed at purchase
+    price: integer('price').notNull(),
+    status: text('status').$type<DomainOrderStatus>().notNull().default('pending_payment'),
+    // True when Stripe was in test mode: nothing was bought from name.com
+    simulated: boolean('simulated').notNull().default(true),
+    stripeSessionId: text('stripe_session_id'),
+    stripeSubscriptionId: text('stripe_subscription_id'),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    error: text('error'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [
+    index('domain_orders_site_idx').on(t.siteId),
+    index('domain_orders_name_idx').on(t.domainName)
+])

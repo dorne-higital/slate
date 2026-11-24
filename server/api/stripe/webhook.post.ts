@@ -6,6 +6,12 @@ export default defineEventHandler(async (event) => {
 
     const evt = JSON.parse(payload) as { type: string, data: { object: Record<string, any> } }
     const obj = evt.data.object
+    // Domain purchases have their own yearly subscription, tagged kind=domain
+    if (obj.metadata?.kind === 'domain') {
+        if (evt.type === 'checkout.session.completed') await fulfilDomainOrder(obj.metadata.orderId, obj)
+        else if (evt.type === 'customer.subscription.deleted') await domainSubscriptionEnded(obj.id)
+        return { received: true }
+    }
     if (evt.type.startsWith('customer.subscription.')) {
         // Re-read so out-of-order events can't leave stale state
         await syncSubscription(await stripe('GET', `subscriptions/${obj.id}`))
