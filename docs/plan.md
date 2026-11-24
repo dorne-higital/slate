@@ -25,7 +25,7 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
   leave, last-owner protection, take offline (holding page), delete with 30-day restore by platform admin
 - [x] Integrations: Google Analytics, Plausible, Meta Pixel, Calendly (+ Booking block), cookie consent
   banner for GA/Meta, cross-site request protection on the CMS API. Mailchimp, Kit, Stripe: coming soon
-- [x] Media library (R2): upload by button or drag and drop, file type checked from the bytes (no SVG/HTML),
+- [x] Media library (R2): upload by button or drag and drop (done: blocks in editor incl. from library, pages list; browser check of the drag still to do), file type checked from the bytes (no SVG/HTML),
   10 MB limit, alt text, search, delete; Choose image in block fields and post covers
 - [x] Billing (Stripe, test mode): Starter £9 / Business £19 / Studio £39 a month, yearly = 2 months free,
   14-day trial with Business features, no card. Billed per person (Studio covers up to 10 sites).
@@ -51,4 +51,4 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
 - Drag and drop for blocks and pages
 - [x] Old Vercel DNS records removed (proxied AAAA 100:: placeholders for the Worker)
 - [x] Daily job (03:00 UTC): purge sites deleted more than 30 days ago, their Cloudflare hostnames, old invites
-- Site export (pages, posts, form replies) for the Settings page
+- [x] Site export: Settings › Download everything (zip: site.json, pages/posts as text, replies CSV, media)

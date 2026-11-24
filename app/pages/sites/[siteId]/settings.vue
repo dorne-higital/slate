@@ -189,6 +189,12 @@ async function deleteSite() {
                     <button class="btn btn-plain danger self-start" type="button" @click="leave">Leave this site</button>
                 </section>
 
+                <section v-if="isAdmin" class="panel box" aria-labelledby="ex-h">
+                    <h2 id="ex-h">Download everything</h2>
+                    <p class="muted">A zip of your pages, blog posts, menus, form replies (as spreadsheets) and uploaded images. Yours to keep or move elsewhere.</p>
+                    <a class="btn btn-ghost self-start" :href="`/api/sites/${siteId}/export`" download>Download a copy</a>
+                </section>
+
                 <section v-if="isAdmin" class="panel box danger-zone" aria-labelledby="x-h">
                     <h2 id="x-h">Take the site offline or delete it</h2>
                     <div class="dz-row">

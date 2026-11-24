@@ -141,6 +141,57 @@ function move(i: number, dir: -1 | 1) {
     queueSave()
 }
 
+// ── Drag and drop: move a block by its handle, or drag a new block in from the library ──
+const drag = ref<{ from: number } | { type: string } | null>(null)
+const dropAt = ref<number | null>(null)
+function startMove(e: DragEvent, i: number) {
+    drag.value = { from: i }
+    e.dataTransfer?.setData('text/plain', blocks.value[i]!.id)
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
+    const frame = (e.target as HTMLElement).closest('.blk-frame')
+    if (frame && e.dataTransfer) e.dataTransfer.setDragImage(frame, 24, 24)
+}
+function startNew(e: DragEvent, type: string) {
+    drag.value = { type }
+    e.dataTransfer?.setData('text/plain', type)
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'copy'
+}
+function overBlock(e: DragEvent, i: number) {
+    if (!drag.value) return
+    e.preventDefault()
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    dropAt.value = e.clientY > rect.top + rect.height / 2 ? i + 1 : i
+}
+function overEmpty(e: DragEvent) {
+    if (!drag.value) return
+    e.preventDefault()
+    dropAt.value = blocks.value.length
+}
+function endDrag() {
+    drag.value = null
+    dropAt.value = null
+}
+function dropBlock() {
+    const d = drag.value
+    let at = dropAt.value
+    endDrag()
+    if (!d || at === null) return
+    if ('from' in d) {
+        if (at === d.from || at === d.from + 1) return
+        snapshot()
+        const [b] = blocks.value.splice(d.from, 1)
+        if (d.from < at) at--
+        blocks.value.splice(at, 0, b!)
+        selectedId.value = b!.id
+    } else {
+        snapshot()
+        const block = newBlock(d.type)
+        blocks.value.splice(at, 0, block)
+        selectedId.value = block.id
+    }
+    queueSave()
+}
+
 function duplicate(i: number) {
     snapshot()
     const copy = { ...structuredClone(toRaw(blocks.value[i]!)), id: crypto.randomUUID() }
@@ -270,7 +321,8 @@ onBeforeRouteLeave(async () => {
 
                 <div v-else class="panel-body">
                     <p class="muted hint">Click a block to add it {{ selected ? 'under the selected block' : 'to the end of the page' }}.</p>
-                    <button v-for="b in BLOCK_TYPES" :key="b.type" class="lib" type="button" @click="addBlock(b.type)">
+                    <p class="muted hint">Or drag one onto the page where you want it.</p>
+                    <button v-for="b in BLOCK_TYPES" :key="b.type" class="lib" type="button" draggable="true" @click="addBlock(b.type)" @dragstart="startNew($event, b.type)" @dragend="endDrag">
                         <b>{{ b.name }}</b>
                         <span>{{ b.desc }}</span>
                     </button>
@@ -284,10 +336,20 @@ onBeforeRouteLeave(async () => {
                         <NuxtLink class="tag" :to="`/sites/${siteId}/menus`">Header, shared on every page. Edit in Menus</NuxtLink>
                     </div>
 
-                    <div v-for="(b, i) in blocks" :key="b.id" class="blk-frame" :class="{ sel: b.id === selectedId }">
+                    <div
+                        v-for="(b, i) in blocks"
+                        :key="b.id"
+                        class="blk-frame"
+                        :class="{ 'sel': b.id === selectedId, 'drop-before': dropAt === i, 'drop-after': dropAt === blocks.length && i === blocks.length - 1, 'is-dragging': drag && 'from' in drag && drag.from === i }"
+                        @dragover="overBlock($event, i)"
+                        @drop.prevent="dropBlock"
+                    >
                         <button class="blk-hit" type="button" :aria-label="`Select ${findBlockType(b.type)?.name ?? b.type} block`" @click="selectedId = b.id" />
                         <div v-if="b.id === selectedId" class="blk-bar" role="toolbar" :aria-label="`${findBlockType(b.type)?.name} block tools`">
-                            <span>{{ findBlockType(b.type)?.name }}</span>
+                            <span class="drag-handle" draggable="true" title="Drag to move" @dragstart="startMove($event, i)" @dragend="endDrag">
+                                <svg width="12" height="16" viewBox="0 0 12 16" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="3" r="1.4" /><circle cx="9" cy="3" r="1.4" /><circle cx="3" cy="8" r="1.4" /><circle cx="9" cy="8" r="1.4" /><circle cx="3" cy="13" r="1.4" /><circle cx="9" cy="13" r="1.4" /></g></svg>
+                                {{ findBlockType(b.type)?.name }}
+                            </span>
                             <button class="ib" type="button" aria-label="Move up" :disabled="i === 0" @click="move(i, -1)">
                                 <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
                             </button>
@@ -304,7 +366,7 @@ onBeforeRouteLeave(async () => {
                         <BlockView :block="b" />
                     </div>
 
-                    <div v-if="!blocks.length" class="empty">
+                    <div v-if="!blocks.length" class="empty" :class="{ 'drop-here': dropAt === 0 }" @dragover="overEmpty" @drop.prevent="dropBlock">
                         <b>This page has no blocks yet</b>
                         <span>Pick one from Add a block on the left.</span>
                     </div>
@@ -440,4 +502,12 @@ onBeforeRouteLeave(async () => {
     .left, .right { border: 0; border-top: 1px solid var(--line); }
     .canvas-wrap { padding: 12px; }
 }
+.drag-handle { align-items: center; cursor: grab; display: inline-flex; gap: 8px; user-select: none; }
+.drag-handle:active { cursor: grabbing; }
+.blk-frame.is-dragging { opacity: .4; }
+.blk-frame.drop-before::before, .blk-frame.drop-after::before { background: var(--lichen, #E8A33A); content: ''; height: 4px; left: 0; position: absolute; right: 0; z-index: 5; }
+.blk-frame.drop-before::before { top: -2px; }
+.blk-frame.drop-after::before { bottom: -2px; }
+.lib[draggable="true"] { cursor: grab; }
+.empty.drop-here { outline: 3px dashed var(--lichen, #E8A33A); }
 </style>

@@ -32,6 +32,43 @@ const shown = computed(() => {
 })
 
 const home = computed(() => pages.value?.find(p => p.path === '/'))
+
+// ── Drag to reorder (siblings only: pages with the same parent). Only with no filter or search. ──
+const { me } = useMe()
+const canReorder = computed(() => filter.value === 'all' && !search.value.trim() && ROLE_RANK[me.value?.sites.find(s => s.id === siteId)?.role ?? 'viewer'] >= ROLE_RANK.editor)
+const parentOf = (path: string) => path === '/' ? null : path.split('/').slice(0, -1).join('/') || '/'
+const dragId = ref<string | null>(null)
+const dropTarget = ref<{ id: string, after: boolean } | null>(null)
+const orderError = ref('')
+function onDragOver(e: DragEvent, p: PageListItem) {
+    const from = pages.value?.find(x => x.id === dragId.value)
+    if (!from || from.id === p.id || p.path === '/' || parentOf(from.path) !== parentOf(p.path)) {
+        dropTarget.value = null
+        return
+    }
+    e.preventDefault()
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    dropTarget.value = { id: p.id, after: e.clientY > rect.top + rect.height / 2 }
+}
+async function onDrop() {
+    const target = dropTarget.value
+    const fromId = dragId.value
+    dragId.value = null
+    dropTarget.value = null
+    if (!target || !fromId || !pages.value) return
+    const before = pages.value
+    const list = before.filter(p => p.id !== fromId)
+    const at = list.findIndex(p => p.id === target.id) + (target.after ? 1 : 0)
+    list.splice(at, 0, before.find(p => p.id === fromId)!)
+    pages.value = list
+    orderError.value = ''
+    try {
+        await $fetch(`/api/sites/${siteId}/pages/order`, { method: 'POST', body: { ids: list.map(p => p.id) } })
+    } catch (err) {
+        pages.value = before
+        orderError.value = (err as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'Couldn’t save the new order. Please try again.'
+    }
+}
 const depth = (path: string) => path === '/' ? 0 : path.split('/').length - 2
 const filters: { key: Filter, label: string }[] = [
     { key: 'all', label: 'All' },
@@ -61,13 +98,30 @@ const filters: { key: Filter, label: string }[] = [
             </label>
         </div>
 
+        <p v-if="orderError" class="error-box" role="alert">{{ orderError }}</p>
+        <p v-if="canReorder" class="muted small">Drag pages by the handle to change their order. Your automatic menu follows it.</p>
         <section class="panel scroll" aria-label="All pages">
             <table class="tbl">
                 <thead><tr><th scope="col">Page</th><th scope="col">Status</th><th scope="col">Last edited</th><th scope="col">By</th></tr></thead>
                 <tbody>
-                    <tr v-for="p in shown" :key="p.id">
+                    <tr
+                        v-for="p in shown"
+                        :key="p.id"
+                        :class="{ dragging: dragId === p.id, 'drop-before': dropTarget?.id === p.id && !dropTarget.after, 'drop-after': dropTarget?.id === p.id && dropTarget.after }"
+                        @dragover="onDragOver($event, p)"
+                        @drop.prevent="onDrop"
+                    >
                         <td :style="{ paddingLeft: `${20 + depth(p.path) * 24}px` }">
-                            <span class="pg"><NuxtLink class="rl" :to="`/sites/${siteId}/pages/${p.id}`">{{ p.title }}</NuxtLink><span class="muted">{{ p.path }}</span></span>
+                            <span class="pg">
+                                <span
+                                    v-if="canReorder && p.path !== '/'"
+                                    class="handle"
+                                    draggable="true"
+                                    title="Drag to reorder"
+                                    aria-hidden="true"
+                                    @dragstart="dragId = p.id; $event.dataTransfer?.setData('text/plain', p.id)"
+                                    @dragend="dragId = null; dropTarget = null"
+                                >⠿</span><NuxtLink class="rl" :to="`/sites/${siteId}/pages/${p.id}`">{{ p.title }}</NuxtLink><span class="muted">{{ p.path }}</span></span>
                         </td>
                         <td><StatusPill :status="p.status" :changed="p.hasUnpublishedChanges" /></td>
                         <td class="muted">{{ formatWhen(p.updatedAt) }}</td>
@@ -98,4 +152,10 @@ h1 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; margin: 0; }
 .pg { display: flex; flex-direction: column; gap: 1px; }
 .rl { color: var(--quarry); font-weight: 600; text-decoration: none; }
 .rl:hover { text-decoration: underline; }
+.small { font-size: 13px; margin: -12px 0 0; }
+.handle { color: var(--text-muted); cursor: grab; font-size: 16px; line-height: 1; margin-right: 8px; user-select: none; }
+.handle:active { cursor: grabbing; }
+tr.dragging td { opacity: .45; }
+tr.drop-before td { box-shadow: inset 0 3px 0 var(--quarry); }
+tr.drop-after td { box-shadow: inset 0 -3px 0 var(--quarry); }
 </style>
