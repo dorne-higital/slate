@@ -8,6 +8,12 @@
         "directory": "./.output/public",
         "binding": "ASSETS"
     },
-    "observability": { "enabled": true }
+    "observability": { "enabled": true },
+    "vars": {
+        // Until Slate's own domain is on Cloudflare, everything runs on the workers.dev address.
+        // Client sites' {slug}.<domain> addresses start working once these point at the real domain.
+        "NUXT_PUBLIC_APP_HOST": "slate.slatecms.workers.dev",
+        "NUXT_PUBLIC_SITES_DOMAIN": "slate.slatecms.workers.dev"
+    }
     // Secrets (set with `wrangler secret put`): NUXT_DATABASE_URL, NUXT_BETTER_AUTH_SECRET
 }
