@@ -9,11 +9,16 @@
         "binding": "ASSETS"
     },
     "observability": { "enabled": true },
+    // slatecms.co.uk is the CMS and marketing site; every {slug}.slatecms.co.uk is a client site.
+    // The old workers.dev address is switched off so there's only one address for the CMS.
+    "workers_dev": false,
+    "routes": [
+        { "pattern": "slatecms.co.uk/*", "zone_name": "slatecms.co.uk" },
+        { "pattern": "*.slatecms.co.uk/*", "zone_name": "slatecms.co.uk" }
+    ],
     "vars": {
-        // Until Slate's own domain is on Cloudflare, everything runs on the workers.dev address.
-        // Client sites' {slug}.<domain> addresses start working once these point at the real domain.
-        "NUXT_PUBLIC_APP_HOST": "slate.slatecms.workers.dev",
-        "NUXT_PUBLIC_SITES_DOMAIN": "slate.slatecms.workers.dev"
+        "NUXT_PUBLIC_APP_HOST": "slatecms.co.uk",
+        "NUXT_PUBLIC_SITES_DOMAIN": "slatecms.co.uk"
     }
     // Secrets (set with `wrangler secret put`): NUXT_DATABASE_URL, NUXT_BETTER_AUTH_SECRET
 }
