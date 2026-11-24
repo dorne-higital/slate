@@ -15,7 +15,7 @@ const home = computed(() => pages.value?.find(p => p.path === '/'))
 const changed = computed(() => (pages.value ?? []).filter(p => p.hasUnpublishedChanges).length)
 const liveUrl = computed(() => {
     if (!site.value) return '#'
-    const host = site.value.customDomain ?? site.value.freeAddress
+    const host = site.value.liveAddress
     return `${host.startsWith('localhost') || host.includes('.localhost') ? 'http' : 'https'}://${host}`
 })
 </script>
@@ -33,7 +33,7 @@ const liveUrl = computed(() => {
         <div class="live">
             <span class="dot" aria-hidden="true" />
             <span class="live-text">
-                <b>Your site is live at {{ site.customDomain ?? site.freeAddress }}</b>
+                <b>Your site is live at {{ site.liveAddress }}</b>
                 <span>{{ changed ? `${changed} page${changed === 1 ? ' has' : 's have'} changes that aren’t published yet.` : 'Everything is published.' }}</span>
             </span>
         </div>
@@ -62,7 +62,7 @@ const liveUrl = computed(() => {
                 <h2 id="next-h">Help people find your site</h2>
                 <ul>
                     <li><span class="ring" aria-hidden="true" /><span><b>Add page descriptions</b><span class="muted">Shown under your page in search results.</span></span></li>
-                    <li><span class="ring" aria-hidden="true" /><span><b>Connect your own domain</b><span class="muted">Your free address works until you do.</span></span></li>
+                    <li><span class="ring" aria-hidden="true" /><span><NuxtLink :to="`/sites/${siteId}/domains`" class="rl">Connect your own domain</NuxtLink><span class="muted">Your free address works until you do.</span></span></li>
                 </ul>
             </section>
         </div>

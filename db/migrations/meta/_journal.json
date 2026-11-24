@@ -15,6 +15,13 @@
       "when": 1795514176372,
       "tag": "0001_nasty_nightshade",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795516411772,
+      "tag": "0002_bouncy_jane_foster",
+      "breakpoints": true
     }
   ]
 }

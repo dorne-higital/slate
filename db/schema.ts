@@ -105,3 +105,18 @@ export const menus = pgTable('menus', {
 }, t => [
     primaryKey({ columns: [t.siteId, t.slot] })
 ])
+
+// Domains a client has connected (Cloudflare for SaaS custom hostnames).
+// The site's main domain is sites.custom_domain; any other domain here redirects to it.
+export const domains = pgTable('domains', {
+    hostname: text('hostname').primaryKey(),
+    siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+    cloudflareId: text('cloudflare_id'),
+    // pending: waiting for the client's DNS record · active: live with HTTPS · error: Cloudflare reported a problem
+    status: text('status').$type<'pending' | 'active' | 'error'>().notNull().default('pending'),
+    statusDetail: text('status_detail'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    checkedAt: timestamp('checked_at', { withTimezone: true })
+}, t => [
+    index('domains_site_idx').on(t.siteId)
+])

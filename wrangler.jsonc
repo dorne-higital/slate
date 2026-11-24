@@ -14,11 +14,15 @@
     "workers_dev": false,
     "routes": [
         { "pattern": "slatecms.co.uk/*", "zone_name": "slatecms.co.uk" },
-        { "pattern": "*.slatecms.co.uk/*", "zone_name": "slatecms.co.uk" }
+        { "pattern": "*.slatecms.co.uk/*", "zone_name": "slatecms.co.uk" },
+        // Catch-all: clients' own domains (Cloudflare for SaaS custom hostnames) arrive through this
+        { "pattern": "*/*", "zone_name": "slatecms.co.uk" }
     ],
     "vars": {
         "NUXT_PUBLIC_APP_HOST": "slatecms.co.uk",
-        "NUXT_PUBLIC_SITES_DOMAIN": "slatecms.co.uk"
+        "NUXT_PUBLIC_SITES_DOMAIN": "slatecms.co.uk",
+        "NUXT_PUBLIC_CNAME_TARGET": "sites.slatecms.co.uk",
+        "NUXT_CLOUDFLARE_ZONE_ID": "04820b9bf2258b595f63d96ac643e6a5"
     }
-    // Secrets (set with `wrangler secret put`): NUXT_DATABASE_URL, NUXT_BETTER_AUTH_SECRET
+    // Secrets (set with `wrangler secret put`): NUXT_DATABASE_URL, NUXT_BETTER_AUTH_SECRET, NUXT_CLOUDFLARE_API_TOKEN
 }

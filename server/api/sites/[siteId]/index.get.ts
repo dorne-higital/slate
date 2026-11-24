@@ -8,6 +8,8 @@ export default defineEventHandler(async (event) => {
         customDomain: site.customDomain,
         theme: site.theme ?? {},
         freeAddress: `${site.slug}.${config.public.sitesDomain}`,
+        // Where visitors actually find the site right now
+        liveAddress: await liveAddress(site),
         role
     }
 })

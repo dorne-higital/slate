@@ -48,7 +48,7 @@ const linkTargets = computed(() => (allPages.value ?? []).map(p => ({ title: p.t
 const themeVars = computed(() => siteThemeVars(site.value?.theme as SiteTheme))
 const liveUrl = computed(() => {
     if (!site.value) return '#'
-    const host = site.value.customDomain ?? site.value.freeAddress
+    const host = site.value.liveAddress
     return `${host.includes('localhost') ? 'http' : 'https'}://${host}${loaded.value!.path}`
 })
 

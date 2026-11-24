@@ -23,12 +23,22 @@ export default defineNuxtConfig({
     runtimeConfig: {
         databaseUrl: '',
         betterAuthSecret: '',
+        // Cloudflare for SaaS (client custom domains). Token needs SSL and Certificates: Edit on the zone.
+        cloudflareApiToken: '',
+        cloudflareZoneId: '',
         public: {
             // Host the CMS itself is served from. Any other host is treated as a client site.
             appHost: 'localhost:3000',
             // Client sites get a free address at {slug}.{sitesDomain}
-            sitesDomain: 'localhost:3000'
+            sitesDomain: 'localhost:3000',
+            // What clients point their domain's CNAME record at
+            cnameTarget: 'sites.slatecms.co.uk'
         }
+    },
+
+    // Local dev: accept any hostname, so client custom domains can be tried with a Host header
+    $development: {
+        vite: { server: { allowedHosts: true } }
     },
 
     // Cloudflare preset for builds only. Local dev runs on plain Node: the Workers emulator
