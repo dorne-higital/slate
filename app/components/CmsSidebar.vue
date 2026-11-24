@@ -8,7 +8,9 @@ interface NavItem { key: string, label: string, icon: string, to?: string }
 // Items without `to` are in the design but not built yet; they show as "soon".
 const groups: { title: string, items: NavItem[] }[] = [
     { title: '', items: [
-        { key: 'overview', label: 'Overview', icon: 'M3 8l6-5 6 5v7H3z', to: '' },
+        { key: 'overview', label: 'Overview', icon: 'M3 8l6-5 6 5v7H3z', to: '' }
+    ] },
+    { title: 'Content', items: [
         { key: 'pages', label: 'Pages', icon: 'M4 2h7l3 3v11H4z', to: '/pages' },
         { key: 'blog', label: 'Blog', icon: 'M3 4h12M3 9h12M3 14h7', to: '/blog' },
         { key: 'forms', label: 'Forms', icon: 'M2 4h14v10H2zM2 4l7 6 7-6', to: '/forms' },
