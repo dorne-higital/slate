@@ -9,7 +9,6 @@ const [{ data: site, refresh: refreshSite }, { data: menus }] = await Promise.al
     useAsyncData(`site-${siteId}`, () => fetcher(`/api/sites/${siteId}`)),
     useAsyncData(`menus-${siteId}`, () => fetcher<{ header: MenuItem[], footer: MenuItem[], legal: MenuItem[] }>(`/api/sites/${siteId}/menus`))
 ])
-useHead(() => ({ title: 'Layout · Slate', link: [{ rel: 'stylesheet', href: themeFontsHref(theme.value) }] }))
 
 const canEdit = computed(() => ROLE_RANK[me.value?.sites.find(s => s.id === siteId)?.role ?? 'viewer'] >= ROLE_RANK.admin)
 const LAYOUT_KEYS = ['headerStyle', 'headerColour', 'headerSticky', 'headerGlass', 'headerSocials', 'footerStyle', 'footerColour', 'footerLogo'] as const
@@ -19,6 +18,7 @@ const pickLayout = (t: Required<SiteTheme>) => Object.fromEntries(LAYOUT_KEYS.ma
 const saved = ref<LayoutSettings>(pickLayout(full.value))
 const layout = ref<LayoutSettings>({ ...saved.value })
 const theme = computed<Required<SiteTheme>>(() => ({ ...full.value, ...layout.value }))
+useHead(() => ({ title: 'Layout · Slate', link: [{ rel: 'stylesheet', href: themeFontsHref(theme.value) }] }))
 const dirty = computed(() => JSON.stringify(layout.value) !== JSON.stringify(saved.value))
 const status = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
 const hasSocials = computed(() => Object.keys((site.value?.socials as SiteSocials) ?? {}).length > 0)
