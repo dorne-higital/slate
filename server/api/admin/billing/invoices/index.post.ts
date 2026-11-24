@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     const note = String(b.note ?? '').trim().slice(0, 500)
 
     const who = await billableUser(site)
-    if (!who) throw createError({ statusCode: 400, statusMessage: 'This site has no owner to send an invoice to. Invite the client as an owner first.' })
+    if (!who) throw createError({ statusCode: 400, statusMessage: 'Only platform admins own this site, and admins are never billed. Invite the client as an owner first.' })
     const customer = await ensureCustomer(who.user)
     const inv = await adminStripe('POST', 'invoices', {
         customer, collection_method: 'send_invoice', days_until_due: days, auto_advance: false,

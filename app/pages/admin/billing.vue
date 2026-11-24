@@ -156,7 +156,7 @@ const randomCode = () => { disc.code = `SLATE-${Math.random().toString(36).slice
                 </div>
 
                 <template v-if="chosen">
-                    <p v-if="!chosen.billTo" class="error-box">This site has no client owner, so there’s no one to bill. Invite the client as an owner from the site’s People page first.</p>
+                    <p v-if="!chosen.billTo" class="note">Only platform admins own this site, and Slate never bills admins, so it’s free. To bill a client for it, invite them as an owner on the site’s People page. They’ll then be the one who pays.</p>
                     <div v-else class="who">
                         <span><b>{{ chosen.billTo.name }}</b> · {{ chosen.billTo.email }}</span>
                         <span class="muted">{{ statusName[chosen.billing.status] }}{{ chosen.billing.plan ? `, ${findPlan(chosen.billing.plan)?.name} ${chosen.billing.interval === 'year' ? 'yearly' : 'monthly'}` : '' }}{{ chosen.billing.specialPrice ? `, special price ${formatPence(chosen.billing.specialPrice.amount)} a ${chosen.billing.specialPrice.interval}` : '' }}</span>

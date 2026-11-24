@@ -52,7 +52,7 @@ async function swapPlanPrice(subscriptionId: string, priceId: string, interval: 
  */
 export async function setSpecialPrice(site: Site, plan: PlanKey, interval: BillingInterval, amount: number) {
     const who = await billableUser(site)
-    if (!who) throw createError({ statusCode: 400, statusMessage: 'This site has no owner to bill. Invite the client as an owner first.' })
+    if (!who) throw createError({ statusCode: 400, statusMessage: 'Only platform admins own this site, and admins are never billed. Invite the client as an owner first.' })
     const db = useDb()
     if (!who.isPayer) {
         await db.update(schema.sites).set({ billingUserId: who.user.id, updatedAt: new Date() }).where(eq(schema.sites.id, site.id))
