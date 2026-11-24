@@ -11,5 +11,6 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: 'Type the site’s name exactly to confirm' })
     }
     await useDb().update(schema.sites).set({ deletedAt: new Date(), offline: true, updatedAt: new Date() }).where(eq(schema.sites.id, site.id))
+    if (site.billingUserId) await syncExtraSites(site.billingUserId).catch(err => console.error('[billing] extra sites sync failed', err))
     return { ok: true }
 })

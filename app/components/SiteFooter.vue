@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{ name: string, items: MenuItem[], legal: MenuItem[], preview?: boolean, cookieSettings?: boolean, theme?: SiteTheme | null, socials?: SiteSocials | null }>()
+const props = defineProps<{ name: string, items: MenuItem[], legal: MenuItem[], preview?: boolean, cookieSettings?: boolean, theme?: SiteTheme | null, socials?: SiteSocials | null, badge?: boolean }>()
 const t = computed(() => ({ ...DEFAULT_THEME, ...props.theme }))
 // Columns style: top-level footer items are headings, their children the links underneath
 const columns = computed(() => menuTree(props.items))
@@ -34,7 +34,7 @@ const year = new Date().getFullYear()
                 </nav>
             </div>
             <div class="sf-bottom">
-                <span>© {{ year }} {{ name }}</span>
+                <span>© {{ year }} {{ name }}<template v-if="badge"> · <a class="sf-made" href="https://slatecms.co.uk/?ref=footer" target="_blank" rel="noopener">Made with Slate</a></template></span>
                 <nav v-if="legal.length || cookieSettings" aria-label="Legal" class="sf-legal">
                     <template v-for="item in legal" :key="item.id">
                         <span v-if="preview">{{ item.label }}</span>
@@ -64,4 +64,5 @@ const year = new Date().getFullYear()
 .sf-cols { display: grid; flex: 1; gap: 24px 40px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); max-width: 720px; }
 .sf-col { display: flex; flex-direction: column; gap: 10px; }
 .sf-col-title { font-weight: 700; }
+.sf-made { font-weight: 600; }
 </style>

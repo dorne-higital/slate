@@ -9,16 +9,23 @@ const layout = ref('trade')
 const busy = ref(false)
 const error = ref('')
 const adding = ref(false)
+// Studio over its included sites: say what it costs before adding one
+const extra = ref<{ price: string, per: string } | null>(null)
 
-async function create() {
+async function create(confirmExtra = false) {
     busy.value = true
     error.value = ''
     try {
-        const { siteId } = await $fetch<{ siteId: string }>('/api/sites', { method: 'POST', body: { name: name.value, layout: layout.value } })
+        const { siteId } = await $fetch<{ siteId: string }>('/api/sites', { method: 'POST', body: { name: name.value, layout: layout.value, confirmExtra } })
         await refresh()
         await navigateTo(`/sites/${siteId}`)
     } catch (err) {
-        error.value = (err as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'Couldn’t create the site. Please try again.'
+        const data = (err as { data?: { statusMessage?: string, data?: { extraSite?: boolean, price: string, per: string } } }).data
+        if (data?.data?.extraSite) {
+            extra.value = { price: data.data.price, per: data.data.per }
+            return
+        }
+        error.value = data?.statusMessage ?? 'Couldn’t create the site. Please try again.'
     } finally {
         busy.value = false
     }
@@ -36,7 +43,7 @@ async function create() {
             <button v-if="!adding" class="btn btn-dark" type="button" @click="adding = true">New site</button>
         </div>
 
-        <form v-if="adding" class="panel box" @submit.prevent="create">
+        <form v-if="adding" class="panel box" @submit.prevent="create()">
             <h2>Start a new site</h2>
             <p v-if="error" class="error-box" role="alert">{{ error }}</p>
             <div class="field"><label for="ns-name">What’s it called?</label><input id="ns-name" v-model="name" class="inp" type="text" maxlength="80" required></div>
@@ -46,11 +53,19 @@ async function create() {
                     <option v-for="l in STARTER_LAYOUTS" :key="l.id" :value="l.id">{{ l.name }}</option>
                 </select>
             </div>
-            <div class="row">
+            <div v-if="extra" class="confirm" role="alert">
+                <b>This is an extra site</b>
+                <span>Your Studio plan includes 5 sites. This one adds {{ extra.price }} a {{ extra.per }} to your bill, charged from today for the rest of your billing period. Delete it any time to stop paying for it.</span>
+                <div class="row">
+                    <button class="btn btn-dark" type="button" :disabled="busy" @click="create(true)">{{ busy ? 'Creating…' : `Add it for ${extra.price}/${extra.per === 'year' ? 'yr' : 'mo'}` }}</button>
+                    <button class="btn btn-plain" type="button" @click="extra = null">Cancel</button>
+                </div>
+            </div>
+            <div v-else class="row">
                 <button class="btn btn-dark" type="submit" :disabled="busy">{{ busy ? 'Creating…' : 'Create site' }}</button>
                 <button class="btn btn-plain" type="button" @click="adding = false">Cancel</button>
             </div>
-            <span class="muted small">Each site counts towards your plan. The Studio plan includes up to 10.</span>
+            <span class="muted small">Each site counts towards your plan. Starter and Business include one; Studio includes 5, then £6 a month each.</span>
         </form>
 
         <ul class="list">
@@ -77,6 +92,7 @@ h2 { font-size: 18px; margin: 0; }
 .inp { font-size: 15px; height: 42px; }
 .row { display: flex; gap: 8px; }
 .small { font-size: 13px; }
+.confirm { background: #fff6e6; border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.5; padding: 14px; }
 .list { display: flex; flex-direction: column; gap: 10px; list-style: none; margin: 0; padding: 0; }
 .site { align-items: center; color: inherit; display: flex; gap: 14px; padding: 14px 18px; text-decoration: none; }
 .site:hover { box-shadow: 0 0 0 2px var(--quarry); }

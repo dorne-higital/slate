@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
             address: a ? [a.line1, a.line2, a.city, a.postal_code].filter(Boolean).join(', ') : '',
             taxId: customer.tax_ids?.data?.[0]?.value ?? ''
         },
-        nextPayment: sub && !sub.cancel_at_period_end ? { amount: sub.items?.data?.[0]?.price?.unit_amount ?? null, date: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null } : null,
+        nextPayment: sub && !sub.cancel_at_period_end ? { amount: (sub.items?.data ?? []).reduce((n: number, i: Record<string, any>) => n + (i.price?.unit_amount ?? 0) * (i.quantity ?? 1), 0) || null, date: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null } : null,
         invoices: invoices.data.filter(i => i.status !== 'draft').map(i => ({
             id: i.id,
             date: new Date(i.created * 1000).toISOString(),
@@ -39,6 +39,7 @@ export default defineEventHandler(async (event) => {
 function invoiceLine(line: Record<string, any> | undefined) {
     const m = /^slate_(starter|business|studio)_(monthly|yearly)$/.exec(line?.price?.lookup_key ?? '')
     if (m) return `${findPlan(m[1])!.name} plan, ${m[2]}`
+    if (/^slate_extra_site_/.test(line?.price?.lookup_key ?? '')) return `Extra sites × ${line?.quantity ?? 1}`
     const domain = /Domain: (\S+)/.exec(line?.description ?? '')
     return domain ? `Domain ${domain[1]}, yearly` : line?.description ?? 'Slate subscription'
 }

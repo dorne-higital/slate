@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, isNull, sql } from 'drizzle-orm'
 
 type Site = typeof schema.sites.$inferSelect
 type Account = typeof schema.billingAccounts.$inferSelect
@@ -42,7 +42,7 @@ function summary(status: BillingStatus, account: Account | null, payerName: stri
         currentPeriodEnd: account?.currentPeriodEnd?.toISOString() ?? null,
         cancelAtPeriodEnd: account?.cancelAtPeriodEnd ?? false,
         // Infinity isn't JSON; null means unlimited
-        limits: JSON.parse(JSON.stringify(limits, (_, v) => v === Number.POSITIVE_INFINITY ? null : v)),
+        limits,
         payerName,
         youPay
     }
@@ -88,8 +88,9 @@ export async function syncSubscription(sub: Record<string, any>) {
         console.error('[billing] subscription with no account', sub.id)
         return
     }
-    const price = sub.items?.data?.[0]?.price
-    const match = /^slate_(starter|business|studio)_(monthly|yearly)$/.exec(price?.lookup_key ?? '')
+    // A Studio subscription can also carry an extra-site line, so look for the plan's own line
+    const planItem = (sub.items?.data ?? []).find((i: Record<string, any>) => /^slate_(starter|business|studio)_(monthly|yearly)$/.test(i.price?.lookup_key ?? ''))
+    const match = /^slate_(starter|business|studio)_(monthly|yearly)$/.exec(planItem?.price?.lookup_key ?? '')
     const ended = ['canceled', 'incomplete_expired'].includes(sub.status)
     await db.insert(schema.billingAccounts).values({ userId }).onConflictDoNothing()
     await db.update(schema.billingAccounts).set({
@@ -115,4 +116,47 @@ export async function portalUrl(customerId: string, siteId: string) {
     const configuration = useRuntimeConfig().stripePortalConfig || undefined
     const session = await stripe('POST', 'billing_portal/sessions', { customer: customerId, configuration, return_url: appUrl(`/sites/${siteId}/billing`) })
     return session.url as string
+}
+
+/** Limits for whoever pays for this site (or comped limits if nobody does). */
+export async function payerLimits(site: Site) {
+    if (!site.billingUserId) return { status: 'comped' as BillingStatus, limits: limitsFor('comped', null) }
+    const { account, payer } = await loadPayer(site.billingUserId)
+    const status = accountStatus(account, !!payer?.isPlatformAdmin)
+    return { status, limits: limitsFor(status, findPlan(account?.plan)?.key ?? null) }
+}
+
+/** Bytes of uploads across every site this site's payer pays for (or just this site). */
+export async function storageUsed(site: Site) {
+    const db = useDb()
+    const r = site.billingUserId
+        ? await db.execute<{ n: number }>(sql`select coalesce(sum(m.size), 0)::bigint n from media m join sites s on s.id = m.site_id where s.billing_user_id = ${site.billingUserId}`)
+        : await db.execute<{ n: number }>(sql`select coalesce(sum(size), 0)::bigint n from media where site_id = ${site.id}`)
+    return Number(r.rows[0]?.n ?? 0)
+}
+
+/**
+ * Studio: keeps the subscription's extra-site line equal to the sites above those included.
+ * Called after a site is created, deleted or restored. Stripe prorates the change.
+ */
+export async function syncExtraSites(userId: string) {
+    const { account, payer } = await loadPayer(userId)
+    if (!account?.stripeSubscriptionId || payer?.isPlatformAdmin || accountStatus(account, false) !== 'active') return
+    const limits = limitsFor('active', findPlan(account.plan)?.key ?? null)
+    if (!limits.extraSiteMonthly) return
+    const extras = Math.max(0, await billedSiteCount(userId) - limits.sites)
+    const sub = await stripe('GET', `subscriptions/${account.stripeSubscriptionId}`)
+    const item = (sub.items?.data ?? []).find((i: Record<string, any>) => /^slate_extra_site_/.test(i.price?.lookup_key ?? ''))
+    if (!extras) {
+        if (item) await stripe('DELETE', `subscription_items/${item.id}`, { proration_behavior: 'create_prorations' })
+        return
+    }
+    if (item) {
+        if (item.quantity !== extras) await stripe('POST', `subscription_items/${item.id}`, { quantity: extras, proration_behavior: 'create_prorations' })
+        return
+    }
+    const interval = (account.interval as BillingInterval) ?? 'month'
+    const prices = await stripe<{ data: { id: string }[] }>('GET', 'prices', { lookup_keys: [EXTRA_SITE_LOOKUP(interval)], active: true })
+    if (!prices.data[0]) throw createError({ statusCode: 503, statusMessage: 'Extra sites aren’t available right now. Please try again later.' })
+    await stripe('POST', 'subscription_items', { subscription: account.stripeSubscriptionId, price: prices.data[0].id, quantity: extras, proration_behavior: 'create_prorations' })
 }

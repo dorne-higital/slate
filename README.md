@@ -50,6 +50,7 @@ Rebuilt from scratch in November 2026 on the `rebuild` branch. The old Supabase/
 
 - Currently in **test mode** (`sk_test_…`). Test card: 4242 4242 4242 4242, any future date, any CVC.
 - Products/prices: `slate_starter`, `slate_business`, `slate_studio`, each with `_monthly` and `_yearly` lookup keys. Created by `yarn stripe:setup` from `shared/utils/plans.ts`.
+- `slate_extra_site` (£6/mo, £60/yr): added to a Studio subscription automatically for each site beyond the 5 included, and removed when sites are deleted.
 - Customer portal configuration: id in `wrangler.jsonc` (`NUXT_STRIPE_PORTAL_CONFIG`).
 - Webhook: `https://slatecms.co.uk/api/stripe/webhook` (checkout completed, subscription created/updated/deleted). Its signing secret is the Worker secret `NUXT_STRIPE_WEBHOOK_SECRET`.
 - Domain purchases are yearly subscriptions tagged `kind=domain`.
@@ -126,7 +127,7 @@ Local dev runs on plain Node: Cloudflare's local runtime (workerd) needs macOS 1
 ## How do I…
 
 - **Make someone a platform admin** — only by SQL on the live database: `update "user" set is_platform_admin = true where email = '…';`
-- **Change prices or plan limits** — edit `shared/utils/plans.ts`, run `yarn stripe:setup`, deploy. New sign-ups get the new price; existing customers keep theirs until moved in Stripe.
+- **Change prices or plan limits** — edit `shared/utils/plans.ts`, run `yarn stripe:setup`, deploy. The home page table and Billing page read from the same file, so they update too. New sign-ups get the new price; existing customers keep theirs until moved in Stripe.
 - **Change domain prices or add an ending** — edit `shared/utils/domainPrices.ts` and deploy.
 - **Go live with payments**
   1. Activate the Stripe account (business and bank details).

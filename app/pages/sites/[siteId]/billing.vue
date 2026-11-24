@@ -30,7 +30,7 @@ const sample = computed<BillingPage | null>(() => {
             trialEndsAt: new Date(Date.now() + (preview.value === 'trial' ? 4 : -2) * day).toISOString(),
             currentPeriodEnd: paying ? new Date(Date.now() + 12 * day).toISOString() : null,
             cancelAtPeriodEnd: false,
-            limits: JSON.parse(JSON.stringify(business.limits, (_, v) => v === Number.POSITIVE_INFINITY ? null : v)),
+            limits: business.limits,
             payerName: 'Sample customer',
             youPay: true
         },
@@ -62,20 +62,7 @@ const error = ref('')
 const current = computed(() => findPlan(b.value?.plan))
 const daysLeft = computed(() => b.value?.trialEndsAt ? Math.max(0, Math.ceil((new Date(b.value.trialEndsAt).getTime() - Date.now()) / 86400000)) : 0)
 const date = (iso: string | null | undefined) => iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''
-const limitText = (n: number | null, one: string, many: string) => isUnlimited(n) ? `Unlimited ${many}` : n === 1 ? `1 ${one}` : `Up to ${n} ${many}`
-
-function features(p: PlanInfo) {
-    const l = p.limits
-    return [
-        limitText(l.sites, 'website', 'websites'),
-        limitText(l.pagesPerSite, 'page', 'pages'),
-        'Your own domain',
-        limitText(l.formsPerSite, 'form', 'forms'),
-        l.blog ? 'Blog' : 'No blog',
-        l.integrations === 'all' ? 'All integrations' : 'Analytics integrations',
-        limitText(l.peoplePerSite, 'editor', 'editors')
-    ]
-}
+const features = (p: PlanInfo) => planFeatures(p)
 
 async function go(path: 'checkout' | 'portal', body?: Record<string, string>) {
     if (preview.value !== 'off') {
@@ -147,7 +134,10 @@ const hasSubscription = computed(() => b.value?.status === 'active' || b.value?.
                         <ul v-if="current && hasSubscription" class="feats">
                             <li v-for="f in features(current)" :key="f">{{ f }}</li>
                         </ul>
-                        <p v-if="b.limits.sites !== 1" class="muted small">{{ data?.sitesUsed }} of {{ isUnlimited(b.limits.sites) ? 'unlimited' : b.limits.sites }} sites used.</p>
+                        <div v-if="b.limits.sites > 1 || b.limits.extraSiteMonthly" class="sites-used">
+                            <span class="muted small">{{ data?.sitesUsed }} of {{ b.limits.sites }} included sites used<template v-if="(data?.sitesUsed ?? 0) > b.limits.sites">, plus {{ (data?.sitesUsed ?? 0) - b.limits.sites }} extra at {{ formatPence(extraSitePrice(b.interval ?? 'month')) }} a {{ b.interval === 'year' ? 'year' : 'month' }} each</template>.</span>
+                            <NuxtLink to="/sites" class="btn btn-ghost btn-sm">Add a site</NuxtLink>
+                        </div>
                     </section>
 
                     <div class="col">
@@ -262,4 +252,5 @@ h2 { font-size: 18px; margin: 0; }
 .danger { color: var(--danger); }
 .self-start { align-self: flex-start; }
 @media (max-width: 1000px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.sites-used { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
 </style>

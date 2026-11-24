@@ -9,6 +9,10 @@ export default defineEventHandler(async (event) => {
     if (!file) throw createError({ statusCode: 400, statusMessage: 'Choose a file to upload' })
     if (file.data.length > MAX_UPLOAD_BYTES) throw createError({ statusCode: 413, statusMessage: 'That file is too big. The limit is 10 MB.' })
 
+    const { limits } = await payerLimits(site)
+    if (await storageUsed(site) + file.data.length > limits.storageBytes) {
+        throw createError({ statusCode: 402, statusMessage: `You’ve used all ${formatGB(limits.storageBytes)} of your storage. Delete some files, or change plan in Billing for more.` })
+    }
     const kind = sniffType(file.data)
     if (!kind) throw createError({ statusCode: 415, statusMessage: 'Slate takes JPG, PNG, WebP, GIF, AVIF and PDF files.' })
 

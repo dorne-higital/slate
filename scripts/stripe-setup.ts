@@ -7,7 +7,7 @@
  * the old one is archived. People already paying stay on their old price until moved in Stripe.
  * Output is one JSON line: { portalConfig, webhookSecret? }. Progress goes to stderr.
  */
-import { PLANS, priceLookupKey } from '../shared/utils/plans.ts'
+import { EXTRA_SITE_LOOKUP, extraSitePrice, PLANS, priceLookupKey } from '../shared/utils/plans.ts'
 
 const KEY = process.env.STRIPE_SECRET_KEY ?? process.env.NUXT_STRIPE_SECRET_KEY
 if (!KEY) throw new Error('STRIPE_SECRET_KEY is not set')
@@ -68,6 +68,24 @@ for (const plan of PLANS) {
         priceIds.push(price.id)
     }
     portalProducts.push({ product: productId, prices: priceIds })
+}
+
+// Studio's extra sites: added to the subscription by the app, never chosen in the portal
+{
+    const productId = 'slate_extra_site'
+    if (!await api('GET', `products/${productId}`, {}, true)) {
+        await api('POST', 'products', { id: productId, name: 'Slate extra site', description: 'One more website on the Studio plan' })
+        log(`  made product ${productId}`)
+    }
+    for (const interval of ['month', 'year'] as const) {
+        const lookup = EXTRA_SITE_LOOKUP(interval)
+        const amount = extraSitePrice(interval)
+        const existing = (await api('GET', 'prices', { lookup_keys: [lookup], active: true })).data[0]
+        if (existing && existing.unit_amount === amount && existing.recurring?.interval === interval) continue
+        await api('POST', 'prices', { product: productId, currency: 'gbp', unit_amount: amount, recurring: { interval }, lookup_key: lookup, transfer_lookup_key: true, nickname: `Extra site ${interval === 'month' ? 'monthly' : 'yearly'}` })
+        if (existing) await api('POST', `prices/${existing.id}`, { active: false })
+        log(`  ${existing ? 'changed' : 'made'} price ${lookup}: £${amount / 100}`)
+    }
 }
 
 // Customer portal: change plan, card, details, cancel at period end, invoices

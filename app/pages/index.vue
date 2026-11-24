@@ -39,16 +39,8 @@ const exampleSites = [
 
 // Prices and limits come from shared/utils/plans.ts
 const plans = PLANS.map(p => ({ name: p.name, tagline: p.tagline, price: formatPence(p.monthly).slice(1), yearly: formatPence(p.yearly), highlight: p.key === 'business' }))
-const limit = (n: number, one: string) => n === Number.POSITIVE_INFINITY ? 'Unlimited' : n === 1 ? one : `Up to ${n}`
-const planRows = [
-    { label: 'Websites', values: PLANS.map(p => limit(p.limits.sites, '1')) },
-    { label: 'Pages', values: PLANS.map(p => limit(p.limits.pagesPerSite, '1')) },
-    { label: 'Your own domain', values: ['Yes', 'Yes', 'Yes, on every site'] },
-    { label: 'Forms and replies inbox', values: ['1 form', 'Unlimited', 'Unlimited'] },
-    { label: 'Blog', values: ['No', 'Yes', 'Yes'] },
-    { label: 'Integrations', values: ['Analytics only', 'All', 'All'] },
-    { label: 'People who can edit', values: PLANS.map(p => p.limits.peoplePerSite === Number.POSITIVE_INFINITY ? 'Unlimited, with client roles' : limit(p.limits.peoplePerSite, '1')) }
-]
+// Rows come from shared/utils/plans.ts so the table always matches what's enforced
+const planRows = computed(() => planRowsFor())
 
 const faqs = [
     { q: 'Do I need to know how to code?', a: 'No. You build pages by adding blocks and typing into them. If you want something custom, a developer can build a new block that appears in your editor.' },
