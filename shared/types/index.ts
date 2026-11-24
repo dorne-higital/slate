@@ -54,6 +54,8 @@ export interface SiteTheme {
     headerStyle?: 'standard' | 'centred' | 'mega'
     headerColour?: ThemeColourChoice
     headerSticky?: boolean
+    /** Frosted glass: the header colour turns see-through and blurs the page behind it */
+    headerGlass?: boolean
     headerSocials?: boolean
     footerStyle?: 'simple' | 'columns'
     footerColour?: ThemeColourChoice

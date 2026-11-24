@@ -11,7 +11,7 @@ const logo = computed(() => (t.value.headerColour !== 'page' && t.value.headerCo
 </script>
 
 <template>
-    <header class="sh" :class="[`style-${t.headerStyle}`, { sticky: t.headerSticky && !preview }]">
+    <header class="sh" :class="[`style-${t.headerStyle}`, { sticky: t.headerSticky && !preview, glass: t.headerGlass }]">
         <div class="sh-bar">
             <component :is="preview ? 'span' : resolveComponent('NuxtLink')" to="/" class="sh-name" :aria-label="logo ? name : undefined">
                 <img v-if="logo" :src="logo" :alt="name" class="sh-logo">
@@ -43,6 +43,11 @@ const logo = computed(() => (t.value.headerColour !== 'page' && t.value.headerCo
 <style scoped>
 .sh { background: var(--site-header-bg, var(--site-bg)); border-bottom: 1px solid rgb(0 0 0 / 8%); color: var(--site-header-text, var(--site-heading)); font-family: var(--site-body-font); position: relative; z-index: 20; }
 .sh.sticky { position: sticky; top: 0; }
+/* Frosted glass: the header colour at 70%, blurring what scrolls underneath. Solid where blur isn't supported. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .sh.glass { -webkit-backdrop-filter: saturate(170%) blur(16px); backdrop-filter: saturate(170%) blur(16px); background: color-mix(in srgb, var(--site-header-bg, var(--site-bg)) 70%, transparent); border-bottom-color: rgb(255 255 255 / 18%); box-shadow: 0 1px 0 rgb(0 0 0 / 6%); }
+}
+@media (prefers-reduced-transparency: reduce) { .sh.glass { background: var(--site-header-bg, var(--site-bg)); } }
 .sh-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; margin: 0 auto; max-width: 1120px; min-height: 72px; padding: 0 24px; }
 .sh-name { align-items: center; color: inherit; display: inline-flex; font-family: var(--site-heading-font); font-size: 20px; font-weight: 800; text-decoration: none; }
 .sh-logo { display: block; height: var(--site-logo-height, 36px); max-width: 240px; object-fit: contain; width: auto; }

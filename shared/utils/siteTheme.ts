@@ -45,6 +45,7 @@ export const DEFAULT_THEME: Required<SiteTheme> = {
     headerStyle: 'standard',
     headerColour: 'page',
     headerSticky: false,
+    headerGlass: false,
     headerSocials: false,
     footerStyle: 'simple',
     footerColour: 'dark'
@@ -87,7 +88,7 @@ export function cleanTheme(input: unknown): SiteTheme {
     pick('footerStyle', ['simple', 'columns'])
     pick('headerColour', COLOUR_CHOICES)
     pick('footerColour', COLOUR_CHOICES)
-    for (const key of ['headerSticky', 'headerSocials'] as const) if (typeof t[key] === 'boolean') out[key] = t[key] as boolean
+    for (const key of ['headerSticky', 'headerGlass', 'headerSocials'] as const) if (typeof t[key] === 'boolean') out[key] = t[key] as boolean
     // Images: our own media addresses or https only (safeUrl also refuses javascript: etc.)
     for (const key of ['logo', 'logoOnDark', 'footerLogo', 'favicon'] as const) {
         if (typeof t[key] === 'string') {

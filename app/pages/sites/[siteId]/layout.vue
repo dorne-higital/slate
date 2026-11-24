@@ -12,7 +12,7 @@ const [{ data: site, refresh: refreshSite }, { data: menus }] = await Promise.al
 useHead(() => ({ title: 'Layout · Slate', link: [{ rel: 'stylesheet', href: themeFontsHref(theme.value) }] }))
 
 const canEdit = computed(() => ROLE_RANK[me.value?.sites.find(s => s.id === siteId)?.role ?? 'viewer'] >= ROLE_RANK.admin)
-const LAYOUT_KEYS = ['headerStyle', 'headerColour', 'headerSticky', 'headerSocials', 'footerStyle', 'footerColour', 'footerLogo'] as const
+const LAYOUT_KEYS = ['headerStyle', 'headerColour', 'headerSticky', 'headerGlass', 'headerSocials', 'footerStyle', 'footerColour', 'footerLogo'] as const
 type LayoutSettings = Pick<Required<SiteTheme>, typeof LAYOUT_KEYS[number]>
 const full = computed<Required<SiteTheme>>(() => ({ ...DEFAULT_THEME, ...(site.value?.theme as SiteTheme) }))
 const pickLayout = (t: Required<SiteTheme>) => Object.fromEntries(LAYOUT_KEYS.map(k => [k, t[k]])) as LayoutSettings
@@ -97,6 +97,8 @@ const sample: Block[] = [{ id: 'l1', type: 'hero', props: { heading: 'Your page 
                         </div>
                     </div>
                     <label class="check"><input v-model="layout.headerSticky" type="checkbox" :disabled="!canEdit"> Keep the header at the top while scrolling</label>
+                    <label class="check"><input v-model="layout.headerGlass" type="checkbox" :disabled="!canEdit"> Frosted glass: see the page blurred through the header as it scrolls underneath</label>
+                    <p v-if="layout.headerGlass && !layout.headerSticky" class="help">Glass shows best with the header kept at the top while scrolling.</p>
                     <label class="check"><input v-model="layout.headerSocials" type="checkbox" :disabled="!canEdit"> Show social media icons in the header</label>
                     <p v-if="layout.headerSocials && !hasSocials" class="help">Add your social links in <NuxtLink :to="`/sites/${siteId}/settings`">Settings</NuxtLink> first.</p>
                 </section>
