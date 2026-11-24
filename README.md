@@ -138,5 +138,8 @@ Local dev runs on plain Node: Cloudflare's local runtime (workerd) needs macOS 1
   4. Update the Worker secrets `NUXT_STRIPE_SECRET_KEY` and `NUXT_STRIPE_WEBHOOK_SECRET`, and `NUXT_STRIPE_PORTAL_CONFIG` in `wrangler.jsonc`. Deploy.
   5. Fund the name.com account — real domain registrations start now.
 - **Rotate a leaked key** — create a new one at the service, `npx wrangler secret put NAME`, update `.env`, then delete the old key at the service.
+- **Give a client a special price** — Admin → Billing (or Billing on a site in the dashboard list) → Special price. It's a Stripe price on the plan's product (metadata `slate_plan`), used at checkout and swapped onto a live subscription from the next payment. If Slate covered the site, its owner becomes the payer with a trial and starts the plan at that price from Billing.
+- **Invoice a client for extra work** — Admin → Billing → New invoice. Stripe hosts the invoice and pay page; Slate emails the link. It also appears on the client's Billing page. Cancel unpaid ones from the Invoices list.
+- **Make a discount code** — Admin → Billing → Discount codes (Stripe coupon + promotion code). People enter it at checkout.
 - **Restore a deleted site** — within 30 days, from the admin dashboard's site list (Restore).
 - **See errors on the live site** — Cloudflare dashboard → Workers → slate → Logs (observability is on).

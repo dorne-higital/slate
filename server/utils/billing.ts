@@ -44,7 +44,10 @@ function summary(status: BillingStatus, account: Account | null, payerName: stri
         // Infinity isn't JSON; null means unlimited
         limits,
         payerName,
-        youPay
+        youPay,
+        specialPrice: account?.customPriceId && findPlan(account.customPlan) && account.customAmount
+            ? { plan: account.customPlan as PlanKey, interval: account.customInterval as BillingInterval, amount: account.customAmount }
+            : null
     }
 }
 
@@ -89,8 +92,11 @@ export async function syncSubscription(sub: Record<string, any>) {
         return
     }
     // A Studio subscription can also carry an extra-site line, so look for the plan's own line
-    const planItem = (sub.items?.data ?? []).find((i: Record<string, any>) => /^slate_(starter|business|studio)_(monthly|yearly)$/.test(i.price?.lookup_key ?? ''))
-    const match = /^slate_(starter|business|studio)_(monthly|yearly)$/.exec(planItem?.price?.lookup_key ?? '')
+    // Special prices have no lookup key; they carry the plan in metadata.slate_plan
+    const planOf = (i: Record<string, any>) => /^slate_(starter|business|studio)_(?:monthly|yearly)$/.exec(i.price?.lookup_key ?? '')?.[1] ?? (findPlan(i.price?.metadata?.slate_plan)?.key)
+    const planItem = (sub.items?.data ?? []).find((i: Record<string, any>) => planOf(i))
+    const planKey = planItem ? planOf(planItem) : null
+    const match = planKey ? [null, planKey, planItem.price?.recurring?.interval === 'year' ? 'yearly' : 'monthly'] as const : null
     const ended = ['canceled', 'incomplete_expired'].includes(sub.status)
     await db.insert(schema.billingAccounts).values({ userId }).onConflictDoNothing()
     await db.update(schema.billingAccounts).set({

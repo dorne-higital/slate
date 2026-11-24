@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
         invoices: invoices.data.filter(i => i.status !== 'draft').map(i => ({
             id: i.id,
             date: new Date(i.created * 1000).toISOString(),
-            description: invoiceLine(i.lines?.data?.[0]),
+            description: i.metadata?.kind === 'custom' ? (i.lines?.data ?? []).map((l: Record<string, any>) => l.description).filter(Boolean).reverse().join(', ') || 'Invoice' : invoiceLine(i.lines?.data?.[0]),
             amount: i.total,
             status: i.status,
             pdf: i.invoice_pdf,
@@ -39,6 +39,8 @@ export default defineEventHandler(async (event) => {
 function invoiceLine(line: Record<string, any> | undefined) {
     const m = /^slate_(starter|business|studio)_(monthly|yearly)$/.exec(line?.price?.lookup_key ?? '')
     if (m) return `${findPlan(m[1])!.name} plan, ${m[2]}`
+    const special = findPlan(line?.price?.metadata?.slate_plan)
+    if (special) return `${special.name} plan, ${line?.price?.recurring?.interval === 'year' ? 'yearly' : 'monthly'}`
     if (/^slate_extra_site_/.test(line?.price?.lookup_key ?? '')) return `Extra sites × ${line?.quantity ?? 1}`
     const domain = /Domain: (\S+)/.exec(line?.description ?? '')
     return domain ? `Domain ${domain[1]}, yearly` : line?.description ?? 'Slate subscription'

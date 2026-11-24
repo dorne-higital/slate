@@ -32,7 +32,8 @@ const sample = computed<BillingPage | null>(() => {
             cancelAtPeriodEnd: false,
             limits: business.limits,
             payerName: 'Sample customer',
-            youPay: true
+            youPay: true,
+            specialPrice: null
         },
         sitesUsed: 1,
         card: paying ? { brand: 'visa', last4: '4417', expMonth: 8, expYear: 2028 } : null,
@@ -80,6 +81,8 @@ async function go(path: 'checkout' | 'portal', body?: Record<string, string>) {
     }
 }
 const choose = (plan: PlanKey) => go('checkout', { plan, interval: interval.value })
+const special = computed(() => b.value?.specialPrice ?? null)
+const chooseSpecial = () => special.value && go('checkout', { plan: special.value.plan, interval: special.value.interval })
 const manage = () => go('portal')
 const hasSubscription = computed(() => b.value?.status === 'active' || b.value?.status === 'past_due')
 </script>
@@ -162,6 +165,13 @@ const hasSubscription = computed(() => b.value?.status === 'active' || b.value?.
                         </section>
                     </div>
                 </div>
+
+                <section v-if="special && !hasSubscription" class="panel box special" aria-labelledby="sp-h">
+                    <h2 id="sp-h">Your price</h2>
+                    <p>You have a special price: <b>{{ findPlan(special.plan)?.name }} plan, {{ formatPence(special.amount) }} a {{ special.interval }}</b>.</p>
+                    <button class="btn btn-dark self-start" type="button" :disabled="!!busy" @click="chooseSpecial">{{ busy === special.plan ? 'Opening checkout…' : `Start ${findPlan(special.plan)?.name} at ${formatPence(special.amount)} a ${special.interval}` }}</button>
+                </section>
+                <p v-else-if="special && hasSubscription" class="note">You’re on a special price: {{ formatPence(special.amount) }} a {{ special.interval }}.</p>
 
                 <section v-if="showPlans || !hasSubscription" class="plans" aria-labelledby="plans-h">
                     <div class="row-between">
@@ -253,4 +263,6 @@ h2 { font-size: 18px; margin: 0; }
 .self-start { align-self: flex-start; }
 @media (max-width: 1000px) { .two { grid-template-columns: minmax(0, 1fr); } }
 .sites-used { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+.special { box-shadow: 0 0 0 2px var(--lichen); }
+.self-start { align-self: flex-start; }
 </style>

@@ -89,6 +89,7 @@ Dan chose: refresh the design, projects as their own content type.
 
 ## Billing extras (asked 24 Nov)
 
-1. [ ] Discounts for existing clients (Stripe coupons / promo codes), applied from All sites
-2. [ ] Custom invoices from All sites (Stripe invoices with a pay link)
-3. [ ] Show past invoices (plans, domain renewals) on the Billing page
+1. [x] Special price per client (fixed price instead of list price), from Admin → Billing
+2. [x] Custom invoices from Admin → Billing (Stripe invoice, emailed pay link, shown in client Billing)
+3. [x] Past invoices on the Billing page (already there: plans, domains, custom)
+4. [x] Discount codes made from Admin → Billing

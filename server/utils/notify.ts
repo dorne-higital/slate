@@ -89,3 +89,15 @@ export async function sendVerifyEmail(to: string, name: string, url: string) {
         button: { label: 'Confirm my email', url }
     })
 }
+
+/** A one-off invoice from Slate, with the Stripe pay page. */
+export async function sendInvoiceEmail(to: { name: string, email: string }, siteName: string, inv: typeof schema.customInvoices.$inferSelect) {
+    if (!inv.hostedUrl) return false
+    const due = inv.dueAt ? ` It’s due by ${inv.dueAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.` : ''
+    return sendEmail({
+        to: to.email,
+        subject: `Invoice ${inv.number ?? ''} for ${siteName}: ${formatPence(inv.total)}`.replace('  ', ' '),
+        text: `Hi ${to.name.split(' ')[0]},\n\nHere’s an invoice for ${formatPence(inv.total)} for ${siteName}: ${inv.description}.${due}\n\nYou can pay by card, and download a PDF, from the link below.`,
+        button: { label: 'View and pay', url: inv.hostedUrl }
+    })
+}

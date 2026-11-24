@@ -250,7 +250,32 @@ export const billingAccounts = pgTable('billing_accounts', {
     trialReminderSentAt: timestamp('trial_reminder_sent_at', { withTimezone: true }),
     stripeCustomerId: text('stripe_customer_id').unique(),
     stripeSubscriptionId: text('stripe_subscription_id'),
+    // A special price set by a platform admin (e.g. a client moving over at what they paid before).
+    // Pence per interval, on the plan's own Stripe product; used at checkout and swapped onto live subscriptions.
+    customPriceId: text('custom_price_id'),
+    customPlan: text('custom_plan'),
+    customInterval: text('custom_interval'),
+    customAmount: integer('custom_amount'),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+})
+
+// One-off invoices a platform admin sends for extra work (Stripe invoices with a pay link).
+export const customInvoices = pgTable('custom_invoices', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    siteId: uuid('site_id').references(() => sites.id, { onDelete: 'set null' }),
+    userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+    stripeInvoiceId: text('stripe_invoice_id').notNull().unique(),
+    number: text('number'),
+    description: text('description').notNull(),
+    // Pence
+    total: integer('total').notNull(),
+    // Stripe's: open, paid, void, uncollectible
+    status: text('status').notNull(),
+    hostedUrl: text('hosted_url'),
+    pdfUrl: text('pdf_url'),
+    dueAt: timestamp('due_at', { withTimezone: true }),
+    createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 })
 
 // Domains bought through Slate. Paid for yearly by a Stripe subscription; registered at name.com.

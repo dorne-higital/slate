@@ -158,7 +158,10 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
                             <td class="muted">{{ formatWhen(s.createdAt) }}</td>
                             <td class="actions">
                                 <button v-if="s.deletedAt" class="btn btn-ghost btn-sm" type="button" @click="restore(s.id)">Restore</button>
-                                <NuxtLink v-else class="btn btn-dark btn-sm" :to="`/sites/${s.id}`">Open</NuxtLink>
+                                <template v-else>
+                                    <NuxtLink class="btn btn-ghost btn-sm" :to="`/admin/billing?site=${s.id}`">Billing</NuxtLink>
+                                    <NuxtLink class="btn btn-dark btn-sm" :to="`/sites/${s.id}`">Open</NuxtLink>
+                                </template>
                             </td>
                         </tr>
                         <tr v-if="!shown.length"><td colspan="6" class="muted">No sites match.</td></tr>

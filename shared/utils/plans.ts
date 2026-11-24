@@ -82,6 +82,8 @@ export interface BillingSummary {
     limits: PlanLimits
     payerName: string | null
     youPay: boolean
+    /** A price agreed with Slate for this customer, used instead of the list price */
+    specialPrice: { plan: PlanKey, interval: BillingInterval, amount: number } | null
 }
 
 export function limitsFor(status: BillingStatus, plan: PlanKey | null): PlanLimits {

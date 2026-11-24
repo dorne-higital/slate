@@ -10,6 +10,7 @@ const { data: waiting } = useAsyncData('admin-support-waiting', () => $fetch<unk
         <span class="tag">Platform admin</span>
         <nav aria-label="Admin" class="nav">
             <NuxtLink to="/admin" class="nav-link" exact-active-class="on">Dashboard</NuxtLink>
+            <NuxtLink to="/admin/billing" class="nav-link" active-class="on">Billing</NuxtLink>
             <NuxtLink to="/admin/support" class="nav-link" active-class="on">Support<span v-if="waiting" class="badge">{{ waiting }}</span></NuxtLink>
         </nav>
         <span class="spacer" />

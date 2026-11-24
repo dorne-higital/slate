@@ -23,7 +23,9 @@ export default defineEventHandler(async (event) => {
         customerId = customer.id as string
         await db.update(schema.billingAccounts).set({ stripeCustomerId: customerId, updatedAt: new Date() }).where(eq(schema.billingAccounts.userId, user.id))
     }
-    const prices = await stripe<{ data: { id: string }[] }>('GET', 'prices', { lookup_keys: [priceLookupKey(plan!, interval)], active: true })
+    // A special price agreed with Slate replaces the list price for that plan and interval
+    const special = account?.customPriceId && account.customPlan === plan && account.customInterval === interval ? account.customPriceId : null
+    const prices = special ? { data: [{ id: special }] } : await stripe<{ data: { id: string }[] }>('GET', 'prices', { lookup_keys: [priceLookupKey(plan!, interval)], active: true })
     if (!prices.data[0]) throw createError({ statusCode: 503, statusMessage: 'That plan isn’t available right now. Please try again later.' })
 
     const session = await stripe('POST', 'checkout/sessions', {

@@ -38,7 +38,8 @@ export async function stripe<T = Record<string, any>>(method: 'GET' | 'POST' | '
     const data = await res.json() as T & { error?: { message?: string } }
     if (!res.ok) {
         console.error('[stripe]', method, path, res.status, data.error?.message)
-        throw createError({ statusCode: 502, statusMessage: 'Our payment provider didn’t respond as expected. Please try again in a minute.' })
+        // Stripe's own message rides along for admin screens (adminStripe); customers see the friendly one
+        throw createError({ statusCode: 502, statusMessage: 'Our payment provider didn’t respond as expected. Please try again in a minute.', data: { stripe: data.error?.message ?? `HTTP ${res.status}` } })
     }
     return data
 }
@@ -61,4 +62,14 @@ export async function verifyStripeSignature(payload: string, header: string | un
         for (let i = 0; i < sig.length; i++) diff |= sig.charCodeAt(i) ^ expected.charCodeAt(i)
         return diff === 0
     })
+}
+
+/** For platform admin screens: like stripe(), but failures say what Stripe said. */
+export async function adminStripe<T = Record<string, any>>(method: 'GET' | 'POST' | 'DELETE', path: string, params: Params = {}): Promise<T> {
+    try {
+        return await stripe<T>(method, path, params)
+    } catch (err) {
+        const msg = (err as { data?: { stripe?: string } }).data?.stripe
+        throw createError({ statusCode: 400, statusMessage: msg ? `Stripe said: ${msg}` : 'Stripe didn’t respond. Try again in a minute.' })
+    }
 }
