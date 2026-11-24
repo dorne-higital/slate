@@ -24,7 +24,13 @@ yarn preview        # build + run in the real Workers runtime (wrangler dev)
 yarn deploy         # build + deploy to Cloudflare
 ```
 
-No test suite yet — don't invent test commands.
+Tests:
+
+```bash
+yarn test           # unit tests (tests/unit): shared rules, no server or database
+yarn dev:test       # dev server with Cloudflare's Turnstile test keys (needed by the API tests)
+yarn test:api       # end-to-end API tests (tests/api) against yarn dev:test and the dev database; cleans up after itself
+```
 
 ## Databases
 
