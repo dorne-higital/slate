@@ -212,3 +212,20 @@ export const invites = pgTable('invites', {
 }, t => [
     index('invites_site_idx').on(t.siteId)
 ])
+
+// Media library: files uploaded to R2 (key = "{siteId}/{id}.{ext}"), served at /media/{key}
+export const media = pgTable('media', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+    key: text('key').notNull().unique(),
+    filename: text('filename').notNull(),
+    contentType: text('content_type').notNull(),
+    size: integer('size').notNull(),
+    width: integer('width'),
+    height: integer('height'),
+    alt: text('alt'),
+    uploadedBy: text('uploaded_by').references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [
+    index('media_site_idx').on(t.siteId, t.createdAt)
+])

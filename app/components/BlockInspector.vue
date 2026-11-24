@@ -6,6 +6,14 @@ const emit = defineEmits<{ change: [] }>()
 const def = computed(() => findBlockType(props.block.type))
 const items = computed(() => (props.block.props.items as Record<string, string>[] | undefined) ?? [])
 
+// Picking from the library also fills in the matching description field if it's empty
+function pickImage(key: string, item: MediaItem) {
+    props.block.props[key] = item.url
+    const altKey = key.replace(/Url$/, 'Alt')
+    if (altKey !== key && item.alt && !props.block.props[altKey]) props.block.props[altKey] = item.alt
+    emit('change')
+}
+
 function set(key: string, value: string) {
     props.block.props[key] = value
     emit('change')
@@ -61,6 +69,10 @@ const inputValue = (e: Event) => (e.target as HTMLInputElement).value
                 <datalist v-if="f.kind === 'url'" :id="`pages-${block.id}`">
                     <option v-for="p in pages" :key="p.path" :value="p.path">{{ p.title }}</option>
                 </datalist>
+                <span v-if="f.kind === 'image' && siteId" class="img-row">
+                    <img v-if="block.props[f.key]" :src="String(block.props[f.key])" alt="" class="img-thumb">
+                    <MediaPicker :site-id="siteId" @pick="pickImage(f.key, $event)" />
+                </span>
             </template>
             <span v-if="f.help" class="help">{{ f.help }}</span>
         </div>
@@ -102,4 +114,6 @@ textarea.inp { height: auto; line-height: 1.5; min-height: 84px; padding: 10px 1
 .ib { align-items: center; background: transparent; border: 0; border-radius: var(--radius); color: var(--quarry); cursor: pointer; display: inline-flex; font-size: 14px; height: 32px; justify-content: center; width: 32px; }
 .ib:hover:not(:disabled) { background: var(--mist); }
 .ib:disabled { cursor: default; opacity: .35; }
+.img-row { align-items: center; display: flex; gap: 10px; margin-top: 6px; }
+.img-thumb { border-radius: 4px; height: 40px; object-fit: cover; width: 56px; }
 </style>

@@ -50,7 +50,7 @@ export const BLOCK_TYPES: BlockType[] = [
         fields: [
             heading,
             body,
-            { key: 'imageUrl', label: 'Image', kind: 'image', help: 'Paste an image address for now. Uploading comes with the media library.', max: 1000 },
+            { key: 'imageUrl', label: 'Image', kind: 'image', help: 'Choose from your media library, or paste an image address.', max: 1000 },
             { key: 'imageAlt', label: 'Describe the image', kind: 'text', help: 'For people using screen readers.', max: 200 }
         ],
         defaults: { heading: 'How we work', body: 'Tell people what it’s like to work with you.', imageUrl: '', imageAlt: '' }

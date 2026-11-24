@@ -39,7 +39,9 @@ export default defineNuxtConfig({
     // Daily clean-up (server/tasks): runs from the Worker's cron trigger in wrangler.jsonc
     nitro: {
         experimental: { tasks: true },
-        scheduledTasks: { '0 3 * * *': ['purge:deleted-sites'] }
+        scheduledTasks: { '0 3 * * *': ['purge:deleted-sites'] },
+        // Media library files: a local folder in development, R2 in production (below)
+        devStorage: { media: { driver: 'fs', base: './.data/media' } }
     },
 
     // Local dev: accept any hostname, so client custom domains can be tried with a Host header
@@ -52,7 +54,8 @@ export default defineNuxtConfig({
     $production: {
         nitro: {
             preset: 'cloudflare_module',
-            cloudflare: { nodeCompat: true }
+            cloudflare: { nodeCompat: true },
+            storage: { media: { driver: 'cloudflare-r2-binding', binding: 'MEDIA' } }
         }
     }
 })

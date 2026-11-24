@@ -9,6 +9,10 @@
         "binding": "ASSETS"
     },
     "observability": { "enabled": true },
+    // Uploaded images and files (Media library). Locally, .data/media stands in for it.
+    "r2_buckets": [
+        { "binding": "MEDIA", "bucket_name": "slate-media", "preview_bucket_name": "slate-media-preview" }
+    ],
     // slatecms.co.uk is the CMS and marketing site; every {slug}.slatecms.co.uk is a client site.
     // The old workers.dev address is switched off so there's only one address for the CMS.
     "workers_dev": false,

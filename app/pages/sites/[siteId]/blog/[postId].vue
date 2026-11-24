@@ -125,7 +125,8 @@ onBeforeRouteLeave(async () => {
                         <label for="p-cover">Cover image</label>
                         <input id="p-cover" v-model="post.coverImage" class="inp" type="text" placeholder="https://…" @input="queueSave">
                         <img v-if="post.coverImage" :src="post.coverImage" alt="" class="cover-prev">
-                        <span class="help">Paste an image address for now. Also used when the post is shared.</span>
+                        <MediaPicker :site-id="siteId" @pick="post.coverImage = $event.url; queueSave()" />
+                        <span class="help">Also used when the post is shared.</span>
                     </div>
                     <div class="field">
                         <label for="p-excerpt">Summary</label>
