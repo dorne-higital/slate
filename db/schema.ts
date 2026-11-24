@@ -271,3 +271,29 @@ export const domainOrders = pgTable('domain_orders', {
     index('domain_orders_site_idx').on(t.siteId),
     index('domain_orders_name_idx').on(t.domainName)
 ])
+
+// Support: a site's people open tickets; platform admins answer them as "Slate"
+export const supportTickets = pgTable('support_tickets', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+    openedBy: text('opened_by').references(() => user.id, { onDelete: 'set null' }),
+    subject: text('subject').notNull(),
+    // open: waiting on Slate · answered: waiting on the customer · closed
+    status: text('status').$type<'open' | 'answered' | 'closed'>().notNull().default('open'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [
+    index('support_tickets_site_idx').on(t.siteId, t.updatedAt),
+    index('support_tickets_status_idx').on(t.status, t.updatedAt)
+])
+
+export const supportMessages = pgTable('support_messages', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    ticketId: uuid('ticket_id').notNull().references(() => supportTickets.id, { onDelete: 'cascade' }),
+    authorId: text('author_id').references(() => user.id, { onDelete: 'set null' }),
+    fromSlate: boolean('from_slate').notNull().default(false),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [
+    index('support_messages_ticket_idx').on(t.ticketId, t.createdAt)
+])

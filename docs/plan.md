@@ -70,4 +70,4 @@ Quick wins first, then the bigger customisation work.
 11. [x] Layout section: header style (regular, centred, mega menu), header/footer colours, link to Menus
 12. [ ] Blocks: a gallery of every block to try out with sample content
 13. [ ] Integrations: list of candidates, including paid add-ons (answered in chat, then build the chosen ones)
-14. [ ] Support: tickets from each site (Support page in the CMS), listed in the platform dashboard; platform admins reply, both sides emailed
+14. [x] Support: tickets from each site (Support page in the CMS), listed in the platform dashboard; platform admins reply, both sides emailed

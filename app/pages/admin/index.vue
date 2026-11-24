@@ -26,6 +26,7 @@ interface AdminOverview {
     billing: { trial: number, expired: number, pastDue: number, cancelling: number, starter: number, business: number, studio: number, paying: number, mrr: number, domainRevenueYear: number }
     domains: { active: number, pending: number, error: number, bought: number, failedOrders: number }
     activity: { replies7: number, published7: number }
+    support: { open: number }
     signups: { day: string, n: number }[]
     recentUsers: { name: string, email: string, createdAt: string, siteName: string | null, siteId: string | null }[]
     attention: { kind: string, text: string, detail: string }[]
@@ -66,13 +67,7 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
 
 <template>
     <div class="admin">
-        <header class="top">
-            <NuxtLink to="/" aria-label="Slate home" class="home-link"><BrandMark :size="22" /></NuxtLink>
-            <span class="tag">Platform admin</span>
-            <span class="spacer" />
-            <span class="who">{{ me?.name }}</span>
-            <button type="button" class="btn btn-ghost btn-sm" @click="signOut">Log out</button>
-        </header>
+        <AdminHeader />
 
         <main class="wrap">
             <div class="head">
@@ -86,6 +81,7 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
                 <li class="panel kpi"><span>Live sites</span><b>{{ ov.sites.live }}</b><small>{{ ov.sites.new7 }} new this week · {{ ov.sites.offline }} offline</small></li>
                 <li class="panel kpi"><span>People</span><b>{{ ov.people.total }}</b><small>{{ ov.people.new7 }} this week · {{ ov.people.new30 }} this month</small></li>
                 <li class="panel kpi"><span>Custom domains</span><b>{{ ov.domains.active }}</b><small>{{ ov.domains.pending }} waiting · {{ ov.domains.bought }} bought through Slate</small></li>
+                <li class="panel kpi"><NuxtLink to="/admin/support" class="kpi-link"><span>Support tickets waiting</span><b>{{ ov.support.open }}</b><small>{{ ov.support.open ? 'Reply in Support' : 'All answered' }}</small></NuxtLink></li>
                 <li class="panel kpi"><span>Activity this week</span><b>{{ ov.activity.replies7 }}</b><small>form replies · {{ ov.activity.published7 }} pages published</small></li>
             </ul>
 
@@ -233,4 +229,5 @@ h2 { font-size: 17px; margin: 0; }
 .plan-tag.trial { background: #eef1f7; color: #3b4a6b; }
 .plan-tag.expired, .plan-tag.past_due { background: #fbeceb; color: var(--danger); }
 @media (max-width: 900px) { .dash { grid-template-columns: minmax(0, 1fr); } .plan-bars li { grid-template-columns: 110px 1fr 30px; } }
+.kpi-link { color: inherit; display: flex; flex-direction: column; gap: 4px; text-decoration: none; }
 </style>

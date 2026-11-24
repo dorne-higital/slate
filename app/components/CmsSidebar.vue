@@ -26,7 +26,8 @@ const groups: { title: string, items: NavItem[] }[] = [
         { key: 'integrations', label: 'Integrations', icon: 'M7 3v4M11 3v4M5 7h8v3a4 4 0 0 1-8 0zM9 14v2', to: '/integrations' },
         { key: 'people', label: 'People', icon: 'M6.5 8a2.5 2.5 0 1 0 0-5a2.5 2.5 0 1 0 0 5M2 15c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4M12 8a2 2 0 1 0 0-4M13 11c1.8.3 3 1.6 3 4', to: '/people' },
         { key: 'settings', label: 'Settings', icon: 'M9 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.5 1.5M12.5 12.5L14 14M4 14l1.5-1.5M12.5 5.5L14 4', to: '/settings' },
-        { key: 'billing', label: 'Billing', icon: 'M2 4h14v10H2zM2 8h14', to: '/billing' }
+        { key: 'billing', label: 'Billing', icon: 'M2 4h14v10H2zM2 8h14', to: '/billing' },
+        { key: 'support', label: 'Support', icon: 'M9 2.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 1 0 0-13M7 7a2 2 0 1 1 2.8 1.8c-.5.3-.8.7-.8 1.2M9 12.5v.1', to: '/support' }
     ] }
 ]
 
