@@ -12,6 +12,8 @@
     // slatecms.co.uk is the CMS and marketing site; every {slug}.slatecms.co.uk is a client site.
     // The old workers.dev address is switched off so there's only one address for the CMS.
     "workers_dev": false,
+    // 03:00 UTC daily: purge sites deleted over 30 days ago (server/tasks/purge/deleted-sites.ts)
+    "triggers": { "crons": ["0 3 * * *"] },
     "routes": [
         { "pattern": "slatecms.co.uk/*", "zone_name": "slatecms.co.uk" },
         { "pattern": "*.slatecms.co.uk/*", "zone_name": "slatecms.co.uk" },
