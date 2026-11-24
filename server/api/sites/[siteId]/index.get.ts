@@ -7,6 +7,8 @@ export default defineEventHandler(async (event) => {
         slug: site.slug,
         customDomain: site.customDomain,
         theme: site.theme ?? {},
+        replyEmail: site.replyEmail,
+        offline: site.offline,
         freeAddress: `${site.slug}.${config.public.sitesDomain}`,
         // Where visitors actually find the site right now
         liveAddress: await liveAddress(site),

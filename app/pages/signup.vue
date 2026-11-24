@@ -3,6 +3,13 @@ useHead({ title: 'Start your site · Slate' })
 const { sitesDomain } = useRuntimeConfig().public
 const { refresh } = useMe()
 
+const route = useRoute()
+// Joining someone's site from an invitation link: account only, no layout step
+const inviteToken = typeof route.query.invite === 'string' ? route.query.invite : ''
+const { data: invite } = await useAsyncData('signup-invite', () => inviteToken
+    ? useRequestFetch()<{ siteName: string, role: SiteRole }>(`/api/invites/${inviteToken}`).catch(() => null)
+    : Promise.resolve(null))
+
 const step = ref<1 | 2>(1)
 const form = reactive({ name: '', email: '', password: '', siteName: '', layout: 'trade' })
 const error = ref('')
@@ -17,6 +24,7 @@ function next() {
         error.value = 'Your password needs at least 10 characters.'
         return
     }
+    if (inviteToken) return create()
     step.value = 2
 }
 
@@ -24,7 +32,7 @@ async function create() {
     busy.value = true
     error.value = ''
     try {
-        const { siteId } = await $fetch('/api/signup', { method: 'POST', body: form })
+        const { siteId } = await $fetch('/api/signup', { method: 'POST', body: inviteToken ? { ...form, invite: inviteToken } : form })
         await refresh()
         await navigateTo(`/sites/${siteId}`)
     } catch (err) {
@@ -42,7 +50,7 @@ async function create() {
         <div class="left">
             <NuxtLink to="/" aria-label="Slate home" class="home-link"><BrandMark /></NuxtLink>
 
-            <ol aria-label="Sign-up steps" class="steps">
+            <ol v-if="!inviteToken" aria-label="Sign-up steps" class="steps">
                 <li :class="step === 1 ? 'on' : 'done'"><span>1</span>Your account</li>
                 <li class="bar" aria-hidden="true" />
                 <li :class="step === 2 ? 'on' : ''"><span>2</span>Starting layout</li>
@@ -52,8 +60,8 @@ async function create() {
 
             <form v-if="step === 1" class="stack" @submit.prevent="next">
                 <div class="intro">
-                    <h1>Start your site</h1>
-                    <p>Free to start. No card needed.</p>
+                    <h1>{{ invite ? `Join ${invite.siteName}` : 'Start your site' }}</h1>
+                    <p>{{ invite ? `Make your Slate account to start working on ${invite.siteName}.` : inviteToken ? 'This invitation has expired or has already been used. Ask for a new link, or start your own site below.' : 'Free to start. No card needed.' }}</p>
                 </div>
                 <p v-if="error" class="error-box" role="alert">{{ error }}</p>
                 <div class="field"><label for="su-name">Your name</label><input id="su-name" v-model="form.name" class="inp" type="text" autocomplete="name" required></div>
@@ -63,12 +71,12 @@ async function create() {
                     <input id="su-pass" v-model="form.password" class="inp" type="password" autocomplete="new-password" required>
                     <span class="help">At least 10 characters.</span>
                 </div>
-                <div class="field">
+                <div v-if="!invite" class="field">
                     <label for="su-site">What’s your business called?</label>
-                    <input id="su-site" v-model="form.siteName" class="inp" type="text" required>
+                    <input id="su-site" v-model="form.siteName" class="inp" type="text" :required="!invite">
                     <span class="help">Your free address: <b>{{ slug }}.{{ sitesDomain }}</b>. You can connect your own domain later.</span>
                 </div>
-                <button class="btn btn-lichen btn-lg" type="submit">Create account</button>
+                <button class="btn btn-lichen btn-lg" type="submit" :disabled="busy">{{ busy ? 'Creating your account…' : invite ? 'Create account and join' : 'Create account' }}</button>
                 <p class="small">Already have an account? <NuxtLink to="/login">Log in</NuxtLink></p>
             </form>
 

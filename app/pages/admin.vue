@@ -13,10 +13,12 @@ interface AdminSite {
     ownerEmail: string | null
     pageCount: number
     createdAt: string
+    deletedAt: string | null
+    offline: boolean
 }
 
 const fetcher = useRequestFetch()
-const { data } = await useAsyncData('admin-sites', () => fetcher<{ totals: { sites: number, users: number }, sites: AdminSite[] }>('/api/admin/sites'))
+const { data, refresh } = await useAsyncData('admin-sites', () => fetcher<{ totals: { sites: number, users: number }, sites: AdminSite[] }>('/api/admin/sites'))
 useHead({ title: 'All sites · Slate' })
 
 const search = ref('')
@@ -24,6 +26,11 @@ const shown = computed(() => {
     const q = search.value.trim().toLowerCase()
     return (data.value?.sites ?? []).filter(s => !q || [s.name, s.address, s.ownerName ?? '', s.ownerEmail ?? ''].some(v => v.toLowerCase().includes(q)))
 })
+async function restore(id: string) {
+    await $fetch(`/api/admin/sites/${id}/restore`, { method: 'POST' })
+    await refresh()
+    await useMe().refresh()
+}
 const linkFor = (address: string) => `${address.includes('localhost') ? 'http' : 'https'}://${address}`
 </script>
 
@@ -52,12 +59,17 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
                 <table class="tbl">
                     <thead><tr><th scope="col">Site</th><th scope="col">Owner</th><th scope="col">Pages</th><th scope="col">Created</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
                     <tbody>
-                        <tr v-for="s in shown" :key="s.id">
+                        <tr v-for="s in shown" :key="s.id" :class="{ deleted: s.deletedAt }">
                             <td>
                                 <span class="site">
                                     <span class="badge" aria-hidden="true">{{ s.name[0] }}</span>
                                     <span class="site-text">
-                                        <NuxtLink class="rl" :to="`/sites/${s.id}`">{{ s.name }}</NuxtLink>
+                                        <span class="name-row">
+                                            <NuxtLink v-if="!s.deletedAt" class="rl" :to="`/sites/${s.id}`">{{ s.name }}</NuxtLink>
+                                            <b v-else>{{ s.name }}</b>
+                                            <span v-if="s.deletedAt" class="flag del">Deleted {{ formatWhen(s.deletedAt) }}</span>
+                                            <span v-else-if="s.offline" class="flag">Offline</span>
+                                        </span>
                                         <a class="muted" :href="linkFor(s.address)" target="_blank" rel="noopener">{{ s.address }}</a>
                                     </span>
                                 </span>
@@ -65,7 +77,10 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
                             <td><span class="site-text"><span>{{ s.ownerName ?? 'No owner' }}</span><span class="muted">{{ s.ownerEmail }}</span></span></td>
                             <td>{{ s.pageCount }}</td>
                             <td class="muted">{{ formatWhen(s.createdAt) }}</td>
-                            <td class="actions"><NuxtLink class="btn btn-dark btn-sm" :to="`/sites/${s.id}`">Open</NuxtLink></td>
+                            <td class="actions">
+                                <button v-if="s.deletedAt" class="btn btn-ghost btn-sm" type="button" @click="restore(s.id)">Restore</button>
+                                <NuxtLink v-else class="btn btn-dark btn-sm" :to="`/sites/${s.id}`">Open</NuxtLink>
+                            </td>
                         </tr>
                         <tr v-if="!shown.length"><td colspan="5" class="muted">No sites match.</td></tr>
                     </tbody>
@@ -93,4 +108,8 @@ h1 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; margin: 0; }
 .rl { color: var(--quarry); font-weight: 700; text-decoration: none; }
 .rl:hover { text-decoration: underline; }
 .actions { text-align: right; }
+.name-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+.flag { background: var(--mist); border-radius: 999px; color: var(--text-muted); font-size: 12px; font-weight: 700; padding: 2px 8px; }
+.flag.del { background: #fbeceb; color: var(--danger); }
+tr.deleted td { opacity: .75; }
 </style>

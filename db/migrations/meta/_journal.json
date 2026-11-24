@@ -43,6 +43,13 @@
       "when": 1795518113845,
       "tag": "0005_young_dreadnoughts",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795518486674,
+      "tag": "0006_round_gorgon",
+      "breakpoints": true
     }
   ]
 }

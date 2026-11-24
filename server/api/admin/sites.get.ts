@@ -13,6 +13,8 @@ export default defineEventHandler(async (event) => {
             slug: schema.sites.slug,
             customDomain: schema.sites.customDomain,
             createdAt: schema.sites.createdAt,
+            deletedAt: schema.sites.deletedAt,
+            offline: schema.sites.offline,
             // Correlated subqueries reference "sites"."id" explicitly: a bare column would bind to the inner table
             pageCount: sql<number>`(select count(*)::int from pages p where p.site_id = "sites"."id")`,
             ownerName: sql<string | null>`(select u.name from site_members m join "user" u on u.id = m.user_id where m.site_id = "sites"."id" and m.role = 'owner' order by m.created_at limit 1)`,
@@ -30,6 +32,7 @@ export default defineEventHandler(async (event) => {
         sites: rows.map(r => ({
             ...r,
             createdAt: r.createdAt.toISOString(),
+            deletedAt: r.deletedAt?.toISOString() ?? null,
             address: r.domainLive && r.customDomain ? r.customDomain : `${r.slug}.${sitesDomain}`
         }))
     }

@@ -21,22 +21,24 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
   Google preview, canonical + Open Graph tags, sitemap.xml and robots.txt per site
 - [x] Blog: posts with drafts, publish, scheduling, categories, cover image, summary, address;
   public blog index, category filter, post pages, RSS, Latest posts block, Blog in auto header
+- [x] Settings and people: site name, reply email, invite links with roles, change role, remove,
+  leave, last-owner protection, take offline (holding page), delete with 30-day restore by platform admin
 
 ## Next, in order
 
-1. [ ] **Settings and people**: site name/details, invite people by email link, roles (owner, admin,
-   editor, viewer), remove people, delete site
-2. [ ] **Integrations**: Google Analytics / Plausible ID, Meta pixel, custom head snippet (owner only)
-3. [ ] **Media library** (**needs Dan: enable R2**): uploads to R2, media page with grid/search,
+1. [ ] **Integrations**: Google Analytics / Plausible ID, Meta pixel, custom head snippet (owner only)
+2. [ ] **Media library** (**needs Dan: enable R2**): uploads to R2, media page with grid/search,
    image picker in the editor, logo + favicon in Theme
-4. [ ] **Billing** (**needs Dan: Stripe account + test keys**): plans, Stripe Checkout + customer portal,
+3. [ ] **Billing** (**needs Dan: Stripe account + test keys**): plans, Stripe Checkout + customer portal,
    webhooks, plan limits, Billing page with invoices
-5. [ ] **Domain buying** (**needs Dan: registrar reseller account**): search + buy a domain during sign-up
+4. [ ] **Domain buying** (**needs Dan: registrar reseller account**): search + buy a domain during sign-up
    and from Domains, auto-connect
-6. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
+5. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
 
 ## Housekeeping (as I go)
 
 - Separate Neon branch for local development so local test data never touches live
 - Drag and drop for blocks and pages
 - Remove old Vercel DNS records on slatecms.co.uk
+- Daily job: purge sites deleted more than 30 days ago (and their Cloudflare custom hostnames)
+- Site export (pages, posts, form replies) for the Settings page

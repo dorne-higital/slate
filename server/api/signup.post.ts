@@ -6,6 +6,8 @@ interface SignupBody {
     password?: string
     siteName?: string
     layout?: string
+    /** Joining someone else's site from an invitation link: no new site is made */
+    invite?: string
 }
 
 /** Sign-up in one step: creates the account, signs it in, creates the site and its starter pages. */
@@ -16,11 +18,15 @@ export default defineEventHandler(async (event) => {
     const password = body.password ?? ''
     const siteName = body.siteName?.trim() ?? ''
 
-    if (!name || !email || !siteName) throw createError({ statusCode: 400, statusMessage: 'Fill in every field' })
+    const joining = typeof body.invite === 'string' && body.invite.length > 0
+    if (!name || !email || (!siteName && !joining)) throw createError({ statusCode: 400, statusMessage: 'Fill in every field' })
     if (password.length < 10) throw createError({ statusCode: 400, statusMessage: 'Your password needs at least 10 characters' })
+    if (joining && !await findOpenInvite(body.invite!)) {
+        throw createError({ statusCode: 410, statusMessage: 'This invitation has expired or has already been used. Ask for a new link.' })
+    }
 
     const db = useDb()
-    const slug = await freeSlug(slugify(siteName) || 'site')
+    const slug = joining ? '' : await freeSlug(slugify(siteName) || 'site')
 
     let signedUp
     try {
@@ -31,6 +37,11 @@ export default defineEventHandler(async (event) => {
     }
     for (const cookie of signedUp.headers.getSetCookie()) appendResponseHeader(event, 'set-cookie', cookie)
     const userId = signedUp.response.user.id
+
+    if (joining) {
+        const { siteId } = await acceptInvite(body.invite!, userId)
+        return { siteId, slug: null }
+    }
 
     const layout = findStarterLayout(body.layout ?? 'trade')
     const [site] = await db.insert(schema.sites).values({ name: siteName, slug }).returning({ id: schema.sites.id })

@@ -25,7 +25,7 @@ export async function requireSiteAccess(event: H3Event, siteId: string, minRole:
         .limit(1)
 
     const row = rows[0]
-    if (!row) throw createError({ statusCode: 404, statusMessage: 'Site not found' })
+    if (!row || row.site.deletedAt) throw createError({ statusCode: 404, statusMessage: 'Site not found' })
     if (ROLE_RANK[row.role] < ROLE_RANK[minRole]) {
         throw createError({ statusCode: 403, statusMessage: 'Your role on this site can’t do that' })
     }

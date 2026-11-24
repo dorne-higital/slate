@@ -61,6 +61,12 @@ export const sites = pgTable('sites', {
     customDomain: text('custom_domain').unique(),
     theme: jsonb('theme').$type<SiteTheme>(),
     seo: jsonb('seo').$type<SiteSeo>(),
+    // Where form reply notifications go (used once email sending is set up)
+    replyEmail: text('reply_email'),
+    // Visitors see a holding page; everything stays saved
+    offline: boolean('offline').notNull().default(false),
+    // Deleted sites vanish at once and are purged after 30 days; a platform admin can restore before then
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 })
@@ -187,4 +193,21 @@ export const posts = pgTable('posts', {
 }, t => [
     uniqueIndex('posts_site_slug_idx').on(t.siteId, t.slug),
     index('posts_site_published_idx').on(t.siteId, t.publishedAt)
+])
+
+// Invitation links. Whoever opens the link (signed in) joins the site with this role.
+export const invites = pgTable('invites', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+    token: text('token').notNull().unique(),
+    role: text('role').$type<SiteRole>().notNull(),
+    // Optional: who it's for, so the People list can say so
+    label: text('label'),
+    createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    acceptedBy: text('accepted_by').references(() => user.id, { onDelete: 'set null' })
+}, t => [
+    index('invites_site_idx').on(t.siteId)
 ])

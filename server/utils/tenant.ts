@@ -24,6 +24,7 @@ export async function resolveTenant(event: H3Event) {
             if (domain) site = (await db.query.sites.findFirst({ where: eq(schema.sites.id, domain.siteId) })) ?? null
         }
     }
+    if (site?.deletedAt) site = null
     event.context.tenant = site
     return site
 }
