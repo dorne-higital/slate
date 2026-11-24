@@ -8,17 +8,22 @@ const password = ref('')
 const error = ref('')
 const busy = ref(false)
 
+const turnstileToken = ref('')
+const turnstile = ref<{ reset: () => void } | null>(null)
+
 async function submit() {
     busy.value = true
     error.value = ''
     try {
-        await $fetch('/api/auth/sign-in/email', { method: 'POST', body: { email: email.value, password: password.value } })
+        await $fetch('/api/auth/sign-in/email', { method: 'POST', body: { email: email.value, password: password.value }, headers: { 'x-turnstile-token': turnstileToken.value } })
         const me = await refresh()
         const next = typeof route.query.next === 'string' && route.query.next.startsWith('/') ? route.query.next : null
         const home = me?.isPlatformAdmin ? '/admin' : me?.sites[0] ? `/sites/${me.sites[0].id}` : '/'
         await navigateTo(next ?? home)
-    } catch {
-        error.value = 'That email and password don’t match an account. Check them and try again.'
+    } catch (err) {
+        const message = (err as { data?: { message?: string } }).data?.message
+        error.value = message?.includes('robot') ? message : 'That email and password don’t match an account. Check them and try again.'
+        turnstile.value?.reset()
     } finally {
         busy.value = false
     }
@@ -33,6 +38,7 @@ async function submit() {
             <p v-if="error" class="error-box" role="alert">{{ error }}</p>
             <div class="field"><label for="li-email">Email</label><input id="li-email" v-model="email" class="inp" type="email" autocomplete="email" required></div>
             <div class="field"><label for="li-pass">Password</label><input id="li-pass" v-model="password" class="inp" type="password" autocomplete="current-password" required></div>
+            <TurnstileWidget ref="turnstile" @token="turnstileToken = $event" />
             <button class="btn btn-dark btn-lg" type="submit" :disabled="busy">{{ busy ? 'Logging in…' : 'Log in' }}</button>
             <p class="small"><NuxtLink to="/forgot-password">Forgot your password?</NuxtLink></p>
             <p class="small">New to Slate? <NuxtLink to="/signup">Start your site</NuxtLink></p>

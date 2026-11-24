@@ -2,6 +2,15 @@
 const route = useRoute()
 const siteId = computed(() => String(route.params.siteId))
 
+// Email not confirmed yet: gentle reminder with a resend button
+const { me } = useMe()
+const resent = ref<'idle' | 'sending' | 'sent'>('idle')
+async function resend() {
+    resent.value = 'sending'
+    await $fetch('/api/me/resend-verification', { method: 'POST' }).catch(() => {})
+    resent.value = 'sent'
+}
+
 // Trial ending soon, site paused, or a failed payment: say so on every CMS page
 const { data: site } = useAsyncData(() => `site-billing-${siteId.value}`, () => $fetch<{ billing: BillingSummary }>(`/api/sites/${siteId.value}`), { watch: [siteId], lazy: true, server: false })
 const notice = computed(() => {
@@ -21,6 +30,11 @@ const notice = computed(() => {
     <div class="cms">
         <CmsSidebar :site-id="siteId" />
         <main class="cms-main">
+ <div v-if="me && !me.emailVerified" class="bill-note" role="status">
+                <span>Please confirm your email: we sent a link to <b>{{ me.email }}</b>. Until then you can’t email invites or buy a domain.</span>
+                <button v-if="resent !== 'sent'" class="btn btn-ghost btn-sm" type="button" :disabled="resent === 'sending'" @click="resend">{{ resent === 'sending' ? 'Sending…' : 'Send the link again' }}</button>
+                <span v-else class="muted">Sent. Check your inbox and spam folder.</span>
+            </div>
             <div v-if="notice" class="bill-note" :class="{ warn: notice.warn }" role="status">
                 <span>{{ notice.text }}</span>
                 <NuxtLink v-if="site?.billing.youPay" :to="`/sites/${siteId}/billing`" class="btn btn-dark btn-sm">Choose a plan</NuxtLink>

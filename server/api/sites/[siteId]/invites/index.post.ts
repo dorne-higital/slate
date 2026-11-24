@@ -1,3 +1,5 @@
+import { and, eq, gt, like, sql } from 'drizzle-orm'
+
 /** Make an invitation link (valid 14 days). You can only invite people to roles below your own. */
 export default defineEventHandler(async (event) => {
     const { site, user, role: actorRole } = await requireSiteAccess(event, getRouterParam(event, 'siteId')!, 'admin')
@@ -7,6 +9,13 @@ export default defineEventHandler(async (event) => {
     const to = String(email ?? '').trim().toLowerCase()
     if (to && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(to)) throw createError({ statusCode: 400, statusMessage: 'That email address doesn’t look right' })
     if (!role || !assignableRoles(actorRole).includes(role)) throw createError({ statusCode: 403, statusMessage: 'Your role can’t invite people as that' })
+    if (to) {
+        requireVerifiedEmail(user)
+        // Stops Slate being used to send bulk email: 20 emailed invites a day per person
+        const [sent] = await useDb().select({ n: sql<number>`count(*)::int` }).from(schema.invites)
+            .where(and(eq(schema.invites.createdBy, user.id), like(schema.invites.label, '%@%'), gt(schema.invites.createdAt, new Date(Date.now() - 24 * 3600 * 1000))))
+        if ((sent?.n ?? 0) >= 20) throw createError({ statusCode: 429, statusMessage: 'You’ve emailed 20 invites today. Make an invite link to share yourself, or try again tomorrow.' })
+    }
 
     const token = inviteToken()
     await useDb().insert(schema.invites).values({

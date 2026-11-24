@@ -106,8 +106,8 @@ function isActive(item: NavItem) {
         <div class="me">
             <span class="avatar" aria-hidden="true">{{ initials }}</span>
             <span class="me-text">
-                <b>{{ me?.name }}</b>
-                <button type="button" class="link" @click="signOut">Log out</button>
+                <NuxtLink to="/account" class="me-name">{{ me?.name }}</NuxtLink>
+                <span class="me-links"><NuxtLink to="/account" class="link">Your account</NuxtLink> · <button type="button" class="link" @click="signOut">Log out</button></span>
             </span>
         </div>
     </aside>
@@ -210,4 +210,7 @@ nav { display: flex; flex-direction: column; gap: 2px; }
     text-align: left;
     text-decoration: underline;
 }
+.me-name { color: var(--quarry); font-weight: 700; text-decoration: none; }
+.me-links { font-size: 13px; }
+.me-links .link { color: inherit; }
 </style>

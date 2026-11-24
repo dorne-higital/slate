@@ -10,6 +10,8 @@ const { data: invite } = await useAsyncData('signup-invite', () => inviteToken
     ? useRequestFetch()<{ siteName: string, role: SiteRole }>(`/api/invites/${inviteToken}`).catch(() => null)
     : Promise.resolve(null))
 
+const turnstileToken = ref('')
+const turnstile = ref<{ reset: () => void } | null>(null)
 const step = ref<1 | 2 | 3>(1)
 // After the site exists: optional domain step
 const createdSiteId = ref<string | null>(null)
@@ -35,7 +37,7 @@ async function create() {
     busy.value = true
     error.value = ''
     try {
-        const { siteId, slug } = await $fetch('/api/signup', { method: 'POST', body: inviteToken ? { ...form, invite: inviteToken } : form })
+        const { siteId, slug } = await $fetch('/api/signup', { method: 'POST', body: { ...form, ...(inviteToken ? { invite: inviteToken } : {}), turnstile: turnstileToken.value } })
         await refresh()
         if (inviteToken || !slug) return await navigateTo(`/sites/${siteId}`)
         createdSiteId.value = siteId
@@ -45,6 +47,7 @@ async function create() {
         error.value = (err as { statusMessage?: string, data?: { statusMessage?: string } }).data?.statusMessage
             ?? 'Something went wrong. Please try again.'
         step.value = 1
+        turnstile.value?.reset()
     } finally {
         busy.value = false
     }
@@ -123,6 +126,7 @@ async function create() {
                     <button class="btn btn-plain" type="button" @click="step = 1">Back</button>
                 </div>
             </div>
+            <TurnstileWidget v-if="step !== 3" ref="turnstile" @token="turnstileToken = $event" />
         </div>
 
         <div class="preview" aria-hidden="true">

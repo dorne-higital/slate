@@ -4,14 +4,18 @@ const email = ref('')
 const busy = ref(false)
 const sent = ref(false)
 const error = ref('')
+const turnstileToken = ref('')
+const turnstile = ref<{ reset: () => void } | null>(null)
 async function submit() {
     busy.value = true
     error.value = ''
     try {
-        await $fetch('/api/auth/request-password-reset', { method: 'POST', body: { email: email.value, redirectTo: '/reset-password' } })
+        await $fetch('/api/auth/request-password-reset', { method: 'POST', body: { email: email.value, redirectTo: '/reset-password' }, headers: { 'x-turnstile-token': turnstileToken.value } })
         sent.value = true
-    } catch {
-        error.value = 'Couldn’t send the email just now. Please try again in a minute.'
+    } catch (err) {
+        const message = (err as { data?: { message?: string } }).data?.message
+        error.value = message?.includes('robot') ? message : 'Couldn’t send the email just now. Please try again in a minute.'
+        turnstile.value?.reset()
     } finally {
         busy.value = false
     }
@@ -31,6 +35,7 @@ async function submit() {
             <p class="big">Type the email you log in with and we’ll send you a link.</p>
             <p v-if="error" class="error-box" role="alert">{{ error }}</p>
             <div class="field"><label for="fp-email">Email</label><input id="fp-email" v-model="email" class="inp" type="email" autocomplete="email" required></div>
+            <TurnstileWidget ref="turnstile" @token="turnstileToken = $event" />
             <button class="btn btn-dark btn-lg" type="submit" :disabled="busy">{{ busy ? 'Sending…' : 'Send reset link' }}</button>
             <p class="small"><NuxtLink to="/login">Back to log in</NuxtLink></p>
         </form>

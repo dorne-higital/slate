@@ -36,8 +36,12 @@ async function create(confirmExtra = false) {
     <div class="wrap">
         <header class="top">
             <NuxtLink to="/" aria-label="Slate home" class="home"><BrandMark /></NuxtLink>
-            <NuxtLink v-if="me?.isPlatformAdmin" to="/admin" class="btn btn-ghost btn-sm">All sites (admin)</NuxtLink>
+            <span class="top-links">
+                <NuxtLink v-if="me?.isPlatformAdmin" to="/admin" class="btn btn-ghost btn-sm">All sites (admin)</NuxtLink>
+                <NuxtLink to="/account" class="btn btn-ghost btn-sm">Your account</NuxtLink>
+            </span>
         </header>
+        <p v-if="$route.query.verified" class="ok-note" role="status">Thanks, your email is confirmed.</p>
         <div class="head">
             <h1>Your sites</h1>
             <button v-if="!adding" class="btn btn-dark" type="button" @click="adding = true">New site</button>
@@ -92,6 +96,7 @@ h2 { font-size: 18px; margin: 0; }
 .inp { font-size: 15px; height: 42px; }
 .row { display: flex; gap: 8px; }
 .small { font-size: 13px; }
+.ok-note { background: #e8f3ec; border-radius: var(--radius); color: var(--ok-text); margin: 0; padding: 12px 14px; }
 .confirm { background: #fff6e6; border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.5; padding: 14px; }
 .list { display: flex; flex-direction: column; gap: 10px; list-style: none; margin: 0; padding: 0; }
 .site { align-items: center; color: inherit; display: flex; gap: 14px; padding: 14px 18px; text-decoration: none; }
@@ -99,4 +104,5 @@ h2 { font-size: 18px; margin: 0; }
 .badge { align-items: center; background: var(--quarry); border-radius: var(--radius); color: var(--white); display: flex; flex: none; font-weight: 800; height: 38px; justify-content: center; width: 38px; }
 .txt { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .role { font-size: 13px; }
+.top-links { display: flex; gap: 8px; }
 </style>

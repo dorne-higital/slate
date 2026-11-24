@@ -117,6 +117,7 @@ export interface Me {
     id: string
     name: string
     email: string
+    emailVerified: boolean
     isPlatformAdmin: boolean
     sites: SiteSummary[]
 }

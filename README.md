@@ -36,6 +36,7 @@ Rebuilt from scratch in November 2026 on the `rebuild` branch. The old Supabase/
   - CAA records for sectigo, pki.goog, letsencrypt
 - **Cloudflare for SaaS** (SSL/TLS → Custom Hostnames): each client domain (and its `www`) is added through the API when connected. HTTP validation.
 - **R2 buckets**: `slate-media` (live), `slate-media-preview` (unused locally). Bound to the Worker as `MEDIA`.
+- **Turnstile** (Cloudflare dashboard → Turnstile): one widget for `slatecms.co.uk`, mode Managed. Site key is public (wrangler var), secret is a Worker secret. Local testing uses Cloudflare's test keys (`1x00000000000000000000AA` / `1x0000000000000000000000000000000AA`).
 - **Cron triggers**: `0 3 * * *` purge deleted sites (30 days), `0 9 * * *` trial-ending reminder emails.
 - **API token** (`NUXT_CLOUDFLARE_API_TOKEN`): needs Zone → SSL and Certificates: Edit, and DNS: Edit on slatecms.co.uk. Create a new one at My Profile → API Tokens.
 
@@ -85,8 +86,9 @@ Set with `npx wrangler secret put NAME` (it asks for the value). List with `npx 
 | `NUXT_STRIPE_WEBHOOK_SECRET` | Signing secret of the Stripe webhook endpoint (`whsec_…`) |
 | `NUXT_NAMECOM_USERNAME`, `NUXT_NAMECOM_TOKEN` | name.com API login |
 | `NUXT_RESEND_API_KEY` | Resend API key |
+| `NUXT_TURNSTILE_SECRET` | Cloudflare Turnstile secret key (bot check on sign-up, login, password reset). Not set = check switched off |
 
-Non-secret settings are `vars` in `wrangler.jsonc`: app host, sites domain, CNAME target (`sites.slatecms.co.uk`), Cloudflare zone id, Stripe portal config id.
+Non-secret settings are `vars` in `wrangler.jsonc` (including `NUXT_PUBLIC_TURNSTILE_SITE_KEY` once Turnstile is set up): app host, sites domain, CNAME target (`sites.slatecms.co.uk`), Cloudflare zone id, Stripe portal config id.
 
 ### Local (`.env` at the repo root, never committed)
 

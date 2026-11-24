@@ -23,5 +23,5 @@ export default defineEventHandler(async (event): Promise<Me | null> => {
             .where(and(eq(schema.siteMembers.userId, user.id), isNull(schema.sites.deletedAt)))
             .orderBy(schema.sites.name)
 
-    return { id: user.id, name: user.name, email: user.email, isPlatformAdmin: !!user.isPlatformAdmin, sites }
+    return { id: user.id, name: user.name, email: user.email, emailVerified: !!user.emailVerified, isPlatformAdmin: !!user.isPlatformAdmin, sites }
 })

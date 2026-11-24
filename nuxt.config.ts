@@ -31,9 +31,12 @@ export default defineNuxtConfig({
         namecomUsername: '',
         namecomToken: '',
         resendApiKey: '',
+        turnstileSecret: '',
         emailFrom: 'hello@slatecms.co.uk',
         cloudflareZoneId: '',
         public: {
+            // Cloudflare Turnstile site key (public). Empty = the check is switched off
+            turnstileSiteKey: '',
             // Host the CMS itself is served from. Any other host is treated as a client site.
             appHost: 'localhost:3000',
             // Client sites get a free address at {slug}.{sitesDomain}

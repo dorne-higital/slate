@@ -80,3 +80,12 @@ export async function sendTrialReminders() {
     }
     return sent
 }
+
+export async function sendVerifyEmail(to: string, name: string, url: string) {
+    return sendEmail({
+        to,
+        subject: 'Confirm your email for Slate',
+        text: `Hi ${name.split(' ')[0]},\n\nPlease confirm this is your email address. It keeps your account safe and lets you invite people to your site. The link lasts 3 days.\n\nIf you didn’t sign up for Slate, ignore this email.`,
+        button: { label: 'Confirm my email', url }
+    })
+}

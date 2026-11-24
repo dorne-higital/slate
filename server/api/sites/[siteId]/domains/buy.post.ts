@@ -4,6 +4,8 @@ import { eq } from 'drizzle-orm'
 export default defineEventHandler(async (event) => {
     const siteId = getRouterParam(event, 'siteId')!
     const { site, user } = await requireSiteAccess(event, siteId, 'owner')
+    // The domain is registered with this email as the contact, so it must be real
+    requireVerifiedEmail(user)
     const { domain } = await readBody<{ domain?: string }>(event)
     const name = normaliseDomain(String(domain ?? ''))
     if (!name) throw createError({ statusCode: 400, statusMessage: 'Pick a domain' })
