@@ -141,6 +141,15 @@ function move(i: number, dir: -1 | 1) {
     queueSave()
 }
 
+// ── Block library: grouped, searchable ──
+const blockSearch = ref('')
+const blockGroups = computed(() => {
+    const q = blockSearch.value.trim().toLowerCase()
+    return BLOCK_GROUPS
+        .map(name => ({ name, blocks: BLOCK_TYPES.filter(b => b.group === name && (!q || b.name.toLowerCase().includes(q) || b.desc.toLowerCase().includes(q))) }))
+        .filter(g => g.blocks.length)
+})
+
 // ── Drag and drop: move a block by its handle, or drag a new block in from the library ──
 const drag = ref<{ from: number } | { type: string } | null>(null)
 const dropAt = ref<number | null>(null)
@@ -320,12 +329,19 @@ onBeforeRouteLeave(async () => {
                 </div>
 
                 <div v-else class="panel-body">
-                    <p class="muted hint">Click a block to add it {{ selected ? 'under the selected block' : 'to the end of the page' }}.</p>
-                    <p class="muted hint">Or drag one onto the page where you want it.</p>
-                    <button v-for="b in BLOCK_TYPES" :key="b.type" class="lib" type="button" draggable="true" @click="addBlock(b.type)" @dragstart="startNew($event, b.type)" @dragend="endDrag">
-                        <b>{{ b.name }}</b>
-                        <span>{{ b.desc }}</span>
-                    </button>
+                    <label class="visually-hidden" for="blk-search">Find a block</label>
+                    <input id="blk-search" v-model="blockSearch" class="inp blk-search" type="search" placeholder="Find a block">
+                    <p class="muted hint">Click to add {{ selected ? 'under the selected block' : 'to the end' }}, or drag onto the page.</p>
+                    <details v-for="(g, gi) in blockGroups" :key="g.name" class="grp" :open="!!blockSearch.trim() || gi === 0 || undefined">
+                        <summary><span>{{ g.name }}</span><span class="grp-n">{{ g.blocks.length }}</span></summary>
+                        <div class="grp-items">
+                            <div v-for="b in g.blocks" :key="b.type" class="lib-row">
+                                <button class="lib" type="button" draggable="true" :aria-description="b.desc" @click="addBlock(b.type)" @dragstart="startNew($event, b.type)" @dragend="endDrag">{{ b.name }}</button>
+                                <span class="info" tabindex="0" :aria-label="`About ${b.name}: ${b.desc}`" :data-tip="b.desc">i</span>
+                            </div>
+                        </div>
+                    </details>
+                    <p v-if="!blockGroups.length" class="muted hint">No blocks match.</p>
                 </div>
             </aside>
 
@@ -442,10 +458,22 @@ onBeforeRouteLeave(async () => {
 .panel-body { display: flex; flex-direction: column; gap: 8px; padding: 14px; }
 .hint { margin: 0 0 6px; }
 
-.lib { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--radius-lg); color: var(--quarry); cursor: pointer; display: flex; flex-direction: column; font-family: inherit; gap: 2px; padding: 12px 14px; text-align: left; }
+.blk-search { font-size: 14px; height: 38px; }
+.grp { border-bottom: 1px solid var(--line-soft); }
+.grp summary { align-items: center; cursor: pointer; display: flex; font-size: 13px; font-weight: 700; gap: 8px; justify-content: space-between; list-style: none; padding: 9px 2px; text-transform: none; }
+.grp summary::-webkit-details-marker { display: none; }
+.grp summary::before { border: solid var(--text-muted); border-width: 0 2px 2px 0; content: ''; height: 6px; margin-right: 4px; transform: rotate(-45deg); transition: transform .15s; width: 6px; }
+.grp[open] summary::before { transform: rotate(45deg); }
+.grp summary span:first-of-type { flex: 1; }
+.grp-n { background: var(--mist); border-radius: 999px; color: var(--text-muted); font-size: 11px; padding: 1px 7px; }
+.grp-items { display: flex; flex-direction: column; gap: 6px; padding: 0 0 10px; }
+.lib-row { align-items: center; display: flex; gap: 6px; position: relative; }
+.lib { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--radius); color: var(--quarry); cursor: grab; flex: 1; font-family: inherit; font-size: 14px; font-weight: 600; padding: 8px 12px; text-align: left; }
 .lib:hover { border-color: var(--quarry); }
-.lib b { font-size: 15px; }
-.lib span { color: var(--text-muted); font-size: 13px; }
+.info { align-items: center; border: 1.5px solid var(--line); border-radius: 50%; color: var(--text-muted); cursor: help; display: inline-flex; flex: none; font-family: Georgia, serif; font-size: 12px; font-style: italic; font-weight: 700; height: 22px; justify-content: center; width: 22px; }
+.info:hover, .info:focus-visible { border-color: var(--quarry); color: var(--quarry); outline: none; }
+.info::after { background: var(--quarry); border-radius: var(--radius); bottom: calc(100% + 6px); color: var(--white); content: attr(data-tip); font-family: inherit; font-size: 13px; font-style: normal; font-weight: 500; left: 0; line-height: 1.4; opacity: 0; padding: 8px 10px; pointer-events: none; position: absolute; right: 0; transition: opacity .12s; z-index: 10; }
+.info:hover::after, .info:focus-visible::after { opacity: 1; }
 
 .tree { display: flex; flex-direction: column; gap: 2px; }
 .tree a { border-radius: var(--radius); color: var(--quarry); font-size: 15px; padding: 8px 12px; text-decoration: none; }

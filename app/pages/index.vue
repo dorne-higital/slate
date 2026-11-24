@@ -23,7 +23,7 @@ const included = [
     { name: 'Blog', text: 'Write posts, schedule them and sort them into categories.' },
     { name: 'Media', text: 'Upload images and files once, use them on any page.' },
     { name: 'Theme', text: 'Set your logo, colours and fonts for the whole site.' },
-    { name: 'Search and sharing', text: 'See which pages are missing titles, descriptions or share images.' },
+    { name: 'SEO', text: 'See which pages are missing titles, descriptions or share images.' },
     { name: 'Domains', text: 'Connect your own domain with step-by-step instructions.' },
     { name: 'Integrations', text: 'Add analytics, booking tools and email sign-ups.' },
     { name: 'Hosting', text: 'Served from Cloudflare’s network, with HTTPS on every domain.' }

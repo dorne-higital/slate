@@ -52,3 +52,21 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
 - [x] Old Vercel DNS records removed (proxied AAAA 100:: placeholders for the Worker)
 - [x] Daily job (03:00 UTC): purge sites deleted more than 30 days ago, their Cloudflare hostnames, old invites
 - [x] Site export: Settings › Download everything (zip: site.json, pages/posts as text, replies CSV, media)
+
+## Feedback round 1 (Dan, 24 Nov 2026)
+
+Quick wins first, then the bigger customisation work.
+
+1. [x] Rename "Search & sharing" to SEO
+2. [x] Pages: New page button on the Pages screen; child pages nested under their parent, collapsed by default with an arrow
+3. [x] Editor: block library grouped into collapsible sections, names only, (i) for the description
+4. [x] Overview: stats (pages, posts, forms/replies, images, people) with recently edited below
+5. [ ] All sites (platform admin): dashboard (sites, plans, trials, revenue, domains, sign-ups) with the site list underneath
+6. [ ] Billing: platform admins can preview the customer view of the page
+7. [ ] Domain at sign-up: optional "find a domain" step
+8. [x] People: own sidebar item (move out of Settings)
+9. [ ] Settings: social links, shown as icons in the footer and usable in menus
+10. [ ] Theme: logo, favicon, extra brand colours, heading sizes, nav size, text transforms, light/dark
+11. [ ] Layout section: header style (regular, centred, mega menu), header/footer colours, link to Menus
+12. [ ] Blocks: a gallery of every block to try out with sample content
+13. [ ] Integrations: list of candidates, including paid add-ons (answered in chat, then build the chosen ones)

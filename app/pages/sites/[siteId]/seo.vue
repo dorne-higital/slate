@@ -7,7 +7,7 @@ const { me } = useMe()
 
 interface SeoPage { id: string, title: string, path: string, status: PageStatus, seoTitle: string | null, seoDescription: string | null, shareImage: string | null, noIndex: boolean }
 const { data, refresh } = await useAsyncData(`seo-${siteId}`, () => fetcher<{ siteName: string, address: string, seo: SiteSeo, pages: SeoPage[] }>(`/api/sites/${siteId}/seo`))
-useHead({ title: 'Search and sharing · Slate' })
+useHead({ title: 'SEO · Slate' })
 
 const role = computed(() => me.value?.sites.find(s => s.id === siteId)?.role ?? 'viewer')
 const canEdit = computed(() => ROLE_RANK[role.value] >= ROLE_RANK.editor)
@@ -70,7 +70,7 @@ const breadcrumb = computed(() => selected.value && data.value ? `${data.value.a
 <template>
     <div class="page">
         <div class="head">
-            <h1>Search and sharing</h1>
+            <h1>SEO</h1>
             <div class="row">
                 <span v-if="status === 'saved' && !dirty && !defaultsDirty" class="muted" role="status">Saved. It’s live now.</span>
                 <span v-if="status === 'error'" class="err" role="alert">Couldn’t save. Please try again.</span>

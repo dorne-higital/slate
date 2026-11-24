@@ -20,9 +20,10 @@ const groups: { title: string, items: NavItem[] }[] = [
         { key: 'blocks', label: 'Blocks', icon: 'M2 2h6v6H2zM10 2h6v6h-6zM2 10h6v6H2zM10 10h6v6h-6z' }
     ] },
     { title: 'Site', items: [
-        { key: 'seo', label: 'Search and sharing', icon: 'M8 3a5 5 0 1 0 0 10a5 5 0 1 0 0-10M12 12l4 4', to: '/seo' },
+        { key: 'seo', label: 'SEO', icon: 'M8 3a5 5 0 1 0 0 10a5 5 0 1 0 0-10M12 12l4 4', to: '/seo' },
         { key: 'domains', label: 'Domains', icon: 'M9 2.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 1 0 0-13M2.5 9h13M9 2.5c-3 3.5-3 9.5 0 13M9 2.5c3 3.5 3 9.5 0 13', to: '/domains' },
         { key: 'integrations', label: 'Integrations', icon: 'M7 3v4M11 3v4M5 7h8v3a4 4 0 0 1-8 0zM9 14v2', to: '/integrations' },
+        { key: 'people', label: 'People', icon: 'M6.5 8a2.5 2.5 0 1 0 0-5a2.5 2.5 0 1 0 0 5M2 15c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4M12 8a2 2 0 1 0 0-4M13 11c1.8.3 3 1.6 3 4', to: '/people' },
         { key: 'settings', label: 'Settings', icon: 'M9 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.5 1.5M12.5 12.5L14 14M4 14l1.5-1.5M12.5 5.5L14 4', to: '/settings' },
         { key: 'billing', label: 'Billing', icon: 'M2 4h14v10H2zM2 8h14', to: '/billing' }
     ] }

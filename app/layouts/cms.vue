@@ -3,7 +3,7 @@ const route = useRoute()
 const siteId = computed(() => String(route.params.siteId))
 
 // Trial ending soon, site paused, or a failed payment: say so on every CMS page
-const { data: site } = useAsyncData(() => `site-${siteId.value}`, () => $fetch<{ billing: BillingSummary }>(`/api/sites/${siteId.value}`), { watch: [siteId], lazy: true, server: false })
+const { data: site } = useAsyncData(() => `site-billing-${siteId.value}`, () => $fetch<{ billing: BillingSummary }>(`/api/sites/${siteId.value}`), { watch: [siteId], lazy: true, server: false })
 const notice = computed(() => {
     const b = site.value?.billing
     if (!b || route.path.endsWith('/billing')) return null

@@ -13,10 +13,15 @@ export interface BlockField {
     max?: number
 }
 
+export type BlockGroup = 'Headers and banners' | 'Text and images' | 'Show what you do' | 'Get in touch' | 'Blog'
+export const BLOCK_GROUPS: BlockGroup[] = ['Headers and banners', 'Text and images', 'Show what you do', 'Get in touch', 'Blog']
+
 export interface BlockType {
     type: string
     name: string
     desc: string
+    /** Section in the editor's block library */
+    group: BlockGroup
     fields: BlockField[]
     /** For blocks holding a repeating list (services, reviews…), stored as props.items */
     items?: { label: string, fields: BlockField[], max: number }
@@ -31,6 +36,7 @@ const buttonUrl: BlockField = { key: 'buttonUrl', label: 'Button goes to', kind:
 export const BLOCK_TYPES: BlockType[] = [
     {
         type: 'hero',
+        group: 'Headers and banners',
         name: 'Hero',
         desc: 'Big heading, text and a button',
         fields: [heading, { key: 'text', label: 'Text', kind: 'textarea', max: 600 }, buttonLabel, buttonUrl],
@@ -38,6 +44,7 @@ export const BLOCK_TYPES: BlockType[] = [
     },
     {
         type: 'text',
+        group: 'Text and images',
         name: 'Text',
         desc: 'Paragraphs with a heading',
         fields: [heading, body],
@@ -45,6 +52,7 @@ export const BLOCK_TYPES: BlockType[] = [
     },
     {
         type: 'imageText',
+        group: 'Text and images',
         name: 'Image and text',
         desc: 'A picture beside some words',
         fields: [
@@ -57,6 +65,7 @@ export const BLOCK_TYPES: BlockType[] = [
     },
     {
         type: 'services',
+        group: 'Show what you do',
         name: 'Services',
         desc: 'A grid of things you offer',
         fields: [heading, { key: 'intro', label: 'Intro', kind: 'textarea', max: 600 }],
@@ -73,6 +82,7 @@ export const BLOCK_TYPES: BlockType[] = [
     },
     {
         type: 'reviews',
+        group: 'Show what you do',
         name: 'Reviews',
         desc: 'Quotes from customers',
         fields: [heading],
@@ -81,6 +91,7 @@ export const BLOCK_TYPES: BlockType[] = [
     },
     {
         type: 'faq',
+        group: 'Show what you do',
         name: 'Questions and answers',
         desc: 'Expandable list of questions',
         fields: [heading],
@@ -89,6 +100,7 @@ export const BLOCK_TYPES: BlockType[] = [
     },
     {
         type: 'form',
+        group: 'Get in touch',
         name: 'Form',
         desc: 'Any form from your Forms inbox',
         fields: [heading, { key: 'intro', label: 'Intro', kind: 'textarea', max: 600 }, { key: 'formId', label: 'Form', kind: 'form', help: 'Replies go to your Forms inbox.' }],
@@ -96,6 +108,7 @@ export const BLOCK_TYPES: BlockType[] = [
     },
     {
         type: 'latestPosts',
+        group: 'Blog',
         name: 'Latest posts',
         desc: 'Newest posts from your blog',
         fields: [heading, { key: 'count', label: 'How many posts', kind: 'text', help: 'A number from 1 to 12.', max: 2 }],
@@ -103,6 +116,7 @@ export const BLOCK_TYPES: BlockType[] = [
     },
     {
         type: 'booking',
+        group: 'Get in touch',
         name: 'Booking',
         desc: 'Your Calendly booking calendar',
         fields: [heading, { key: 'intro', label: 'Intro', kind: 'textarea', max: 600 }],
@@ -110,6 +124,7 @@ export const BLOCK_TYPES: BlockType[] = [
     },
     {
         type: 'cta',
+        group: 'Headers and banners',
         name: 'Call to action',
         desc: 'A dark band with one button',
         fields: [heading, { key: 'text', label: 'Text', kind: 'textarea', max: 400 }, buttonLabel, buttonUrl],
