@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{ heading?: string, count?: string }>()
+const props = defineProps<{ eyebrow?: string, heading?: string, count?: string }>()
 const posts = inject<Ref<PostCardData[]>>('sitePosts', ref([]))
 const preview = inject<boolean>('blockPreview', false)
 const shown = computed(() => posts.value.slice(0, Math.min(12, Math.max(1, Number.parseInt(props.count ?? '3') || 3))))
@@ -11,7 +11,7 @@ interface PostCardData { title: string, slug: string, summary: string, coverImag
     <section class="blk">
         <div class="blk-inner">
             <div class="top">
-                <h2 v-if="heading">{{ heading }}</h2>
+                <BlockHeading :eyebrow="eyebrow" :heading="heading" />
                 <component :is="preview ? 'span' : resolveComponent('NuxtLink')" to="/blog" class="all">All posts</component>
             </div>
             <div v-if="shown.length" class="grid">

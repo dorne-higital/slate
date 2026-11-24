@@ -15,7 +15,7 @@ export async function loadMenus(siteId: string): Promise<Record<MenuSlot, MenuIt
         const pages = await db
             .select({ id: schema.pages.id, title: schema.pages.title, path: schema.pages.path })
             .from(schema.pages)
-            .where(and(eq(schema.pages.siteId, siteId), eq(schema.pages.status, 'published'), isNull(schema.pages.parentId)))
+            .where(and(eq(schema.pages.siteId, siteId), eq(schema.pages.status, 'published'), isNull(schema.pages.parentId), eq(schema.pages.kind, 'page')))
             .orderBy(asc(schema.pages.position))
         header = pages.filter(p => p.path !== '/').map(p => ({ id: p.id, label: p.title, url: p.path, depth: 0 as const }))
         // Sites with a blog get a Blog link until they set their own header menu

@@ -24,6 +24,10 @@ export function siteThemeVars(theme: SiteTheme | null | undefined): Record<strin
         '--site-primary': t.primary,
         '--site-primary-text': readableOn(t.primary),
         '--site-accent': t.accent,
+        '--site-accent-text': readableOn(t.accent),
+        // Untouched copies, so a coloured section can swap primary and its text colour without a loop
+        '--theme-primary': t.primary,
+        '--theme-primary-text': readableOn(t.primary),
         '--site-radius': RADIUS[t.corners],
         '--site-card-radius': t.corners === 'square' ? '0px' : '8px',
         '--site-heading-font': font(t.headingFont),

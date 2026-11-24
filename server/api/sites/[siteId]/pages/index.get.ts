@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event): Promise<PageListItem[]> => {
     const { site } = await requireSiteAccess(event, getRouterParam(event, 'siteId')!)
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event): Promise<PageListItem[]> => {
         })
         .from(schema.pages)
         .leftJoin(schema.user, eq(schema.user.id, schema.pages.updatedBy))
-        .where(eq(schema.pages.siteId, site.id))
+        .where(and(eq(schema.pages.siteId, site.id), eq(schema.pages.kind, 'page')))
         .orderBy(asc(schema.pages.position), asc(schema.pages.path))
 
     return rows.map(r => ({

@@ -44,7 +44,12 @@ function removeItem(i: number) {
     emit('change')
 }
 
-const inputValue = (e: Event) => (e.target as HTMLInputElement).value
+function pickItemImage(i: number, key: string, item: MediaItem) {
+    items.value[i]![key] = item.url
+    const altKey = key === 'url' ? 'alt' : key.replace(/Url$/, 'Alt')
+    if (altKey !== key && item.alt && altKey in items.value[i]! && !items.value[i]![altKey]) items.value[i]![altKey] = item.alt
+    emit('change')
+}
 </script>
 
 <template>
@@ -54,28 +59,18 @@ const inputValue = (e: Event) => (e.target as HTMLInputElement).value
             <span class="muted">Changes save as you type.</span>
         </div>
 
-        <div v-for="f in def.fields" :key="f.key" class="field">
-            <label :for="`f-${block.id}-${f.key}`">{{ f.label }}</label>
-            <textarea v-if="f.kind === 'textarea'" :id="`f-${block.id}-${f.key}`" class="inp" rows="4" :value="String(block.props[f.key] ?? '')" @input="set(f.key, inputValue($event))" />
-            <template v-else-if="f.kind === 'form'">
-                <select :id="`f-${block.id}-${f.key}`" class="inp" :value="String(block.props[f.key] ?? '')" @change="set(f.key, inputValue($event))">
-                    <option value="">Choose a form…</option>
-                    <option v-for="form in forms" :key="form.id" :value="form.id">{{ form.name }}</option>
-                </select>
-                <NuxtLink v-if="siteId" class="help" :to="`/sites/${siteId}/forms`">Edit forms and see replies</NuxtLink>
-            </template>
-            <template v-else>
-                <input :id="`f-${block.id}-${f.key}`" class="inp" type="text" :value="String(block.props[f.key] ?? '')" :list="f.kind === 'url' ? `pages-${block.id}` : undefined" @input="set(f.key, inputValue($event))">
-                <datalist v-if="f.kind === 'url'" :id="`pages-${block.id}`">
-                    <option v-for="p in pages" :key="p.path" :value="p.path">{{ p.title }}</option>
-                </datalist>
-                <span v-if="f.kind === 'image' && siteId" class="img-row">
-                    <img v-if="block.props[f.key]" :src="String(block.props[f.key])" alt="" class="img-thumb">
-                    <MediaPicker :site-id="siteId" @pick="pickImage(f.key, $event)" />
-                </span>
-            </template>
-            <span v-if="f.help" class="help">{{ f.help }}</span>
-        </div>
+        <BlockField
+            v-for="f in def.fields"
+            :key="f.key"
+            :field="f"
+            :value="block.props[f.key]"
+            :id="`f-${block.id}-${f.key}`"
+            :site-id="siteId"
+            :pages="pages"
+            :forms="forms"
+            @input="set(f.key, $event)"
+            @pick="pickImage(f.key, $event)"
+        />
 
         <div v-if="def.items" class="items">
             <b class="items-title">{{ def.items.label }}s</b>
@@ -88,14 +83,32 @@ const inputValue = (e: Event) => (e.target as HTMLInputElement).value
                         <button class="ib" type="button" :aria-label="`Remove ${def.items.label.toLowerCase()} ${i + 1}`" @click="removeItem(i)">✕</button>
                     </span>
                 </div>
-                <div v-for="f in def.items.fields" :key="f.key" class="field">
-                    <label :for="`f-${block.id}-${i}-${f.key}`">{{ f.label }}</label>
-                    <textarea v-if="f.kind === 'textarea'" :id="`f-${block.id}-${i}-${f.key}`" class="inp" rows="3" :value="item[f.key] ?? ''" @input="setItem(i, f.key, inputValue($event))" />
-                    <input v-else :id="`f-${block.id}-${i}-${f.key}`" class="inp" type="text" :value="item[f.key] ?? ''" @input="setItem(i, f.key, inputValue($event))">
-                </div>
+                <BlockField
+                    v-for="f in def.items.fields"
+                    :key="f.key"
+                    :field="f"
+                    :value="item[f.key]"
+                    :id="`f-${block.id}-${i}-${f.key}`"
+                    :site-id="siteId"
+                    :pages="pages"
+                    @input="setItem(i, f.key, $event)"
+                    @pick="pickItemImage(i, f.key, $event)"
+                />
             </div>
             <button v-if="items.length < def.items.max" class="btn btn-ghost btn-sm" type="button" @click="addItem">Add {{ def.items.label.toLowerCase() }}</button>
         </div>
+
+        <details class="section-opts">
+            <summary>Section: background, spacing, fade-in</summary>
+            <BlockField
+                v-for="f in SECTION_FIELDS"
+                :key="f.key"
+                :field="f"
+                :value="block.props[f.key]"
+                :id="`f-${block.id}-${f.key}`"
+                @input="set(f.key, $event)"
+            />
+        </details>
     </div>
 </template>
 
@@ -116,4 +129,7 @@ textarea.inp { height: auto; line-height: 1.5; min-height: 84px; padding: 10px 1
 .ib:disabled { cursor: default; opacity: .35; }
 .img-row { align-items: center; display: flex; gap: 10px; margin-top: 6px; }
 .img-thumb { border-radius: 4px; height: 40px; object-fit: cover; width: 56px; }
+.section-opts { border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 14px; padding-top: 14px; }
+.section-opts summary { cursor: pointer; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.section-opts[open] summary { margin-bottom: 12px; }
 </style>

@@ -121,3 +121,29 @@ export interface Me {
     isPlatformAdmin: boolean
     sites: SiteSummary[]
 }
+
+/** A project as shown on cards (Projects block, project pages) */
+export interface ProjectCard {
+    title: string
+    path: string
+    category: string
+    summary: string
+    cover: string
+    coverAlt: string
+    year: string
+    featured: boolean
+}
+
+/** Extra details a page has when it's a project (pages.kind = 'project') */
+export interface ProjectMeta {
+    category?: string
+    summary?: string
+    cover?: string
+    coverAlt?: string
+    year?: string
+    featured?: boolean
+    /** Shown beside the cover: Built 2025, Platform iPhone… */
+    details?: { label: string, value: string }[]
+    /** Buttons under the details: Visit live site, App Store… */
+    links?: { label: string, url: string }[]
+}

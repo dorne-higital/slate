@@ -13,6 +13,8 @@ interface EditorPageData {
     shareImage: string | null
     noIndex: boolean
     hasUnpublishedChanges: boolean
+    kind: 'page' | 'project'
+    project: ProjectMeta | null
 }
 
 const route = useRoute()
@@ -29,6 +31,8 @@ const [{ data: site }, { data: loaded, error }, { data: allPages, refresh: refre
 const { data: forms } = await useAsyncData(`forms-${siteId}`, () => fetcher<FormDefinition[]>(`/api/sites/${siteId}/forms`))
 provide('siteForms', computed(() => Object.fromEntries((forms.value ?? []).map(f => [f.id, f]))))
 provide('blockPreview', true)
+const { data: projectCards } = await useAsyncData(`projects-${siteId}`, () => fetcher<{ title: string, path: string, status: string, project: ProjectMeta }[]>(`/api/sites/${siteId}/projects`))
+provide('siteProjects', computed(() => (projectCards.value ?? []).filter(p => p.status === 'published').map(p => ({ title: p.title, path: p.path, category: p.project.category ?? '', summary: p.project.summary ?? '', cover: p.project.cover ?? '', coverAlt: p.project.coverAlt ?? '', year: p.project.year ?? '', featured: !!p.project.featured }))))
 provide('siteIntegrations', computed(() => (site.value?.integrations ?? {}) as SiteIntegrations))
 const { data: posts } = await useAsyncData(`posts-${siteId}`, () => fetcher<{ title: string, slug: string, excerpt: string, body: string, coverImage: string, publishedAt: string | null, state: string, categoryName: string | null }[]>(`/api/sites/${siteId}/posts`))
 provide('sitePosts', computed(() => (posts.value ?? [])
@@ -271,7 +275,7 @@ onBeforeRouteLeave(async () => {
 <template>
     <div class="ed">
         <header class="top">
-            <NuxtLink class="ib" :to="`/sites/${siteId}/pages`" aria-label="Back to pages">
+            <NuxtLink class="ib" :to="loaded?.kind === 'project' ? `/sites/${siteId}/projects` : `/sites/${siteId}/pages`" :aria-label="loaded?.kind === 'project' ? 'Back to projects' : 'Back to pages'">
                 <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </NuxtLink>
             <div class="title">
@@ -350,6 +354,10 @@ onBeforeRouteLeave(async () => {
                     <div class="shared">
                         <SiteHeader :name="site?.name ?? ''" :items="menus?.header ?? []" :theme="(site?.theme as SiteTheme)" :socials="(site?.socials as SiteSocials)" preview :compact="device === 'phone'" />
                         <NuxtLink class="tag" :to="`/sites/${siteId}/menus`">Header, shared on every page. Edit in Menus</NuxtLink>
+                    </div>
+                    <div v-if="loaded?.kind === 'project' && loaded.project" class="shared">
+                        <ProjectHeader :title="page.title" :project="loaded.project" />
+                        <NuxtLink class="tag" :to="`/sites/${siteId}/projects`">Project details. Edit in Projects</NuxtLink>
                     </div>
 
                     <div

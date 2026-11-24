@@ -1,11 +1,11 @@
 <script setup lang="ts">
-defineProps<{ heading?: string, items?: { question?: string, answer?: string }[] }>()
+defineProps<{ eyebrow?: string, heading?: string, items?: { question?: string, answer?: string }[] }>()
 </script>
 
 <template>
     <section class="blk">
         <div class="blk-inner narrow">
-            <h2 v-if="heading">{{ heading }}</h2>
+            <BlockHeading :eyebrow="eyebrow" :heading="heading" />
             <div class="list">
                 <details v-for="(item, i) in items" :key="i">
                     <summary>{{ item.question }}</summary>
@@ -18,8 +18,8 @@ defineProps<{ heading?: string, items?: { question?: string, answer?: string }[]
 
 <style scoped>
 .narrow { max-width: 820px; }
-.list { border-top: 1px solid rgb(0 0 0 / 12%); }
-details { border-bottom: 1px solid rgb(0 0 0 / 12%); padding: 18px 0; }
+.list { border-top: 1px solid color-mix(in srgb, currentcolor 15%, transparent); }
+details { border-bottom: 1px solid color-mix(in srgb, currentcolor 15%, transparent); padding: 18px 0; }
 summary { cursor: pointer; font-size: 18px; font-weight: 700; }
 details p { margin-top: 12px; }
 </style>

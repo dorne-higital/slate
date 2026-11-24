@@ -49,5 +49,6 @@ Local `.env` points at Neon's **dev** branch (a copy of production), so local te
 - 4-space indent, single quotes, no semicolons, no trailing commas.
 - Components use bare names (`pathPrefix: false`).
 - Pages store blocks as JSONB: `blocks` (draft) and `published_blocks` (live). Publishing copies one to the other.
-- Block components live in `app/components/blocks/`, registered in `BlockRenderer.vue`.
+- Block components live in `app/components/blocks/`, registered in `BlockView.vue`; fields in `shared/utils/blockTypes.ts`. Every block also gets the section options (`SECTION_FIELDS`: background, spacing, fade-in, anchor). New fields must keep old saved blocks working (use `choice()` for defaults).
+- Projects are rows in `pages` with `kind = 'project'` at `/work/{slug}`, with details in `pages.project`. They're hidden from the Pages list and auto menus, and edited in the normal page editor.
 - Copy follows the brand sheet: plain words, sentence case, no exclamation marks, errors say what to do next.

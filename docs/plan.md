@@ -71,3 +71,15 @@ Quick wins first, then the bigger customisation work.
 12. [x] Blocks: a gallery of every block to try out with sample content
 13. [ ] Integrations: candidate list sent to Dan 24 Nov; build the ones he picks
 14. [x] Support: tickets from each site (Support page in the CMS), listed in the platform dashboard; platform admins reply, both sides emailed
+
+## Portfolio push (for danhorne.co.uk, 24 Nov 2026)
+
+Dan chose: refresh the design, projects as their own content type.
+
+1. [x] Section options on every block: background (page, soft, dark, main colour, accent), spacing, fade-in on scroll, link name (anchor)
+2. [x] Upgraded blocks: hero (label, two buttons, side picture, centred, coloured band), image and text (side, card/tilted/round picture, tick list, button), reviews (role, photo, one-big-quote layout), call to action (band, card, plain), services (columns, icons), labels above headings everywhere
+3. [x] New blocks: projects, gallery with lightbox, before and after, details list, numbers, steps, logos and tools, timeline, team, big statement, scrolling band, video, big image, contact details
+4. [x] Projects: own CMS screen (details, cover, category, buttons, order), pages at /work/…, case-study header, edited in the page editor
+5. [x] More fonts: Baloo 2, Quicksand, Space Grotesk, Outfit, Plus Jakarta Sans, Instrument Serif
+6. [ ] Multi-step forms
+7. [ ] Rebuild danhorne.co.uk in Slate with a refreshed design, then point the domain at it

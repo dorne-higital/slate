@@ -26,11 +26,14 @@ export default defineEventHandler(async (event) => {
     // Latest posts blocks need the newest posts
     const postsWanted = Math.max(0, ...blocks.filter(b => b.type === 'latestPosts').map(b => Math.min(12, Number.parseInt(String(b.props.count ?? '3')) || 3)))
     const posts = postsWanted ? await livePosts(site.id, { limit: postsWanted }) : []
+    // Projects blocks need the project cards
+    const projects = blocks.some(b => b.type === 'projects') ? await liveProjectCards(site.id) : []
 
     setResponseHeader(event, 'cache-control', 'public, max-age=30, stale-while-revalidate=300')
     return {
         ...shell,
         posts,
+        projects,
         forms: Object.fromEntries(formRows.map(f => [f.id, toFormDefinition(f)])) as Record<string, FormDefinition>,
         page: {
             title: page.title,
@@ -39,6 +42,8 @@ export default defineEventHandler(async (event) => {
             seoDescription: page.seoDescription,
             shareImage: page.shareImage,
             noIndex: page.noIndex,
+            kind: page.kind,
+            project: page.kind === 'project' ? { ...cleanProjectMeta({}), ...(page.project ?? {}) } : null,
             blocks
         }
     }

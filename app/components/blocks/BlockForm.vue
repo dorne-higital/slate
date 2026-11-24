@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{ heading?: string, intro?: string, formId?: string }>()
+const props = defineProps<{ eyebrow?: string, heading?: string, intro?: string, formId?: string }>()
 
 // The page (public site or editor) provides the forms its blocks use, and whether this is a preview
 const forms = inject<Ref<Record<string, FormDefinition>>>('siteForms', ref({}))
@@ -42,7 +42,7 @@ async function submit() {
 <template>
     <section class="blk">
         <div class="blk-inner narrow">
-            <h2 v-if="heading">{{ heading }}</h2>
+            <BlockHeading :eyebrow="eyebrow" :heading="heading" />
             <p v-if="intro" class="blk-muted">{{ intro }}</p>
 
             <div v-if="!form" class="missing">

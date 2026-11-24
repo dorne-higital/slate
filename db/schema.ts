@@ -1,5 +1,5 @@
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
-import type { Block, MenuItem, MenuSlot, PageStatus, SiteIntegrations, SiteRole, SiteSeo, SiteSocials, SiteTheme } from '../shared/types'
+import type { Block, MenuItem, MenuSlot, PageStatus, ProjectMeta, SiteIntegrations, SiteRole, SiteSeo, SiteSocials, SiteTheme } from '../shared/types'
 import type { DomainOrderStatus } from '../shared/utils/domainPrices'
 import type { FormField } from '../shared/utils/forms'
 
@@ -104,6 +104,9 @@ export const pages = pgTable('pages', {
     shareImage: text('share_image'),
     noIndex: boolean('no_index').notNull().default(false),
     publishedAt: timestamp('published_at', { withTimezone: true }),
+    // 'page', or 'project' (a portfolio item shown by the Projects block, at /work/…)
+    kind: text('kind').$type<'page' | 'project'>().notNull().default('page'),
+    project: jsonb('project').$type<ProjectMeta>(),
     updatedBy: text('updated_by').references(() => user.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()

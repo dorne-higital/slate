@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: 'Send every page in its new order' })
     }
     const db = useDb()
-    const owned = await db.select({ id: schema.pages.id }).from(schema.pages).where(eq(schema.pages.siteId, site.id))
+    const owned = await db.select({ id: schema.pages.id }).from(schema.pages).where(and(eq(schema.pages.siteId, site.id), eq(schema.pages.kind, 'page')))
     if (owned.length !== ids.length || !owned.every(p => ids.includes(p.id))) {
         throw createError({ statusCode: 409, statusMessage: 'The pages changed while you were moving them. Refresh and try again.' })
     }

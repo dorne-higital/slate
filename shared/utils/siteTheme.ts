@@ -2,6 +2,12 @@
 export const SITE_FONTS = [
     { name: 'Schibsted Grotesk', css: 'Schibsted+Grotesk:wght@400;600;700;800', stack: '\'Schibsted Grotesk\', system-ui, sans-serif' },
     { name: 'Inter', css: 'Inter:wght@400;600;700;800', stack: 'Inter, system-ui, sans-serif' },
+    { name: 'Baloo 2', css: 'Baloo+2:wght@500;600;700;800', stack: "'Baloo 2', system-ui, sans-serif" },
+    { name: 'Quicksand', css: 'Quicksand:wght@400;500;600;700', stack: 'Quicksand, system-ui, sans-serif' },
+    { name: 'Space Grotesk', css: 'Space+Grotesk:wght@400;500;600;700', stack: "'Space Grotesk', system-ui, sans-serif" },
+    { name: 'Outfit', css: 'Outfit:wght@400;500;600;700;800', stack: 'Outfit, system-ui, sans-serif' },
+    { name: 'Plus Jakarta Sans', css: 'Plus+Jakarta+Sans:wght@400;500;600;700;800', stack: "'Plus Jakarta Sans', system-ui, sans-serif" },
+    { name: 'Instrument Serif', css: 'Instrument+Serif', stack: "'Instrument Serif', Georgia, serif" },
     { name: 'DM Sans', css: 'DM+Sans:wght@400;600;700;800', stack: '\'DM Sans\', system-ui, sans-serif' },
     { name: 'Manrope', css: 'Manrope:wght@400;600;700;800', stack: 'Manrope, system-ui, sans-serif' },
     { name: 'Fraunces', css: 'Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700', stack: 'Fraunces, Georgia, serif' },

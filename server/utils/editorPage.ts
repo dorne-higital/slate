@@ -17,6 +17,8 @@ export function toEditorPage(page: PageRow) {
         seoDescription: page.seoDescription,
         shareImage: page.shareImage,
         noIndex: page.noIndex,
+        kind: page.kind,
+        project: page.kind === 'project' ? { ...cleanProjectMeta({}), ...(page.project ?? {}) } : null,
         hasUnpublishedChanges: page.status === 'draft' || JSON.stringify(page.blocks) !== JSON.stringify(page.publishedBlocks),
         publishedAt: page.publishedAt?.toISOString() ?? null,
         updatedAt: page.updatedAt.toISOString()

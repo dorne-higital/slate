@@ -30,10 +30,12 @@ useSiteSeo(() => {
 
 provide('siteForms', computed(() => data.value?.forms ?? {}))
 provide('sitePosts', computed(() => data.value?.posts ?? []))
+provide('siteProjects', computed(() => data.value?.projects ?? []))
 </script>
 
 <template>
     <SiteShell v-if="data" :site="data.site" :menus="data.menus">
+        <ProjectHeader v-if="data.page.project" :title="data.page.title" :project="data.page.project" />
         <BlockRenderer :blocks="data.page.blocks" />
     </SiteShell>
 </template>

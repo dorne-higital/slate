@@ -18,6 +18,7 @@ const canEdit = computed(() => ROLE_RANK[me.value?.sites.find(s => s.id === site
 
 // Blocks render as they would on the site, with links switched off
 provide('blockPreview', true)
+provide('siteProjects', ref([]))
 provide('siteForms', computed(() => Object.fromEntries((forms.value ?? []).map(f => [f.id, f]))))
 provide('siteIntegrations', computed(() => (site.value?.integrations ?? {}) as SiteIntegrations))
 provide('sitePosts', ref([

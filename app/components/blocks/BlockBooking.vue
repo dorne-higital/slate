@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ heading?: string, intro?: string }>()
+defineProps<{ eyebrow?: string, heading?: string, intro?: string }>()
 const integrations = inject<Ref<SiteIntegrations>>('siteIntegrations', ref({}))
 const preview = inject<boolean>('blockPreview', false)
 const src = computed(() => integrations.value.calendly ? `${integrations.value.calendly.replace(/\/$/, '')}?hide_gdpr_banner=1&embed_type=Inline` : '')
@@ -8,7 +8,7 @@ const src = computed(() => integrations.value.calendly ? `${integrations.value.c
 <template>
     <section class="blk">
         <div class="blk-inner">
-            <h2 v-if="heading">{{ heading }}</h2>
+            <BlockHeading :eyebrow="eyebrow" :heading="heading" />
             <p v-if="intro" class="blk-muted">{{ intro }}</p>
             <div v-if="preview" class="placeholder">
                 {{ integrations.calendly ? `Your Calendly calendar (${integrations.calendly.replace('https://', '')}) shows here.` : 'Connect Calendly in Integrations to show your booking calendar here.' }}
