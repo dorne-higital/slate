@@ -270,6 +270,18 @@ onBeforeUnmount(() => {
 onBeforeRouteLeave(async () => {
     if (saveState.value === 'pending') await save()
 })
+
+const confirmDeletePage = ref(false)
+const deletePageError = ref('')
+async function deletePage() {
+    deletePageError.value = ''
+    try {
+        await $fetch(`/api/sites/${siteId}/pages/${pageId}`, { method: 'DELETE' })
+        await navigateTo(`/sites/${siteId}/pages`)
+    } catch (err) {
+        deletePageError.value = (err as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'Couldn’t delete the page. Please try again.'
+    }
+}
 </script>
 
 <template>
@@ -430,6 +442,17 @@ onBeforeRouteLeave(async () => {
                     </div>
                     <label class="check"><input v-model="page.noIndex" type="checkbox" @change="queueSave">Hide this page from search engines</label>
                     <NuxtLink class="help" :to="`/sites/${siteId}/seo`">See search details for every page</NuxtLink>
+                    <div v-if="loaded?.path !== '/' && loaded?.kind !== 'project'" class="del-zone">
+                        <button v-if="!confirmDeletePage" class="btn btn-plain btn-sm del-link" type="button" @click="confirmDeletePage = true">Delete this page…</button>
+                        <div v-else class="del-confirm" role="alert">
+                            <span>Delete <b>{{ page.title }}</b>? Links to it will stop working. This can’t be undone.</span>
+                            <p v-if="deletePageError" class="del-err">{{ deletePageError }}</p>
+                            <span class="del-row">
+                                <button class="btn btn-sm del-btn" type="button" @click="deletePage">Delete page</button>
+                                <button class="btn btn-plain btn-sm" type="button" @click="confirmDeletePage = false">Keep it</button>
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </aside>
         </div>
@@ -437,6 +460,12 @@ onBeforeRouteLeave(async () => {
 </template>
 
 <style scoped>
+.del-zone { border-top: 1px solid var(--line-soft); padding-top: 14px; }
+.del-link { color: var(--danger); }
+.del-confirm { background: #fbeceb; border-radius: var(--radius); display: flex; flex-direction: column; font-size: 14px; gap: 10px; padding: 12px; }
+.del-err { color: var(--danger); margin: 0; }
+.del-row { display: flex; gap: 8px; }
+.del-btn { background: var(--danger); color: var(--white); }
 .ed { display: flex; flex-direction: column; height: 100vh; }
 
 .top { align-items: center; background: var(--white); border-bottom: 1px solid var(--line); display: flex; flex: none; gap: 16px; padding: 10px 16px; }
