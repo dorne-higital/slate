@@ -17,23 +17,23 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
 - [x] Platform admin: All sites page
 - [x] Forms and inbox: form editor, Form block, spam protection (hidden field, timing, rate limit),
   inbox with read/done/notes, CSV export, unread badge, replies on the overview
+- [x] Search and sharing: per-page search title/description/share image/hide, site defaults,
+  Google preview, canonical + Open Graph tags, sitemap.xml and robots.txt per site
 
 ## Next, in order
 
-1. [ ] **Search and sharing (SEO)**: per-page titles/descriptions/share image overview, site-wide defaults,
-   sitemap.xml and robots.txt for client sites, canonical + Open Graph tags
-2. [ ] **Blog**: posts with draft/publish/schedule, categories, blog index + post pages on client sites,
+1. [ ] **Blog**: posts with draft/publish/schedule, categories, blog index + post pages on client sites,
    Latest posts block, RSS feed
-3. [ ] **Settings and people**: site name/details, invite people by email link, roles (owner, admin,
+2. [ ] **Settings and people**: site name/details, invite people by email link, roles (owner, admin,
    editor, viewer), remove people, delete site
-4. [ ] **Integrations**: Google Analytics / Plausible ID, Meta pixel, custom head snippet (owner only)
-5. [ ] **Media library** (**needs Dan: enable R2**): uploads to R2, media page with grid/search,
+3. [ ] **Integrations**: Google Analytics / Plausible ID, Meta pixel, custom head snippet (owner only)
+4. [ ] **Media library** (**needs Dan: enable R2**): uploads to R2, media page with grid/search,
    image picker in the editor, logo + favicon in Theme
-6. [ ] **Billing** (**needs Dan: Stripe account + test keys**): plans, Stripe Checkout + customer portal,
+5. [ ] **Billing** (**needs Dan: Stripe account + test keys**): plans, Stripe Checkout + customer portal,
    webhooks, plan limits, Billing page with invoices
-7. [ ] **Domain buying** (**needs Dan: registrar reseller account**): search + buy a domain during sign-up
+6. [ ] **Domain buying** (**needs Dan: registrar reseller account**): search + buy a domain during sign-up
    and from Domains, auto-connect
-8. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
+7. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
 
 ## Housekeeping (as I go)
 

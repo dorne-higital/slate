@@ -10,6 +10,8 @@ interface EditorPageData {
     blocks: Block[]
     seoTitle: string | null
     seoDescription: string | null
+    shareImage: string | null
+    noIndex: boolean
     hasUnpublishedChanges: boolean
 }
 
@@ -32,7 +34,9 @@ if (error.value) throw createError({ statusCode: 404, statusMessage: 'Page not f
 const page = reactive({
     title: loaded.value!.title,
     seoTitle: loaded.value!.seoTitle ?? '',
-    seoDescription: loaded.value!.seoDescription ?? ''
+    seoDescription: loaded.value!.seoDescription ?? '',
+    shareImage: loaded.value!.shareImage ?? '',
+    noIndex: loaded.value!.noIndex
 })
 const blocks = ref<Block[]>(structuredClone(toRaw(loaded.value!.blocks)))
 const status = ref<PageStatus>(loaded.value!.status)
@@ -90,7 +94,7 @@ async function save() {
     try {
         const res = await $fetch<EditorPageData>(`/api/sites/${siteId}/pages/${pageId}`, {
             method: 'PATCH',
-            body: { title: page.title, blocks: blocks.value, seoTitle: page.seoTitle || null, seoDescription: page.seoDescription || null }
+            body: { title: page.title, blocks: blocks.value, seoTitle: page.seoTitle || null, seoDescription: page.seoDescription || null, shareImage: page.shareImage || null, noIndex: page.noIndex }
         })
         unpublished.value = res.hasUnpublishedChanges
         saveState.value = saveState.value === 'saving' ? 'saved' : saveState.value
@@ -327,6 +331,13 @@ onBeforeRouteLeave(async () => {
                         <textarea id="ps-seo-desc" v-model="page.seoDescription" class="inp" rows="4" @input="queueSave" />
                         <span class="help">One or two sentences. {{ page.seoDescription.length }}/160</span>
                     </div>
+                    <div class="field">
+                        <label for="ps-share">Share image</label>
+                        <input id="ps-share" v-model="page.shareImage" class="inp" type="text" placeholder="https://…" @input="queueSave">
+                        <span class="help">Shown when someone posts a link to this page.</span>
+                    </div>
+                    <label class="check"><input v-model="page.noIndex" type="checkbox" @change="queueSave">Hide this page from search engines</label>
+                    <NuxtLink class="help" :to="`/sites/${siteId}/seo`">See search details for every page</NuxtLink>
                 </div>
             </aside>
         </div>
@@ -408,6 +419,8 @@ onBeforeRouteLeave(async () => {
 .page-settings .inp { font-size: 15px; height: 42px; }
 .page-settings textarea.inp { height: auto; line-height: 1.5; padding: 10px 12px; resize: vertical; }
 .page-settings label, .lbl { font-size: 14px; font-weight: 600; }
+.check { align-items: center; display: flex; font-size: 14px; gap: 10px; }
+.check input { accent-color: var(--quarry); height: 18px; width: 18px; }
 .addr { color: var(--text-body); font-family: ui-monospace, monospace; font-size: 14px; }
 
 @media (max-width: 1100px) {

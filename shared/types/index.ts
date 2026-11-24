@@ -28,6 +28,16 @@ export interface SiteTheme {
     corners?: 'square' | 'soft' | 'round'
 }
 
+/** Site-wide search and sharing defaults. */
+export interface SiteSeo {
+    /** Added after every page title, e.g. " | Bramble & Oak, Bristol". Empty means the site name. */
+    titleSuffix?: string
+    /** Used when a page has no description of its own */
+    defaultDescription?: string
+    /** Used when a page has no share image of its own */
+    defaultShareImage?: string
+}
+
 export type MenuSlot = 'header' | 'footer' | 'legal'
 
 export interface MenuItem {

@@ -5,6 +5,8 @@ interface PatchBody {
     blocks?: unknown
     seoTitle?: string | null
     seoDescription?: string | null
+    shareImage?: string | null
+    noIndex?: boolean
 }
 
 /** Saves the draft. Visitors don't see any of this until the page is published. */
@@ -23,6 +25,8 @@ export default defineEventHandler(async (event) => {
     if (body.blocks !== undefined) changes.blocks = cleanBlocks(body.blocks)
     if (body.seoTitle !== undefined) changes.seoTitle = body.seoTitle ? String(body.seoTitle).slice(0, 120) : null
     if (body.seoDescription !== undefined) changes.seoDescription = body.seoDescription ? String(body.seoDescription).slice(0, 320) : null
+    if (body.shareImage !== undefined) changes.shareImage = body.shareImage ? safeUrl(String(body.shareImage).slice(0, 1000)) || null : null
+    if (body.noIndex !== undefined) changes.noIndex = body.noIndex === true
 
     const [page] = await useDb()
         .update(schema.pages)

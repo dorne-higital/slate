@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
 
     setResponseHeader(event, 'cache-control', 'public, max-age=30, stale-while-revalidate=300')
     return {
-        site: { name: site.name, theme: site.theme ?? {} },
+        site: { name: site.name, theme: site.theme ?? {}, seo: site.seo ?? {}, address: await liveAddress(site) },
         menus: { header: menus.header, footer: menus.footer, legal: menus.legal },
         forms: Object.fromEntries(formRows.map(f => [f.id, toFormDefinition(f)])) as Record<string, FormDefinition>,
         page: {
@@ -33,6 +33,8 @@ export default defineEventHandler(async (event) => {
             path: page.path,
             seoTitle: page.seoTitle,
             seoDescription: page.seoDescription,
+            shareImage: page.shareImage,
+            noIndex: page.noIndex,
             blocks
         }
     }

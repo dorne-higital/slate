@@ -15,6 +15,8 @@ export function toEditorPage(page: PageRow) {
         blocks: page.blocks,
         seoTitle: page.seoTitle,
         seoDescription: page.seoDescription,
+        shareImage: page.shareImage,
+        noIndex: page.noIndex,
         hasUnpublishedChanges: page.status === 'draft' || JSON.stringify(page.blocks) !== JSON.stringify(page.publishedBlocks),
         publishedAt: page.publishedAt?.toISOString() ?? null,
         updatedAt: page.updatedAt.toISOString()

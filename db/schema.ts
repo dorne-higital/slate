@@ -1,5 +1,5 @@
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
-import type { Block, MenuItem, MenuSlot, PageStatus, SiteRole, SiteTheme } from '../shared/types'
+import type { Block, MenuItem, MenuSlot, PageStatus, SiteRole, SiteSeo, SiteTheme } from '../shared/types'
 import type { FormField } from '../shared/utils/forms'
 
 // ── Better Auth tables (shape required by better-auth's drizzle adapter) ──
@@ -60,6 +60,7 @@ export const sites = pgTable('sites', {
     slug: text('slug').notNull().unique(),
     customDomain: text('custom_domain').unique(),
     theme: jsonb('theme').$type<SiteTheme>(),
+    seo: jsonb('seo').$type<SiteSeo>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 })
@@ -89,6 +90,8 @@ export const pages = pgTable('pages', {
     publishedBlocks: jsonb('published_blocks').$type<Block[]>(),
     seoTitle: text('seo_title'),
     seoDescription: text('seo_description'),
+    shareImage: text('share_image'),
+    noIndex: boolean('no_index').notNull().default(false),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     updatedBy: text('updated_by').references(() => user.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
