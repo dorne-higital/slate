@@ -14,7 +14,8 @@
         "postinstall": "nuxt prepare",
         "typecheck": "nuxt typecheck",
         "db:generate": "drizzle-kit generate",
-        "db:migrate": "drizzle-kit migrate"
+        "db:migrate": "drizzle-kit migrate",
+        "db:migrate:prod": "MIGRATE_TARGET=prod drizzle-kit migrate"
     },
     "dependencies": {
         "@neon/config": "^1.14.6",

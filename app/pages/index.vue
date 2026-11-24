@@ -57,7 +57,7 @@ const faqs = [
     { q: 'Do I need to know how to code?', a: 'No. You build pages by adding blocks and typing into them. If you want something custom, a developer can build a new block that appears in your editor.' },
     { q: 'Can I use a domain I already own?', a: 'Yes. Keep it wherever you bought it. Slate shows you the two records to add, then checks them and sets up HTTPS for you.' },
     { q: 'What happens to my site if I cancel?', a: 'Your site goes offline at the end of your billing period. You can download your pages, posts, images and form replies before then.' },
-    { q: 'Where is my data stored?', a: '[CONFIRM DATA REGION]. Every site’s content is kept separate, and every request is checked, so one account can never see another’s.' }
+    { q: 'Where is my data stored?', a: 'Your pages, posts and form replies are stored in London. Pages are served to visitors from Cloudflare’s network, close to wherever they are. Every site’s content is kept separate, and every request is checked, so one account can never see another’s.' }
 ]
 
 const sheets = [

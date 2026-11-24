@@ -38,8 +38,8 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
 
 ## Housekeeping (as I go)
 
-- Separate Neon branch for local development so local test data never touches live
+- [x] Separate Neon branch for local development (`dev`); `yarn db:migrate:prod` for live
 - Drag and drop for blocks and pages
-- Remove old Vercel DNS records on slatecms.co.uk
+- Remove old Vercel DNS records on slatecms.co.uk (**needs Dan's OK**: replace with proxied AAAA 100:: placeholders)
 - Daily job: purge sites deleted more than 30 days ago (and their Cloudflare custom hostnames)
 - Site export (pages, posts, form replies) for the Settings page
