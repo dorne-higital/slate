@@ -37,7 +37,7 @@ Rebuilt from scratch in November 2026 on the `rebuild` branch. The old Supabase/
 - **Cloudflare for SaaS** (SSL/TLS → Custom Hostnames): each client domain (and its `www`) is added through the API when connected. HTTP validation.
 - **R2 buckets**: `slate-media` (live), `slate-media-preview` (unused locally). Bound to the Worker as `MEDIA`.
 - **Turnstile** (Cloudflare dashboard → Turnstile): one widget for `slatecms.co.uk`, mode Managed. Site key is public (wrangler var), secret is a Worker secret. Local testing uses Cloudflare's test keys (`1x00000000000000000000AA` / `1x0000000000000000000000000000000AA`).
-- **Cron triggers**: `0 3 * * *` purge deleted sites (30 days), `0 9 * * *` trial-ending reminder emails.
+- **Cron triggers**: `0 3 * * *` purge deleted sites (30 days) and old error logs, `0 9 * * *` trial-ending reminder emails, `0 2 * * 1,4` database backup.
 - **API token** (`NUXT_CLOUDFLARE_API_TOKEN`): needs Zone → SSL and Certificates: Edit, and DNS: Edit on slatecms.co.uk. Create a new one at My Profile → API Tokens.
 
 ### Neon in detail
@@ -142,4 +142,7 @@ Local dev runs on plain Node: Cloudflare's local runtime (workerd) needs macOS 1
 - **Invoice a client for extra work** — Admin → Billing → New invoice. Stripe hosts the invoice and pay page; Slate emails the link. It also appears on the client's Billing page. Cancel unpaid ones from the Invoices list.
 - **Make a discount code** — Admin → Billing → Discount codes (Stripe coupon + promotion code). People enter it at checkout.
 - **Restore a deleted site** — within 30 days, from the admin dashboard's site list (Restore).
-- **See errors on the live site** — Cloudflare dashboard → Workers → slate → Logs (observability is on).
+- **See errors on the live site** — Admin → Errors (grouped, with the stack). Platform admins are emailed the first time each kind of error appears in an hour. Raw logs: Cloudflare dashboard → Workers → slate → Logs.
+- **Backups** — every Monday and Thursday at 02:00 UTC the whole database is saved as one gzipped JSON file in R2 (`slate-media` bucket, `_backups/` folder); the newest 8 are kept. Admin → Backups lists them, downloads them and can back up now. Media files aren't copied (they're already in R2).
+- **Restore a backup** — make an empty database with Slate's tables (a new Neon branch, then `yarn db:migrate` against it, or a schema-only branch), then `RESTORE_DATABASE_URL=… node --experimental-strip-types scripts/restore-backup.ts slate-….json.gz` (add `--check` to just list what's inside). It refuses to write into tables that already have rows. Then point `NUXT_DATABASE_URL` at it.
+- **Run the tests** — `yarn test` (quick, no server). For the end-to-end ones: `yarn dev:test` in one terminal, `yarn test:api` in another (uses the dev database and deletes its test accounts).

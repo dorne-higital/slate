@@ -14,6 +14,7 @@ const { data: errors } = useAsyncData('admin-error-count', () => $fetch<{ n: num
             <NuxtLink to="/admin" class="nav-link" exact-active-class="on">Dashboard</NuxtLink>
             <NuxtLink to="/admin/billing" class="nav-link" active-class="on">Billing</NuxtLink>
             <NuxtLink to="/admin/errors" class="nav-link" active-class="on">Errors<span v-if="errors" class="badge">{{ errors }}</span></NuxtLink>
+            <NuxtLink to="/admin/backups" class="nav-link" active-class="on">Backups</NuxtLink>
             <NuxtLink to="/admin/support" class="nav-link" active-class="on">Support<span v-if="waiting" class="badge">{{ waiting }}</span></NuxtLink>
         </nav>
         <span class="spacer" />

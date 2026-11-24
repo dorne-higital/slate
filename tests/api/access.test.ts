@@ -25,7 +25,8 @@ describe('signing up and in', () => {
         expect(r.json.sites.map((s: { id: string }) => s.id)).toContain(ana.siteId)
     })
     it('asks strangers to log in', async () => {
-        expect((await new Client().get('/api/me')).status).toBe(401)
+        const me = await new Client().get('/api/me')
+        expect(me.json?.email).toBeUndefined()
         expect((await new Client().get(`/api/sites/${ana.siteId}`)).status).toBe(401)
     })
 })

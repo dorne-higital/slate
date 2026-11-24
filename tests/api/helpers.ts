@@ -4,6 +4,7 @@
  * Every account they make is test+…@example.com and is deleted afterwards. They refuse to run against the live database.
  */
 import { config } from 'dotenv'
+import { request } from 'node:http'
 import { neon } from '@neondatabase/serverless'
 
 config({ quiet: true })
@@ -23,29 +24,42 @@ export const testEmail = (label: string) => `test+${label}-${run}-${++n}@example
 export class Client {
     cookies = new Map<string, string>()
     constructor(public hostHeader?: string) {}
-    async req(method: string, path: string, body?: unknown, headers: Record<string, string> = {}) {
-        const res = await fetch(BASE + path, {
-            method,
-            redirect: 'manual',
-            headers: {
-                'content-type': 'application/json',
-                'origin': BASE,
-                ...(this.hostHeader ? { host: this.hostHeader } : {}),
-                ...(this.cookies.size ? { cookie: [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ') } : {}),
-                ...headers
-            },
-            body: body === undefined ? undefined : JSON.stringify(body)
+    /** Node's http module rather than fetch, because fetch won't send a custom Host header (needed to visit a client site). */
+    req(method: string, path: string, body?: unknown, headers: Record<string, string> = {}): Promise<{ status: number, json: any, text: string }> {
+        const url = new URL(path, BASE)
+        const data = body === undefined ? undefined : JSON.stringify(body)
+        return new Promise((resolve, reject) => {
+            const r = request(url, {
+                method,
+                headers: {
+                    'content-type': 'application/json',
+                    'origin': BASE,
+                    ...(this.hostHeader ? { host: this.hostHeader } : {}),
+                    ...(this.cookies.size ? { cookie: [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ') } : {}),
+                    ...(data ? { 'content-length': String(Buffer.byteLength(data)) } : {}),
+                    ...headers
+                }
+            }, (res) => {
+                for (const c of res.headers['set-cookie'] ?? []) {
+                    const [pair] = c.split(';')
+                    const i = pair!.indexOf('=')
+                    this.cookies.set(pair!.slice(0, i), pair!.slice(i + 1))
+                }
+                const chunks: Buffer[] = []
+                res.on('data', (c: Buffer) => chunks.push(c))
+                res.on('end', () => {
+                    const text = Buffer.concat(chunks).toString('utf8')
+                    let json: any = null
+                    try { json = JSON.parse(text) } catch { /* not JSON */ }
+                    resolve({ status: res.statusCode ?? 0, json, text })
+                })
+            })
+            r.on('error', reject)
+            if (data) r.write(data)
+            r.end()
         })
-        for (const c of res.headers.getSetCookie()) {
-            const [pair] = c.split(';')
-            const i = pair!.indexOf('=')
-            this.cookies.set(pair!.slice(0, i), pair!.slice(i + 1))
-        }
-        const text = await res.text()
-        let json: any = null
-        try { json = JSON.parse(text) } catch { /* not JSON */ }
-        return { status: res.status, json, text }
     }
+
     get = (p: string) => this.req('GET', p)
     post = (p: string, b?: unknown) => this.req('POST', p, b ?? {})
     patch = (p: string, b: unknown) => this.req('PATCH', p, b)

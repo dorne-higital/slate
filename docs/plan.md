@@ -93,3 +93,9 @@ Dan chose: refresh the design, projects as their own content type.
 2. [x] Custom invoices from Admin → Billing (Stripe invoice, emailed pay link, shown in client Billing)
 3. [x] Past invoices on the Billing page (already there: plans, domains, custom)
 4. [x] Discount codes made from Admin → Billing
+
+## Reliability (24 Nov 2026)
+
+1. [x] Error log: Admin → Errors, grouped, emailed to admins once an hour per kind, kept 30 days
+2. [x] Backups twice a week to R2 (newest 8 kept), Admin → Backups, restore script (tested round trip)
+3. [x] Automated tests: yarn test (unit), yarn test:api (end to end against the dev server)
