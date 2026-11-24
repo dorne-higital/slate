@@ -30,6 +30,8 @@ export default defineNuxtConfig({
         stripePortalConfig: '',
         namecomUsername: '',
         namecomToken: '',
+        resendApiKey: '',
+        emailFrom: 'hello@slatecms.co.uk',
         cloudflareZoneId: '',
         public: {
             // Host the CMS itself is served from. Any other host is treated as a client site.
@@ -44,7 +46,7 @@ export default defineNuxtConfig({
     // Daily clean-up (server/tasks): runs from the Worker's cron trigger in wrangler.jsonc
     nitro: {
         experimental: { tasks: true },
-        scheduledTasks: { '0 3 * * *': ['purge:deleted-sites'] },
+        scheduledTasks: { '0 3 * * *': ['purge:deleted-sites'], '0 9 * * *': ['billing:trial-reminders'] },
         // Media library files: a local folder in development, R2 in production (below)
         devStorage: { media: { driver: 'fs', base: './.data/media' } }
     },

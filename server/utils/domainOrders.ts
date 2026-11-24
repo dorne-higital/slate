@@ -20,6 +20,7 @@ export async function fulfilDomainOrder(orderId: string, session: Record<string,
     const fail = async (message: string) => {
         console.error('[domains] order failed', order.domainName, message)
         await db.update(schema.domainOrders).set({ status: 'failed', error: message.slice(0, 500), updatedAt: new Date() }).where(eq(schema.domainOrders.id, order.id))
+        await alertPlatformAdmins(`Domain order failed: ${order.domainName}`, `A customer paid for ${order.domainName} but setting it up failed.\n\n${message}\n\nOrder ${order.id}. It needs finishing by hand at name.com.`)
     }
 
     if (order.simulated) {

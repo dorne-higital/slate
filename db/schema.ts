@@ -243,6 +243,7 @@ export const billingAccounts = pgTable('billing_accounts', {
     status: text('status'),
     currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
     cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+    trialReminderSentAt: timestamp('trial_reminder_sent_at', { withTimezone: true }),
     stripeCustomerId: text('stripe_customer_id').unique(),
     stripeSubscriptionId: text('stripe_subscription_id'),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()

@@ -1,0 +1,1 @@
+ALTER TABLE "billing_accounts" ADD COLUMN "trial_reminder_sent_at" timestamp with time zone;

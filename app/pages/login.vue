@@ -34,6 +34,7 @@ async function submit() {
             <div class="field"><label for="li-email">Email</label><input id="li-email" v-model="email" class="inp" type="email" autocomplete="email" required></div>
             <div class="field"><label for="li-pass">Password</label><input id="li-pass" v-model="password" class="inp" type="password" autocomplete="current-password" required></div>
             <button class="btn btn-dark btn-lg" type="submit" :disabled="busy">{{ busy ? 'Logging in…' : 'Log in' }}</button>
+            <p class="small"><NuxtLink to="/forgot-password">Forgot your password?</NuxtLink></p>
             <p class="small">New to Slate? <NuxtLink to="/signup">Start your site</NuxtLink></p>
         </form>
     </div>

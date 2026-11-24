@@ -39,10 +39,11 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
   registered in the customer's name, ANAME/CNAME to Slate, connected with HTTPS. Simulated (nothing bought)
   while Stripe is in test mode. Cancelling the domain subscription turns auto-renew off.
   Later: admin view to retry failed orders, offer a domain during sign-up, transfer-out codes.
+- [x] Email (Resend, slatecms.co.uk verified, DKIM/SPF/DMARC): form replies to the reply email or owner
+  (reply-to = visitor), invites by email, password reset, trial ending reminder (daily 09:00 UTC),
+  failed domain orders to platform admins. Locally emails are logged, not sent.
 
 ## Next, in order
-
-1. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
 
 ## Housekeeping (as I go)
 

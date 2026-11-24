@@ -40,6 +40,8 @@ async function saveGeneral() {
 const peopleError = ref('')
 const inviteRole = ref<SiteRole>('editor')
 const inviteLabel = ref('')
+const inviteEmail = ref('')
+const inviteEmailed = ref(false)
 const inviteUrl = ref('')
 const copied = ref(false)
 async function peopleCall(fn: () => Promise<unknown>) {
@@ -56,7 +58,11 @@ async function peopleCall(fn: () => Promise<unknown>) {
         peopleError.value = (err as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'That didn’t work. Please try again.'
     }
 }
-const invite = () => peopleCall(() => $fetch(`/api/sites/${siteId}/invites`, { method: 'POST', body: { role: inviteRole.value, label: inviteLabel.value } }))
+const invite = () => peopleCall(() => $fetch(`/api/sites/${siteId}/invites`, { method: 'POST', body: { role: inviteRole.value, label: inviteLabel.value, email: inviteEmail.value } }).then((r) => {
+    inviteEmailed.value = !!(r as { emailed?: boolean }).emailed
+    inviteEmail.value = ''
+    return r
+}))
 const cancelInvite = (id: string) => peopleCall(() => $fetch(`/api/sites/${siteId}/invites/${id}`, { method: 'DELETE' }))
 const changeRole = (userId: string, role: SiteRole) => peopleCall(() => $fetch(`/api/sites/${siteId}/people/${userId}`, { method: 'PATCH', body: { role } }))
 const removePerson = (userId: string) => peopleCall(() => $fetch(`/api/sites/${siteId}/people/${userId}`, { method: 'DELETE' }))
@@ -161,16 +167,17 @@ async function deleteSite() {
                     <form v-if="people.canInvite.length" class="invite" @submit.prevent="invite">
                         <b>Invite someone</b>
                         <div class="invite-row">
-                            <div class="field grow"><label for="inv-label">Who it’s for (optional)</label><input id="inv-label" v-model="inviteLabel" class="inp" type="text" placeholder="e.g. Ellie" maxlength="120"></div>
+                            <div class="field grow"><label for="inv-email">Their email (optional)</label><input id="inv-email" v-model="inviteEmail" class="inp" type="email" placeholder="ellie@example.co.uk" autocomplete="off"></div>
+                            <div class="field grow"><label for="inv-label">Name (optional)</label><input id="inv-label" v-model="inviteLabel" class="inp" type="text" placeholder="e.g. Ellie" maxlength="120"></div>
                             <div class="field"><label for="inv-role">Role</label>
                                 <select id="inv-role" v-model="inviteRole" class="inp">
                                     <option v-for="r in people.canInvite" :key="r" :value="r">{{ ROLE_INFO[r].name }}</option>
                                 </select>
                             </div>
-                            <button class="btn btn-ghost" type="submit">Make invite link</button>
+                            <button class="btn btn-ghost" type="submit">{{ inviteEmail ? 'Send invite' : 'Make invite link' }}</button>
                         </div>
                         <div v-if="inviteUrl" class="link-box">
-                            <span class="muted">Send this link to them. It works once and lasts 14 days.</span>
+                            <span class="muted">{{ inviteEmailed ? 'We’ve emailed them this link. You can also send it yourself.' : 'Send this link to them.' }} It works once and lasts 14 days.</span>
                             <div class="link-row"><input class="inp mono" type="text" readonly :value="inviteUrl" aria-label="Invite link" @focus="($event.target as HTMLInputElement).select()"><button class="btn btn-dark btn-sm" type="button" @click="copyInvite">{{ copied ? 'Copied' : 'Copy' }}</button></div>
                         </div>
                     </form>

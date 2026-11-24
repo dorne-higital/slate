@@ -15,7 +15,15 @@ function create() {
             provider: 'pg',
             schema: { user: schema.user, session: schema.session, account: schema.account, verification: schema.verification }
         }),
-        emailAndPassword: { enabled: true, minPasswordLength: 10 },
+        emailAndPassword: {
+            enabled: true,
+            minPasswordLength: 10,
+            resetPasswordTokenExpiresIn: 3600,
+            revokeSessionsOnPasswordReset: true,
+            sendResetPassword: async ({ user, url }) => {
+                await sendPasswordResetEmail(user.email, user.name, url)
+            }
+        },
         user: {
             additionalFields: {
                 // input: false → can never be set through sign-up or profile updates

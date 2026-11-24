@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const page = typeof body.page === 'string' && body.page.startsWith('/') ? body.page.slice(0, 300) : null
-    await db.insert(schema.formReplies).values({ siteId: site.id, formId: form.id, data: result.data, pagePath: page, senderHash: hash })
+    const [reply] = await db.insert(schema.formReplies).values({ siteId: site.id, formId: form.id, data: result.data, pagePath: page, senderHash: hash }).returning({ id: schema.formReplies.id })
+    notifyFormReply(event, site, form, result.data, page, reply!.id)
     return thanks
 })
