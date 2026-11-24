@@ -95,6 +95,13 @@ export const BLOCK_TYPES: BlockType[] = [
         defaults: { heading: 'Get in touch', intro: '', formId: '' }
     },
     {
+        type: 'latestPosts',
+        name: 'Latest posts',
+        desc: 'Newest posts from your blog',
+        fields: [heading, { key: 'count', label: 'How many posts', kind: 'text', help: 'A number from 1 to 12.', max: 2 }],
+        defaults: { heading: 'From the blog', count: '3' }
+    },
+    {
         type: 'cta',
         name: 'Call to action',
         desc: 'A dark band with one button',

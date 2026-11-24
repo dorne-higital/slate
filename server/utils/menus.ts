@@ -1,4 +1,4 @@
-import { and, asc, eq, isNull } from 'drizzle-orm'
+import { and, asc, eq, isNull, lte } from 'drizzle-orm'
 
 /**
  * A site's three menus. A header menu nobody has set up yet falls back to the
@@ -18,6 +18,12 @@ export async function loadMenus(siteId: string): Promise<Record<MenuSlot, MenuIt
             .where(and(eq(schema.pages.siteId, siteId), eq(schema.pages.status, 'published'), isNull(schema.pages.parentId)))
             .orderBy(asc(schema.pages.position))
         header = pages.filter(p => p.path !== '/').map(p => ({ id: p.id, label: p.title, url: p.path, depth: 0 as const }))
+        // Sites with a blog get a Blog link until they set their own header menu
+        const hasPosts = await db.query.posts.findFirst({
+            where: and(eq(schema.posts.siteId, siteId), eq(schema.posts.status, 'published'), lte(schema.posts.publishedAt, new Date())),
+            columns: { id: true }
+        })
+        if (hasPosts) header.push({ id: 'blog', label: 'Blog', url: BLOG_PATH, depth: 0 })
     }
     return { header, footer: bySlot.footer ?? [], legal: bySlot.legal ?? [], headerIsAuto }
 }

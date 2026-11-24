@@ -156,3 +156,35 @@ export const formReplies = pgTable('form_replies', {
     index('form_replies_form_idx').on(t.formId, t.createdAt),
     index('form_replies_site_idx').on(t.siteId, t.createdAt)
 ])
+
+// Blog. A post is live once status is 'published' and publishedAt has passed,
+// so scheduling a post is just publishing it with a future date.
+export const postCategories = pgTable('post_categories', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    slug: text('slug').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [
+    uniqueIndex('post_categories_site_slug_idx').on(t.siteId, t.slug)
+])
+
+export const posts = pgTable('posts', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+    categoryId: uuid('category_id').references(() => postCategories.id, { onDelete: 'set null' }),
+    title: text('title').notNull(),
+    slug: text('slug').notNull(),
+    excerpt: text('excerpt'),
+    coverImage: text('cover_image'),
+    // Plain text: blank lines between paragraphs, "## " headings, "- " list items. Never HTML.
+    body: text('body').notNull().default(''),
+    status: text('status').$type<PageStatus>().notNull().default('draft'),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    authorId: text('author_id').references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [
+    uniqueIndex('posts_site_slug_idx').on(t.siteId, t.slug),
+    index('posts_site_published_idx').on(t.siteId, t.publishedAt)
+])

@@ -5,6 +5,7 @@ import BlockFaq from './blocks/BlockFaq.vue'
 import BlockForm from './blocks/BlockForm.vue'
 import BlockHero from './blocks/BlockHero.vue'
 import BlockImageText from './blocks/BlockImageText.vue'
+import BlockLatestPosts from './blocks/BlockLatestPosts.vue'
 import BlockReviews from './blocks/BlockReviews.vue'
 import BlockServices from './blocks/BlockServices.vue'
 import BlockText from './blocks/BlockText.vue'
@@ -21,7 +22,8 @@ const registry: Record<string, Component> = {
     reviews: BlockReviews,
     faq: BlockFaq,
     cta: BlockCta,
-    form: BlockForm
+    form: BlockForm,
+    latestPosts: BlockLatestPosts
 }
 </script>
 

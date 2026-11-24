@@ -29,6 +29,11 @@ const [{ data: site }, { data: loaded, error }, { data: allPages, refresh: refre
 const { data: forms } = await useAsyncData(`forms-${siteId}`, () => fetcher<FormDefinition[]>(`/api/sites/${siteId}/forms`))
 provide('siteForms', computed(() => Object.fromEntries((forms.value ?? []).map(f => [f.id, f]))))
 provide('blockPreview', true)
+const { data: posts } = await useAsyncData(`posts-${siteId}`, () => fetcher<{ title: string, slug: string, excerpt: string, body: string, coverImage: string, publishedAt: string | null, state: string, categoryName: string | null }[]>(`/api/sites/${siteId}/posts`))
+provide('sitePosts', computed(() => (posts.value ?? [])
+    .filter(p => p.state === 'published')
+    .sort((a, b) => (b.publishedAt ?? '').localeCompare(a.publishedAt ?? ''))
+    .map(p => ({ title: p.title, slug: p.slug, summary: postSummary(p), coverImage: p.coverImage || null, publishedAt: p.publishedAt!, category: p.categoryName ? { name: p.categoryName } : null }))))
 if (error.value) throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
 
 const page = reactive({

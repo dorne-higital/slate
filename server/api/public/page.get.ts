@@ -8,11 +8,11 @@ export default defineEventHandler(async (event) => {
     const rawPath = String(getQuery(event).path ?? '/')
     const path = rawPath === '/' ? '/' : `/${rawPath.replace(/^\/+|\/+$/g, '')}`
 
-    const [page, menus] = await Promise.all([
+    const [page, shell] = await Promise.all([
         useDb().query.pages.findFirst({
             where: and(eq(schema.pages.siteId, site.id), eq(schema.pages.path, path), eq(schema.pages.status, 'published'))
         }),
-        loadMenus(site.id)
+        publicShell(site)
     ])
     if (!page) throw createError({ statusCode: 404, statusMessage: 'Page not found' })
 
@@ -23,10 +23,14 @@ export default defineEventHandler(async (event) => {
         ? await useDb().select().from(schema.forms).where(and(eq(schema.forms.siteId, site.id), inArray(schema.forms.id, formIds)))
         : []
 
+    // Latest posts blocks need the newest posts
+    const postsWanted = Math.max(0, ...blocks.filter(b => b.type === 'latestPosts').map(b => Math.min(12, Number.parseInt(String(b.props.count ?? '3')) || 3)))
+    const posts = postsWanted ? await livePosts(site.id, { limit: postsWanted }) : []
+
     setResponseHeader(event, 'cache-control', 'public, max-age=30, stale-while-revalidate=300')
     return {
-        site: { name: site.name, theme: site.theme ?? {}, seo: site.seo ?? {}, address: await liveAddress(site) },
-        menus: { header: menus.header, footer: menus.footer, legal: menus.legal },
+        ...shell,
+        posts,
         forms: Object.fromEntries(formRows.map(f => [f.id, toFormDefinition(f)])) as Record<string, FormDefinition>,
         page: {
             title: page.title,

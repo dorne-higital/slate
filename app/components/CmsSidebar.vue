@@ -10,7 +10,7 @@ const groups: { title: string, items: NavItem[] }[] = [
     { title: '', items: [
         { key: 'overview', label: 'Overview', icon: 'M3 8l6-5 6 5v7H3z', to: '' },
         { key: 'pages', label: 'Pages', icon: 'M4 2h7l3 3v11H4z', to: '/pages' },
-        { key: 'blog', label: 'Blog', icon: 'M3 4h12M3 9h12M3 14h7' },
+        { key: 'blog', label: 'Blog', icon: 'M3 4h12M3 9h12M3 14h7', to: '/blog' },
         { key: 'forms', label: 'Forms', icon: 'M2 4h14v10H2zM2 4l7 6 7-6', to: '/forms' },
         { key: 'media', label: 'Media', icon: 'M2 3h14v12H2zM2 12l4-4 4 4 2-2 4 4' },
         { key: 'menus', label: 'Menus', icon: 'M3 5h12M3 9h12M3 13h12', to: '/menus' }

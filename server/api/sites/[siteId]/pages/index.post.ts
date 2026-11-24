@@ -18,7 +18,9 @@ export default defineEventHandler(async (event) => {
         parentPath = parent.path === '/' ? '' : parent.path
     }
 
-    const base = `${parentPath}/${slugify(title) || 'page'}`
+    let base = `${parentPath}/${slugify(title) || 'page'}`
+    // The blog lives at /blog, so a page can't
+    if (base === BLOG_PATH || base.startsWith(`${BLOG_PATH}/`)) base = base.replace(BLOG_PATH, `${BLOG_PATH}-page`)
     let path = base
     for (let n = 2; await db.query.pages.findFirst({ where: and(eq(schema.pages.siteId, site.id), eq(schema.pages.path, path)), columns: { id: true } }); n++) {
         path = `${base}-${n}`
