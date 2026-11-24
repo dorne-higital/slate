@@ -35,6 +35,8 @@ async function loadSite() {
 const statusName: Record<BillingStatus, string> = { comped: 'Slate covers it', trial: 'On free trial', active: 'Paying', past_due: 'Payment failed', expired: 'Paused' }
 const pence = (pounds: string | number) => Math.round(Number(String(pounds).replace(/[£,\s]/g, '')) * 100)
 const date = (iso: string | null) => iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''
+// Code end dates are stored as 23:59:59 UTC on the chosen day, so show them in UTC (otherwise BST rolls them to the next day)
+const endDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : ''
 
 // ── Special price ──
 const price = reactive({ plan: 'business' as PlanKey, interval: 'month' as BillingInterval, pounds: '' })
@@ -252,7 +254,7 @@ const randomCode = () => { disc.code = `SLATE-${Math.random().toString(36).slice
                     <li v-for="d in discounts" :key="d.id" :class="{ off: !d.active }">
                         <code>{{ d.code }}</code>
                         <span>{{ discountText(d) }}</span>
-                        <span class="muted small">Used {{ d.used }}{{ d.maxUses ? ` of ${d.maxUses}` : '' }}{{ d.expiresAt ? ` · ends ${date(d.expiresAt)}` : '' }}{{ d.active ? '' : ' · switched off' }}</span>
+                        <span class="muted small">Used {{ d.used }}{{ d.maxUses ? ` of ${d.maxUses}` : '' }}{{ d.expiresAt ? ` · ends ${endDate(d.expiresAt)}` : '' }}{{ d.active ? '' : ' · switched off' }}</span>
                         <button v-if="d.active" class="btn btn-plain btn-sm" type="button" @click="stopDiscount(d.id)">Switch off</button>
                     </li>
                     <li v-if="!discounts?.length" class="muted">No codes yet.</li>
