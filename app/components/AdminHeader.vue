@@ -2,6 +2,8 @@
 const { me, signOut } = useMe()
 // Tickets waiting on Slate, for the badge
 const { data: waiting } = useAsyncData('admin-support-waiting', () => $fetch<unknown[]>('/api/admin/support', { query: { status: 'open' } }).then(r => r.length).catch(() => 0), { server: false, lazy: true })
+// Kinds of server error in the last day
+const { data: errors } = useAsyncData('admin-error-count', () => $fetch<{ n: number }>('/api/admin/errors/count').then(r => r.n).catch(() => 0), { server: false, lazy: true })
 </script>
 
 <template>
@@ -11,6 +13,7 @@ const { data: waiting } = useAsyncData('admin-support-waiting', () => $fetch<unk
         <nav aria-label="Admin" class="nav">
             <NuxtLink to="/admin" class="nav-link" exact-active-class="on">Dashboard</NuxtLink>
             <NuxtLink to="/admin/billing" class="nav-link" active-class="on">Billing</NuxtLink>
+            <NuxtLink to="/admin/errors" class="nav-link" active-class="on">Errors<span v-if="errors" class="badge">{{ errors }}</span></NuxtLink>
             <NuxtLink to="/admin/support" class="nav-link" active-class="on">Support<span v-if="waiting" class="badge">{{ waiting }}</span></NuxtLink>
         </nav>
         <span class="spacer" />

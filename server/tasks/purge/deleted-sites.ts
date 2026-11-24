@@ -1,5 +1,6 @@
 import { and, inArray, isNotNull, lt } from 'drizzle-orm'
 
+
 /**
  * Daily: permanently remove sites deleted more than 30 days ago, their client domains in
  * Cloudflare for SaaS, and invitation links that expired more than 30 days ago.
@@ -29,6 +30,8 @@ export default defineTask({
             // Everything else (pages, forms, replies, posts, members, menus, domains) cascades
             await db.delete(schema.sites).where(inArray(schema.sites.id, ids))
         }
+        // Error log entries older than 30 days
+        await db.delete(schema.errorLogs).where(lt(schema.errorLogs.createdAt, cutoff))
 
         const oldInvites = await db.delete(schema.invites).where(lt(schema.invites.expiresAt, cutoff)).returning({ id: schema.invites.id })
         const summary = { sitesPurged: ids.length, hostnamesRemoved: hostnames, invitesRemoved: oldInvites.length }

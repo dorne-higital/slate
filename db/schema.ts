@@ -327,3 +327,19 @@ export const supportMessages = pgTable('support_messages', {
 }, t => [
     index('support_messages_ticket_idx').on(t.ticketId, t.createdAt)
 ])
+
+// Server errors (5xx), for the platform admin Errors page and alert emails. Kept 30 days.
+export const errorLogs = pgTable('error_logs', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    // Groups repeats of the same error: hash of message + where it came from
+    fingerprint: text('fingerprint').notNull(),
+    message: text('message').notNull(),
+    stack: text('stack'),
+    status: integer('status').notNull(),
+    method: text('method'),
+    // Path only, never the query string (it can hold tokens)
+    path: text('path'),
+    host: text('host'),
+    userId: text('user_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [index('error_logs_created_idx').on(t.createdAt), index('error_logs_fingerprint_idx').on(t.fingerprint, t.createdAt)])

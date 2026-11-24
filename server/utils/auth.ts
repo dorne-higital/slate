@@ -68,6 +68,8 @@ export async function getSessionUser(event: H3Event) {
 export async function requireUser(event: H3Event) {
     const user = await getSessionUser(event)
     if (!user) throw createError({ statusCode: 401, statusMessage: 'Please log in' })
+    // Remembered for the error log, so an error can say who hit it
+    event.context.user = { id: user.id }
     return user
 }
 
