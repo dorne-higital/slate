@@ -49,7 +49,8 @@ Rebuilt from scratch in November 2026 on the `rebuild` branch. The old Supabase/
 
 ### Stripe in detail
 
-- Currently in **test mode** (`sk_test_…`). Test card: 4242 4242 4242 4242, any future date, any CVC.
+- **Live since 24 Nov 2026** with a restricted key (`rk_live_…`, Worker secret `NUXT_STRIPE_SECRET_KEY`; a copy is `STRIPE_LIVE_SECRET_KEY` in `.env`). Local development still uses the test key (`STRIPE_SECRET_KEY`). Test card for test mode: 4242 4242 4242 4242, any future date, any CVC.
+- The restricted key needs write access to: customers, checkout sessions, billing portal sessions and configurations, products, prices, subscriptions and subscription items, invoices and invoice items, coupons, promotion codes, webhook endpoints.
 - Products/prices: `slate_starter`, `slate_business`, `slate_studio`, each with `_monthly` and `_yearly` lookup keys. Created by `yarn stripe:setup` from `shared/utils/plans.ts`.
 - `slate_extra_site` (£6/mo, £60/yr): added to a Studio subscription automatically for each site beyond the 5 included, and removed when sites are deleted.
 - Customer portal configuration: id in `wrangler.jsonc` (`NUXT_STRIPE_PORTAL_CONFIG`).

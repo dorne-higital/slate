@@ -25,7 +25,7 @@
         { "pattern": "*/*", "zone_name": "slatecms.co.uk" }
     ],
     "vars": {
-        "NUXT_STRIPE_PORTAL_CONFIG": "bpc_1UfIAiK2Yd7McZpY3ZWGkiyf",
+        "NUXT_STRIPE_PORTAL_CONFIG": "bpc_1UfRq3K2Yd7McZpYC0XCds56",
         "NUXT_PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAGQ8GbDzVHZM4y21",
         "NUXT_PUBLIC_APP_HOST": "slatecms.co.uk",
         "NUXT_PUBLIC_SITES_DOMAIN": "slatecms.co.uk",

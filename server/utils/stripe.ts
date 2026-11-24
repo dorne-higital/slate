@@ -25,6 +25,11 @@ export function stripeConfigured() {
     return !!useRuntimeConfig().stripeSecretKey
 }
 
+/** Live mode: a live secret key (sk_live_) or restricted key (rk_live_). Real money and real domain registrations. */
+export function stripeIsLive() {
+    return /^(sk|rk)_live_/.test(String(useRuntimeConfig().stripeSecretKey))
+}
+
 export async function stripe<T = Record<string, any>>(method: 'GET' | 'POST' | 'DELETE', path: string, params: Params = {}): Promise<T> {
     const key = useRuntimeConfig().stripeSecretKey
     if (!key) throw createError({ statusCode: 503, statusMessage: 'Billing isn’t set up yet' })

@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
     const paying = plans.starter + plans.business + plans.studio
 
     return {
-        live: String(useRuntimeConfig().stripeSecretKey).startsWith('sk_live_'),
+        live: stripeIsLive(),
         sites: { live: sitesLive, offline: sitesOffline, deleted: sitesDeleted, new7: sites7 },
         people: { total: users, new7: users7, new30: users30 },
         billing: { ...plans, paying, mrr, domainRevenueYear: orderRevenue },

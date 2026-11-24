@@ -36,7 +36,7 @@ async function api(method: string, path: string, params: Record<string, unknown>
     return data
 }
 
-const mode = KEY.startsWith('sk_live_') ? 'LIVE' : 'test'
+const mode = /^(sk|rk)_live_/.test(KEY) ? 'LIVE' : 'test'
 log(`Stripe ${mode} mode`)
 const portalProducts: { product: string, prices: string[] }[] = []
 

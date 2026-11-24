@@ -25,7 +25,7 @@ async function namecom<T>(method: 'GET' | 'POST' | 'PUT', path: string, body?: u
 }
 
 export function domainRegistrationLive() {
-    return String(useRuntimeConfig().stripeSecretKey).startsWith('sk_live_')
+    return stripeIsLive()
 }
 
 /** Why a name can't be sold, or null if it can (checks premium names and our margin). */
