@@ -22,7 +22,7 @@ async function clear(fp: string) {
             <div class="head">
                 <div>
                     <h1>Errors</h1>
-                    <p class="muted">Things that went wrong on Slate’s server in the last 30 days, grouped by kind. You’re emailed the first time each kind appears in an hour. Clear one once it’s fixed; it comes back if it happens again.</p>
+                    <p class="muted">Things that went wrong on Slate’s server, or in visitors’ browsers, in the last 30 days, grouped by kind. You’re emailed the first time each kind appears in an hour. Clear one once it’s fixed; it comes back if it happens again.</p>
                 </div>
                 <button class="btn btn-ghost btn-sm" type="button" @click="() => refresh()">Refresh</button>
             </div>
@@ -30,7 +30,7 @@ async function clear(fp: string) {
                 <ul class="list">
                     <li v-for="g in groups" :key="g.fingerprint">
                         <button class="row" type="button" :aria-expanded="open === g.fingerprint" @click="open = open === g.fingerprint ? null : g.fingerprint">
-                            <span class="code">{{ g.status }}</span>
+                            <span class="code" :class="{ browser: !g.status }">{{ g.status || 'Browser' }}</span>
                             <span class="what">
                                 <b>{{ g.message }}</b>
                                 <span class="muted small">{{ g.method }} {{ g.path ?? '(scheduled job)' }}{{ g.host ? ` · ${g.host}` : '' }}</span>
@@ -64,6 +64,7 @@ h1 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; margin: 0; }
 .row { align-items: center; background: none; border: 0; color: var(--quarry); cursor: pointer; display: grid; font: inherit; gap: 16px; grid-template-columns: 56px minmax(0, 1fr) 220px; padding: 14px 20px; text-align: left; width: 100%; }
 .row:hover { background: var(--paper); }
 .code { background: #fbeceb; border-radius: var(--radius); color: var(--danger); font-weight: 800; padding: 4px 0; text-align: center; }
+.code.browser { background: #eef2fb; color: #22477a; font-size: 11px; }
 .what { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .what b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nums { display: flex; flex-direction: column; gap: 2px; text-align: right; }

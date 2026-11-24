@@ -227,6 +227,7 @@ const sheets = [
                     </div>
                     <nav aria-label="Product"><a class="foot-link" href="#how">How it works</a><a class="foot-link" href="#included">Features</a><a class="foot-link" href="#pricing">Pricing</a><a class="foot-link" href="#studios">For studios</a></nav>
                     <nav aria-label="Account"><NuxtLink class="foot-link" to="/login">Log in</NuxtLink><NuxtLink class="foot-link" to="/signup">Sign up</NuxtLink></nav>
+                    <nav aria-label="Legal"><NuxtLink class="foot-link" to="/privacy">Privacy</NuxtLink><NuxtLink class="foot-link" to="/terms">Terms</NuxtLink></nav>
                 </div>
             </div>
         </footer>
@@ -375,7 +376,7 @@ details p { color: var(--text-body); font-size: 16px; line-height: 1.6; margin: 
 .foot { background: var(--quarry); color: var(--mist); padding: 88px 0 48px; }
 .foot-cta { align-items: flex-start; display: flex; flex-direction: column; gap: 28px; }
 .foot-cta h2 { color: var(--white); font-size: 56px; font-weight: 900; letter-spacing: -.04em; line-height: 1; max-width: 640px; }
-.foot-grid { border-top: 1px solid rgb(230 233 238 / 16%); display: grid; gap: 32px; grid-template-columns: 2fr 1fr 1fr; padding-top: 40px; }
+.foot-grid { border-top: 1px solid rgb(230 233 238 / 16%); display: grid; gap: 32px; grid-template-columns: 2fr 1fr 1fr 1fr; padding-top: 40px; }
 .foot-brand { color: #c3c8d1; display: flex; flex-direction: column; font-size: 15px; gap: 8px; }
 .foot-logo { color: var(--white); font-size: 26px; font-weight: 900; letter-spacing: -.04em; }
 .foot nav { display: flex; flex-direction: column; }

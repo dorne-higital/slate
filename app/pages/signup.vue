@@ -85,6 +85,7 @@ async function create() {
                     <input id="su-site" v-model="form.siteName" class="inp" type="text" :required="!invite">
                     <span class="help">Your free address: <b>{{ slug }}.{{ sitesDomain }}</b>. You can connect your own domain later.</span>
                 </div>
+                <p class="small">By creating an account you agree to our <NuxtLink to="/terms" target="_blank">terms</NuxtLink> and <NuxtLink to="/privacy" target="_blank">privacy policy</NuxtLink>.</p>
                 <button class="btn btn-lichen btn-lg" type="submit" :disabled="busy">{{ busy ? 'Creating your account…' : invite ? 'Create account and join' : 'Create account' }}</button>
                 <p class="small">Already have an account? <NuxtLink to="/login">Log in</NuxtLink></p>
             </form>

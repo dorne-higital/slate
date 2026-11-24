@@ -48,3 +48,24 @@ export async function logServerError(error: unknown, event?: H3Event) {
         console.error('[error-log] could not record error', e)
     }
 }
+
+export async function browserFingerprint(message: string, path: string | null) {
+    return sha1(`0|${normalise(message)}|${normalise(path ?? '')}`)
+}
+
+/** Stores an error reported by a browser (status 0) and alerts admins the first time in an hour, like server errors. */
+export async function logBrowserError(event: H3Event, e: { message: string, stack: string | null, path: string | null, fingerprint: string }) {
+    try {
+        const db = useDb()
+        await db.insert(schema.errorLogs).values({ fingerprint: e.fingerprint, message: e.message, stack: e.stack, status: 0, path: e.path, method: 'BROWSER', host: (getRequestHost(event, { xForwardedHost: false }) ?? '').slice(0, 200) })
+        const hourAgo = new Date(Date.now() - 3600 * 1000)
+        const seen = await db.select({ n: sql<number>`count(*)::int` }).from(schema.errorLogs).where(and(eq(schema.errorLogs.fingerprint, e.fingerprint), gt(schema.errorLogs.createdAt, hourAgo)))
+        if ((seen[0]?.n ?? 0) > 1) return
+        const [{ groups } = { groups: 0 }] = await db.select({ groups: sql<number>`count(distinct fingerprint)::int` }).from(schema.errorLogs)
+            .where(gt(schema.errorLogs.createdAt, new Date(Date.now() - 24 * 3600 * 1000)))
+        if (groups > ALERTS_PER_DAY) return
+        await alertPlatformAdmins(`Browser error: ${e.message.slice(9, 80)}`, `A visitor's browser hit an error.\n\n${e.message}\n\nPage: ${e.path ?? '?'}\n\nSee Admin → Errors: ${appUrl('/admin/errors')}`)
+    } catch (err) {
+        console.error('[error-log] could not record browser error', err)
+    }
+}
