@@ -10,7 +10,10 @@ const { data: invite } = await useAsyncData('signup-invite', () => inviteToken
     ? useRequestFetch()<{ siteName: string, role: SiteRole }>(`/api/invites/${inviteToken}`).catch(() => null)
     : Promise.resolve(null))
 
-const step = ref<1 | 2>(1)
+const step = ref<1 | 2 | 3>(1)
+// After the site exists: optional domain step
+const createdSiteId = ref<string | null>(null)
+const freeAddress = ref('')
 const form = reactive({ name: '', email: '', password: '', siteName: '', layout: 'trade' })
 const error = ref('')
 const busy = ref(false)
@@ -32,9 +35,12 @@ async function create() {
     busy.value = true
     error.value = ''
     try {
-        const { siteId } = await $fetch('/api/signup', { method: 'POST', body: inviteToken ? { ...form, invite: inviteToken } : form })
+        const { siteId, slug } = await $fetch('/api/signup', { method: 'POST', body: inviteToken ? { ...form, invite: inviteToken } : form })
         await refresh()
-        await navigateTo(`/sites/${siteId}`)
+        if (inviteToken || !slug) return await navigateTo(`/sites/${siteId}`)
+        createdSiteId.value = siteId
+        freeAddress.value = `${slug}.${useRuntimeConfig().public.sitesDomain}`
+        step.value = 3
     } catch (err) {
         error.value = (err as { statusMessage?: string, data?: { statusMessage?: string } }).data?.statusMessage
             ?? 'Something went wrong. Please try again.'
@@ -53,9 +59,9 @@ async function create() {
             <ol v-if="!inviteToken" aria-label="Sign-up steps" class="steps">
                 <li :class="step === 1 ? 'on' : 'done'"><span>1</span>Your account</li>
                 <li class="bar" aria-hidden="true" />
-                <li :class="step === 2 ? 'on' : ''"><span>2</span>Starting layout</li>
+                <li :class="step === 2 ? 'on' : step === 3 ? 'done' : ''"><span>2</span>Starting layout</li>
                 <li class="bar" aria-hidden="true" />
-                <li><span>3</span>Editor</li>
+                <li :class="step === 3 ? 'on' : ''"><span>3</span>Your domain</li>
             </ol>
 
             <form v-if="step === 1" class="stack" @submit.prevent="next">
@@ -80,6 +86,18 @@ async function create() {
                 <p class="small">Already have an account? <NuxtLink to="/login">Log in</NuxtLink></p>
             </form>
 
+            <div v-else-if="step === 3 && createdSiteId" class="stack wide">
+                <div class="intro">
+                    <h1>Want your own domain?</h1>
+                    <p>Your site is ready at <b>{{ freeAddress }}</b>. A domain like yourbusiness.co.uk looks more professional. You can also do this later from Domains.</p>
+                </div>
+                <DomainBuy :site-id="createdSiteId" can-buy auto-search :suggestion="form.siteName" />
+                <div class="row">
+                    <NuxtLink class="btn btn-lichen btn-lg" :to="`/sites/${createdSiteId}`">Open the editor</NuxtLink>
+                    <NuxtLink class="btn btn-plain" :to="`/sites/${createdSiteId}`">Skip for now</NuxtLink>
+                </div>
+            </div>
+
             <div v-else class="stack wide">
                 <div class="intro">
                     <h1>Pick a starting layout</h1>
@@ -101,7 +119,7 @@ async function create() {
                     </button>
                 </div>
                 <div class="row">
-                    <button class="btn btn-lichen btn-lg" type="button" :disabled="busy" @click="create">{{ busy ? 'Creating your site…' : 'Open the editor' }}</button>
+                    <button class="btn btn-lichen btn-lg" type="button" :disabled="busy" @click="create">{{ busy ? 'Creating your site…' : 'Create my site' }}</button>
                     <button class="btn btn-plain" type="button" @click="step = 1">Back</button>
                 </div>
             </div>

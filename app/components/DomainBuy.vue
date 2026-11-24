@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Search for a domain and buy it through Slate (yearly, paid via Stripe, registered at name.com).
-const props = defineProps<{ siteId: string, canBuy: boolean, suggestion?: string }>()
+const props = defineProps<{ siteId: string, canBuy: boolean, suggestion?: string, autoSearch?: boolean }>()
 const route = useRoute()
 
 interface Order { id: string, domain: string, price: number, status: DomainOrderStatus, simulated: boolean, expiresAt: string | null, createdAt: string }
@@ -43,6 +43,7 @@ async function buy(domain: string) {
 const returning = typeof route.query.order === 'string' ? route.query.order : null
 const emit = defineEmits<{ bought: [] }>()
 onMounted(async () => {
+    if (props.autoSearch && query.value.trim() && !returning) search()
     if (!returning) return
     await $fetch(`/api/sites/${props.siteId}/domains/orders/${returning}`, { method: 'POST' }).catch(() => {})
     await refresh()
