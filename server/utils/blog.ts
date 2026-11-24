@@ -61,7 +61,7 @@ export type PublicPostSummary = Awaited<ReturnType<typeof livePosts>>[number]
 export async function publicShell(site: typeof schema.sites.$inferSelect) {
     const [menus, address] = await Promise.all([loadMenus(site.id), liveAddress(site)])
     return {
-        site: { name: site.name, theme: site.theme ?? {}, seo: site.seo ?? {}, address },
+        site: { name: site.name, theme: site.theme ?? {}, seo: site.seo ?? {}, integrations: site.integrations ?? {}, address },
         menus: { header: menus.header, footer: menus.footer, legal: menus.legal }
     }
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
+import BlockBooking from './blocks/BlockBooking.vue'
 import BlockCta from './blocks/BlockCta.vue'
 import BlockFaq from './blocks/BlockFaq.vue'
 import BlockForm from './blocks/BlockForm.vue'
@@ -23,7 +24,8 @@ const registry: Record<string, Component> = {
     faq: BlockFaq,
     cta: BlockCta,
     form: BlockForm,
-    latestPosts: BlockLatestPosts
+    latestPosts: BlockLatestPosts,
+    booking: BlockBooking
 }
 </script>
 

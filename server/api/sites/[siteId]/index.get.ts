@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
         customDomain: site.customDomain,
         theme: site.theme ?? {},
         replyEmail: site.replyEmail,
+        integrations: site.integrations ?? {},
         offline: site.offline,
         freeAddress: `${site.slug}.${config.public.sitesDomain}`,
         // Where visitors actually find the site right now

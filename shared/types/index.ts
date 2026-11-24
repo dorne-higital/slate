@@ -38,6 +38,18 @@ export interface SiteSeo {
     defaultShareImage?: string
 }
 
+/** Third-party tools connected to a site. Each value is validated against the tool's format. */
+export interface SiteIntegrations {
+    /** Google Analytics 4 measurement ID, e.g. G-ABC123XYZ */
+    ga4?: string
+    /** The domain as registered in Plausible, e.g. brambleandoak.co.uk */
+    plausible?: string
+    /** Meta (Facebook) Pixel ID: digits only */
+    metaPixel?: string
+    /** Calendly scheduling link, e.g. https://calendly.com/bramble/visit */
+    calendly?: string
+}
+
 export type MenuSlot = 'header' | 'footer' | 'legal'
 
 export interface MenuItem {

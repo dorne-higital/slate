@@ -23,17 +23,18 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
   public blog index, category filter, post pages, RSS, Latest posts block, Blog in auto header
 - [x] Settings and people: site name, reply email, invite links with roles, change role, remove,
   leave, last-owner protection, take offline (holding page), delete with 30-day restore by platform admin
+- [x] Integrations: Google Analytics, Plausible, Meta Pixel, Calendly (+ Booking block), cookie consent
+  banner for GA/Meta, cross-site request protection on the CMS API. Mailchimp, Kit, Stripe: coming soon
 
 ## Next, in order
 
-1. [ ] **Integrations**: Google Analytics / Plausible ID, Meta pixel, custom head snippet (owner only)
-2. [ ] **Media library** (**needs Dan: enable R2**): uploads to R2, media page with grid/search,
+1. [ ] **Media library** (**needs Dan: enable R2**): uploads to R2, media page with grid/search,
    image picker in the editor, logo + favicon in Theme
-3. [ ] **Billing** (**needs Dan: Stripe account + test keys**): plans, Stripe Checkout + customer portal,
+2. [ ] **Billing** (**needs Dan: Stripe account + test keys**): plans, Stripe Checkout + customer portal,
    webhooks, plan limits, Billing page with invoices
-4. [ ] **Domain buying** (**needs Dan: registrar reseller account**): search + buy a domain during sign-up
+3. [ ] **Domain buying** (**needs Dan: registrar reseller account**): search + buy a domain during sign-up
    and from Domains, auto-connect
-5. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
+4. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
 
 ## Housekeeping (as I go)
 

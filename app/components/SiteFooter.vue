@@ -1,5 +1,6 @@
 <script setup lang="ts">
-defineProps<{ name: string, items: MenuItem[], legal: MenuItem[], preview?: boolean }>()
+defineProps<{ name: string, items: MenuItem[], legal: MenuItem[], preview?: boolean, cookieSettings?: boolean }>()
+defineEmits<{ cookieSettings: [] }>()
 const year = new Date().getFullYear()
 </script>
 
@@ -17,11 +18,12 @@ const year = new Date().getFullYear()
             </div>
             <div class="sf-bottom">
                 <span>© {{ year }} {{ name }}</span>
-                <nav v-if="legal.length" aria-label="Legal" class="sf-legal">
+                <nav v-if="legal.length || cookieSettings" aria-label="Legal" class="sf-legal">
                     <template v-for="item in legal" :key="item.id">
                         <span v-if="preview">{{ item.label }}</span>
                         <a v-else :href="item.url">{{ item.label }}</a>
                     </template>
+                    <button v-if="cookieSettings && !preview" type="button" class="sf-cookie" @click="$emit('cookieSettings')">Cookie settings</button>
                 </nav>
             </div>
         </div>
@@ -38,4 +40,6 @@ const year = new Date().getFullYear()
 .sf a:hover { text-decoration: underline; }
 .sf-bottom { border-top: 1px solid currentcolor; display: flex; flex-wrap: wrap; font-size: 13px; gap: 12px 24px; justify-content: space-between; opacity: .75; padding-top: 20px; }
 .sf-legal { display: flex; flex-wrap: wrap; gap: 20px; }
+.sf-cookie { background: none; border: 0; color: inherit; cursor: pointer; font: inherit; padding: 0; }
+.sf-cookie:hover { text-decoration: underline; }
 </style>

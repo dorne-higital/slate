@@ -102,6 +102,13 @@ export const BLOCK_TYPES: BlockType[] = [
         defaults: { heading: 'From the blog', count: '3' }
     },
     {
+        type: 'booking',
+        name: 'Booking',
+        desc: 'Your Calendly booking calendar',
+        fields: [heading, { key: 'intro', label: 'Intro', kind: 'textarea', max: 600 }],
+        defaults: { heading: 'Book a time', intro: 'Pick a time that suits you.' }
+    },
+    {
         type: 'cta',
         name: 'Call to action',
         desc: 'A dark band with one button',

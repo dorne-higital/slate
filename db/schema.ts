@@ -1,5 +1,5 @@
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
-import type { Block, MenuItem, MenuSlot, PageStatus, SiteRole, SiteSeo, SiteTheme } from '../shared/types'
+import type { Block, MenuItem, MenuSlot, PageStatus, SiteIntegrations, SiteRole, SiteSeo, SiteTheme } from '../shared/types'
 import type { FormField } from '../shared/utils/forms'
 
 // ── Better Auth tables (shape required by better-auth's drizzle adapter) ──
@@ -61,6 +61,7 @@ export const sites = pgTable('sites', {
     customDomain: text('custom_domain').unique(),
     theme: jsonb('theme').$type<SiteTheme>(),
     seo: jsonb('seo').$type<SiteSeo>(),
+    integrations: jsonb('integrations').$type<SiteIntegrations>(),
     // Where form reply notifications go (used once email sending is set up)
     replyEmail: text('reply_email'),
     // Visitors see a holding page; everything stays saved

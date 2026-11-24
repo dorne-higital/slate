@@ -1,11 +1,15 @@
 <script setup lang="ts">
 // The frame around every public page of a client site: theme, fonts, header and footer.
 const props = defineProps<{
-    site: { name: string, theme: SiteTheme }
+    site: { name: string, theme: SiteTheme, integrations?: SiteIntegrations }
     menus: { header: MenuItem[], footer: MenuItem[], legal: MenuItem[] }
 }>()
 useHead(() => ({ link: [{ rel: 'stylesheet', href: themeFontsHref(props.site.theme) }] }))
 const themeVars = computed(() => siteThemeVars(props.site.theme))
+const integrations = computed(() => props.site.integrations ?? {})
+provide('siteIntegrations', integrations)
+const tracking = ref<{ reopen: () => void } | null>(null)
+const hasCookies = computed(() => !!(integrations.value.ga4 || integrations.value.metaPixel))
 </script>
 
 <template>
@@ -14,7 +18,8 @@ const themeVars = computed(() => siteThemeVars(props.site.theme))
         <main>
             <slot />
         </main>
-        <SiteFooter :name="site.name" :items="menus.footer" :legal="menus.legal" />
+        <SiteFooter :name="site.name" :items="menus.footer" :legal="menus.legal" :cookie-settings="hasCookies" @cookie-settings="tracking?.reopen()" />
+        <SiteTracking ref="tracking" :integrations="integrations" />
     </div>
 </template>
 

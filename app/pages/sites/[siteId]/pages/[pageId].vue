@@ -29,6 +29,7 @@ const [{ data: site }, { data: loaded, error }, { data: allPages, refresh: refre
 const { data: forms } = await useAsyncData(`forms-${siteId}`, () => fetcher<FormDefinition[]>(`/api/sites/${siteId}/forms`))
 provide('siteForms', computed(() => Object.fromEntries((forms.value ?? []).map(f => [f.id, f]))))
 provide('blockPreview', true)
+provide('siteIntegrations', computed(() => (site.value?.integrations ?? {}) as SiteIntegrations))
 const { data: posts } = await useAsyncData(`posts-${siteId}`, () => fetcher<{ title: string, slug: string, excerpt: string, body: string, coverImage: string, publishedAt: string | null, state: string, categoryName: string | null }[]>(`/api/sites/${siteId}/posts`))
 provide('sitePosts', computed(() => (posts.value ?? [])
     .filter(p => p.state === 'published')
