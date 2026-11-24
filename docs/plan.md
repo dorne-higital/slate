@@ -82,4 +82,13 @@ Dan chose: refresh the design, projects as their own content type.
 4. [x] Projects: own CMS screen (details, cover, category, buttons, order), pages at /work/…, case-study header, edited in the page editor
 5. [x] More fonts: Baloo 2, Quicksand, Space Grotesk, Outfit, Plus Jakarta Sans, Instrument Serif
 6. [ ] Multi-step forms
-7. [ ] Rebuild danhorne.co.uk in Slate with a refreshed design, then point the domain at it
+7. [x] Rebuild danhorne.co.uk in Slate with a refreshed design (danhorne.slatecms.co.uk, 24 Nov)
+8. [ ] Dan reviews it, then point danhorne.co.uk at it
+9. [x] Theme: any Google Font for headings and paragraphs
+10. [x] Delete a page from the editor
+
+## Billing extras (asked 24 Nov)
+
+1. [ ] Discounts for existing clients (Stripe coupons / promo codes), applied from All sites
+2. [ ] Custom invoices from All sites (Stripe invoices with a pay link)
+3. [ ] Show past invoices (plans, domain renewals) on the Billing page
