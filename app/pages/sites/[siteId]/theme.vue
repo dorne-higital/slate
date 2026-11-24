@@ -115,6 +115,15 @@ function setFont(key: 'headingFont' | 'bodyFont', f: GoogleFont) {
                         </div>
                     </div>
                     <div v-if="theme.logo" class="field">
+                        <span class="lb">Logo for dark backgrounds (optional)</span>
+                        <div class="img-row">
+                            <img v-if="theme.logoOnDark" :src="theme.logoOnDark" alt="" class="logo-prev dark">
+                            <span v-else class="muted">Used on a dark or coloured header or footer, e.g. a white version.</span>
+                            <MediaPicker :site-id="siteId" @pick="theme.logoOnDark = $event.url" />
+                            <button v-if="theme.logoOnDark" class="btn btn-plain btn-sm" type="button" @click="theme.logoOnDark = ''">Remove</button>
+                        </div>
+                    </div>
+                    <div v-if="theme.logo" class="field">
                         <label for="lh">Logo height: {{ theme.logoHeight }}px</label>
                         <input id="lh" v-model.number="theme.logoHeight" type="range" min="20" max="96" step="2">
                     </div>
@@ -243,6 +252,7 @@ h2 { font-size: 18px; margin: 0; }
     .preview-col { position: static; }
 }
 .img-row { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; }
+.logo-prev.dark { background: var(--quarry); }
 .logo-prev { background: var(--mist); border-radius: 4px; height: 40px; max-width: 180px; object-fit: contain; padding: 4px; }
 .fav-prev { border-radius: 4px; height: 32px; object-fit: cover; width: 32px; }
 input[type="range"] { width: 100%; }

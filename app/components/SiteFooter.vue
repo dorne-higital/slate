@@ -5,6 +5,8 @@ const t = computed(() => ({ ...DEFAULT_THEME, ...props.theme }))
 const columns = computed(() => menuTree(props.items))
 defineEmits<{ cookieSettings: [] }>()
 const year = new Date().getFullYear()
+// On a dark or coloured footer, use the light version of the logo if there is one
+const logo = computed(() => (t.value.footerColour !== 'page' && t.value.footerColour !== 'soft' && t.value.logoOnDark) || t.value.logo)
 </script>
 
 <template>
@@ -12,7 +14,7 @@ const year = new Date().getFullYear()
         <div class="sf-inner">
             <div class="sf-top">
                 <div class="sf-brand">
-                    <img v-if="t.logo" :src="t.logo" :alt="name" class="sf-logo">
+                    <img v-if="logo" :src="logo" :alt="name" class="sf-logo">
                     <b v-else class="sf-name">{{ name }}</b>
                     <SocialIcons :socials="socials" :preview="preview" />
                 </div>

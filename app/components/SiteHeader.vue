@@ -6,13 +6,15 @@ const tree = computed(() => menuTree(props.items))
 const open = ref(false)
 const isInternal = (url: string) => url.startsWith('/')
 const t = computed(() => ({ ...DEFAULT_THEME, ...props.theme }))
+// On a dark or coloured header, use the light version of the logo if there is one
+const logo = computed(() => (t.value.headerColour !== 'page' && t.value.headerColour !== 'soft' && t.value.logoOnDark) || t.value.logo)
 </script>
 
 <template>
     <header class="sh" :class="[`style-${t.headerStyle}`, { sticky: t.headerSticky && !preview }]">
         <div class="sh-bar">
-            <component :is="preview ? 'span' : resolveComponent('NuxtLink')" to="/" class="sh-name" :aria-label="t.logo ? name : undefined">
-                <img v-if="t.logo" :src="t.logo" :alt="name" class="sh-logo">
+            <component :is="preview ? 'span' : resolveComponent('NuxtLink')" to="/" class="sh-name" :aria-label="logo ? name : undefined">
+                <img v-if="logo" :src="logo" :alt="name" class="sh-logo">
                 <template v-else>{{ name }}</template>
             </component>
             <button v-if="!preview" class="sh-toggle" type="button" :aria-expanded="open" aria-controls="site-menu" @click="open = !open">Menu</button>

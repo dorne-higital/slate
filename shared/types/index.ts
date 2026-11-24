@@ -37,6 +37,8 @@ export interface SiteTheme {
     scheme?: 'light' | 'dark'
     /** Media library or https image addresses */
     logo?: string
+    /** Optional version of the logo for dark or coloured headers and footers (e.g. white lettering) */
+    logoOnDark?: string
     logoHeight?: number
     favicon?: string
     /** Big page headings (hero) and section headings */
