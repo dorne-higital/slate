@@ -161,8 +161,8 @@ const themeVars = computed(() => siteThemeVars(site.value?.theme as SiteTheme))
                 </template>
 
                 <div class="mini" :style="themeVars">
-                    <SiteHeader v-if="slot === 'header'" :name="site?.name ?? ''" :items="items" preview />
-                    <SiteFooter v-else :name="site?.name ?? ''" :items="drafts.footer" :legal="drafts.legal" preview />
+                    <SiteHeader v-if="slot === 'header'" :name="site?.name ?? ''" :items="items" :theme="(site?.theme as SiteTheme)" :socials="(site?.socials as SiteSocials)" preview />
+                    <SiteFooter v-else :name="site?.name ?? ''" :items="drafts.footer" :legal="drafts.legal" :theme="(site?.theme as SiteTheme)" :socials="(site?.socials as SiteSocials)" preview />
                 </div>
                 <span class="muted">Preview of your {{ slot === 'header' ? 'header' : 'footer' }}</span>
             </section>

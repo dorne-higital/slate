@@ -1,10 +1,11 @@
 <script setup lang="ts">
 // The frame around every public page of a client site: theme, fonts, header and footer.
 const props = defineProps<{
-    site: { name: string, theme: SiteTheme, integrations?: SiteIntegrations }
+    site: { name: string, theme: SiteTheme, integrations?: SiteIntegrations, socials?: SiteSocials }
     menus: { header: MenuItem[], footer: MenuItem[], legal: MenuItem[] }
 }>()
 useHead(() => ({ link: [{ rel: 'stylesheet', href: themeFontsHref(props.site.theme) }] }))
+useHead(() => ({ link: props.site.theme?.favicon ? [{ rel: 'icon', href: props.site.theme.favicon }] : [] }))
 const themeVars = computed(() => siteThemeVars(props.site.theme))
 const integrations = computed(() => props.site.integrations ?? {})
 provide('siteIntegrations', integrations)
@@ -14,11 +15,11 @@ const hasCookies = computed(() => !!(integrations.value.ga4 || integrations.valu
 
 <template>
     <div class="site" :style="themeVars">
-        <SiteHeader :name="site.name" :items="menus.header" />
+        <SiteHeader :name="site.name" :items="menus.header" :theme="site.theme" :socials="site.socials" />
         <main>
             <slot />
         </main>
-        <SiteFooter :name="site.name" :items="menus.footer" :legal="menus.legal" :cookie-settings="hasCookies" @cookie-settings="tracking?.reopen()" />
+        <SiteFooter :name="site.name" :items="menus.footer" :legal="menus.legal" :theme="site.theme" :socials="site.socials" :cookie-settings="hasCookies" @cookie-settings="tracking?.reopen()" />
         <SiteTracking ref="tracking" :integrations="integrations" />
     </div>
 </template>

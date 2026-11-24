@@ -2,7 +2,8 @@ import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
     const { site } = await requireSiteAccess(event, getRouterParam(event, 'siteId')!, 'admin')
-    const theme = cleanTheme(await readBody(event))
+    // Theme and Layout each send only their own settings, so merge with what's saved
+    const theme = cleanTheme({ ...(site.theme ?? {}), ...(await readBody<Record<string, unknown>>(event)) })
     await useDb().update(schema.sites).set({ theme, updatedAt: new Date() }).where(eq(schema.sites.id, site.id))
     return theme
 })

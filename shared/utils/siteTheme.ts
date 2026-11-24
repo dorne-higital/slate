@@ -16,9 +16,26 @@ export const DEFAULT_THEME: Required<SiteTheme> = {
     soft: '#F4F5F7',
     text: '#464D5F',
     background: '#FFFFFF',
+    accent: '#E8A33A',
     headingFont: 'Schibsted Grotesk',
     bodyFont: 'Schibsted Grotesk',
-    corners: 'soft'
+    corners: 'soft',
+    scheme: 'light',
+    logo: '',
+    logoHeight: 36,
+    favicon: '',
+    titleSize: 'large',
+    headingSize: 'medium',
+    navSize: 'medium',
+    headingCase: 'none',
+    navCase: 'none',
+    buttonCase: 'none',
+    headerStyle: 'standard',
+    headerColour: 'page',
+    headerSticky: false,
+    headerSocials: false,
+    footerStyle: 'simple',
+    footerColour: 'dark'
 }
 
 export const THEME_PRESETS: { name: string, theme: SiteTheme }[] = [
@@ -35,13 +52,50 @@ const HEX = /^#[0-9a-f]{6}$/i
 export function cleanTheme(input: unknown): SiteTheme {
     const t = (input && typeof input === 'object' ? input : {}) as Record<string, unknown>
     const out: SiteTheme = {}
-    for (const key of ['primary', 'dark', 'soft', 'text', 'background'] as const) {
+    for (const key of ['primary', 'dark', 'soft', 'text', 'background', 'accent'] as const) {
         if (typeof t[key] === 'string' && HEX.test(t[key] as string)) out[key] = (t[key] as string).toUpperCase()
     }
     for (const key of ['headingFont', 'bodyFont'] as const) {
         if (SITE_FONTS.some(f => f.name === t[key])) out[key] = t[key] as string
     }
-    if (t.corners === 'square' || t.corners === 'soft' || t.corners === 'round') out.corners = t.corners
+    const pick = <K extends keyof SiteTheme>(key: K, allowed: readonly string[]) => {
+        if (typeof t[key] === 'string' && allowed.includes(t[key] as string)) out[key] = t[key] as SiteTheme[K]
+    }
+    pick('corners', ['square', 'soft', 'round'])
+    pick('scheme', ['light', 'dark'])
+    pick('titleSize', SIZES)
+    pick('headingSize', SIZES)
+    pick('navSize', ['small', 'medium', 'large'])
+    for (const key of ['headingCase', 'navCase', 'buttonCase'] as const) pick(key, ['none', 'uppercase', 'capitalize'])
+    pick('headerStyle', ['standard', 'centred', 'mega'])
+    pick('footerStyle', ['simple', 'columns'])
+    pick('headerColour', COLOUR_CHOICES)
+    pick('footerColour', COLOUR_CHOICES)
+    for (const key of ['headerSticky', 'headerSocials'] as const) if (typeof t[key] === 'boolean') out[key] = t[key] as boolean
+    // Images: our own media addresses or https only (safeUrl also refuses javascript: etc.)
+    for (const key of ['logo', 'favicon'] as const) {
+        if (typeof t[key] === 'string') {
+            const v = safeUrl(String(t[key]).trim().slice(0, 1000))
+            out[key] = v.startsWith('/media/') || v.startsWith('https://') ? v : ''
+        }
+    }
+    if (typeof t.logoHeight === 'number' && t.logoHeight >= 20 && t.logoHeight <= 96) out.logoHeight = Math.round(t.logoHeight)
+    return out
+}
+
+const SIZES = ['small', 'medium', 'large', 'huge'] as const
+const COLOUR_CHOICES = ['page', 'soft', 'dark', 'primary', 'accent'] as const
+
+/** Social links: each must be an https address. */
+export function cleanSocials(input: unknown): SiteSocials {
+    const t = (input && typeof input === 'object' ? input : {}) as Record<string, unknown>
+    const out: SiteSocials = {}
+    for (const key of SOCIAL_NETWORKS) {
+        const v = typeof t[key] === 'string' ? (t[key] as string).trim() : ''
+        if (!v) continue
+        const url = /^https?:\/\//i.test(v) ? v : `https://${v.replace(/^\/+/, '')}`
+        if (/^https:\/\/[^\s/]+\.[^\s]+$/i.test(url.replace(/^http:/i, 'https:'))) out[key] = url.replace(/^http:/i, 'https:').slice(0, 300)
+    }
     return out
 }
 

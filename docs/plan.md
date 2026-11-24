@@ -65,8 +65,9 @@ Quick wins first, then the bigger customisation work.
 6. [x] Billing: platform admins can preview the customer view of the page
 7. [x] Domain at sign-up: optional "find a domain" step
 8. [x] People: own sidebar item (move out of Settings)
-9. [ ] Settings: social links, shown as icons in the footer and usable in menus
-10. [ ] Theme: logo, favicon, extra brand colours, heading sizes, nav size, text transforms, light/dark
-11. [ ] Layout section: header style (regular, centred, mega menu), header/footer colours, link to Menus
+9. [x] Settings: social links, shown as icons in the footer and usable in menus
+10. [x] Theme: logo, favicon, extra brand colours, heading sizes, nav size, text transforms, light/dark
+11. [x] Layout section: header style (regular, centred, mega menu), header/footer colours, link to Menus
 12. [ ] Blocks: a gallery of every block to try out with sample content
 13. [ ] Integrations: list of candidates, including paid add-ons (answered in chat, then build the chosen ones)
+14. [ ] Support: tickets from each site (Support page in the CMS), listed in the platform dashboard; platform admins reply, both sides emailed

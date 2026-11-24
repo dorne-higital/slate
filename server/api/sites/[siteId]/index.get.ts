@@ -9,6 +9,7 @@ export default defineEventHandler(async (event) => {
         theme: site.theme ?? {},
         replyEmail: site.replyEmail,
         integrations: site.integrations ?? {},
+        socials: site.socials ?? {},
         offline: site.offline,
         freeAddress: `${site.slug}.${config.public.sitesDomain}`,
         // Where visitors actually find the site right now

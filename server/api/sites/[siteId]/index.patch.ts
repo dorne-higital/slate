@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm'
 /** General settings: site name, reply email, and taking the site offline. */
 export default defineEventHandler(async (event) => {
     const { site } = await requireSiteAccess(event, getRouterParam(event, 'siteId')!, 'admin')
-    const b = await readBody<{ name?: string, replyEmail?: string | null, offline?: boolean }>(event)
+    const b = await readBody<{ name?: string, replyEmail?: string | null, offline?: boolean, socials?: SiteSocials }>(event)
     const set: Partial<typeof schema.sites.$inferInsert> = { updatedAt: new Date() }
 
     if (b.name !== undefined) {
@@ -17,7 +17,8 @@ export default defineEventHandler(async (event) => {
         set.replyEmail = email || null
     }
     if (b.offline !== undefined) set.offline = b.offline === true
+    if (b.socials !== undefined) set.socials = cleanSocials(b.socials)
 
     const [updated] = await useDb().update(schema.sites).set(set).where(eq(schema.sites.id, site.id)).returning()
-    return { name: updated!.name, replyEmail: updated!.replyEmail, offline: updated!.offline }
+    return { name: updated!.name, replyEmail: updated!.replyEmail, offline: updated!.offline, socials: updated!.socials ?? {} }
 })

@@ -348,7 +348,7 @@ onBeforeRouteLeave(async () => {
             <main class="canvas-wrap" aria-label="Page canvas" @click.self="selectedId = null">
                 <div class="canvas" :class="device" :style="themeVars">
                     <div class="shared">
-                        <SiteHeader :name="site?.name ?? ''" :items="menus?.header ?? []" preview :compact="device === 'phone'" />
+                        <SiteHeader :name="site?.name ?? ''" :items="menus?.header ?? []" :theme="(site?.theme as SiteTheme)" :socials="(site?.socials as SiteSocials)" preview :compact="device === 'phone'" />
                         <NuxtLink class="tag" :to="`/sites/${siteId}/menus`">Header, shared on every page. Edit in Menus</NuxtLink>
                     </div>
 
@@ -388,7 +388,7 @@ onBeforeRouteLeave(async () => {
                     </div>
 
                     <div class="shared foot">
-                        <SiteFooter :name="site?.name ?? ''" :items="menus?.footer ?? []" :legal="menus?.legal ?? []" preview />
+                        <SiteFooter :name="site?.name ?? ''" :items="menus?.footer ?? []" :legal="menus?.legal ?? []" :theme="(site?.theme as SiteTheme)" :socials="(site?.socials as SiteSocials)" preview />
                         <NuxtLink class="tag" :to="`/sites/${siteId}/menus`">Footer, shared on every page. Edit in Menus</NuxtLink>
                     </div>
                 </div>

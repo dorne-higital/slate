@@ -17,6 +17,7 @@ const groups: { title: string, items: NavItem[] }[] = [
     ] },
     { title: 'Design', items: [
         { key: 'theme', label: 'Theme', icon: 'M9 2.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 1 0 0-13M9 2.5v13', to: '/theme' },
+        { key: 'layout', label: 'Layout', icon: 'M2 3h14v3H2zM2 8h5v7H2zM9 8h7v7H9z', to: '/layout' },
         { key: 'blocks', label: 'Blocks', icon: 'M2 2h6v6H2zM10 2h6v6h-6zM2 10h6v6H2zM10 10h6v6h-6z' }
     ] },
     { title: 'Site', items: [

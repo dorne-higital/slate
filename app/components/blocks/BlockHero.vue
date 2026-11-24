@@ -14,6 +14,6 @@ defineProps<{ heading?: string, text?: string, buttonLabel?: string, buttonUrl?:
 
 <style scoped>
 .hero { padding: 104px 0 88px; }
-h1 { color: var(--site-heading); font-family: var(--site-heading-font); font-size: clamp(40px, 6vw, 64px); font-weight: 800; letter-spacing: -.035em; line-height: 1.02; margin: 0; max-width: 16em; }
+h1 { color: var(--site-heading); font-family: var(--site-heading-font); font-size: var(--site-h1-size, clamp(40px, 6vw, 64px)); text-transform: var(--site-heading-case, none); font-weight: 800; letter-spacing: -.035em; line-height: 1.02; margin: 0; max-width: 16em; }
 .lead { font-size: 19px; max-width: 36em; }
 </style>

@@ -85,6 +85,13 @@
       "when": 1795523088132,
       "tag": "0011_striped_donald_blake",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795532272096,
+      "tag": "0012_lush_pride",
+      "breakpoints": true
     }
   ]
 }

@@ -19,8 +19,9 @@ useHead(() => ({
     link: [{ rel: 'stylesheet', href: themeFontsHref(theme.value) }]
 }))
 
-const colours: { key: 'primary' | 'dark' | 'soft' | 'text' | 'background', name: string, help: string }[] = [
+const colours: { key: 'primary' | 'dark' | 'soft' | 'text' | 'background' | 'accent', name: string, help: string }[] = [
     { key: 'primary', name: 'Main', help: 'Buttons, links and highlights' },
+    { key: 'accent', name: 'Accent', help: 'Small touches: underlines, labels' },
     { key: 'dark', name: 'Dark', help: 'Headings and dark sections' },
     { key: 'soft', name: 'Soft', help: 'Light section backgrounds' },
     { key: 'text', name: 'Text', help: 'Paragraphs' },
@@ -32,9 +33,14 @@ const corners = [
     { key: 'round', label: 'Round' }
 ] as const
 
+// Presets change colours, fonts and corners only; logo, sizes and layout stay as they are
 function applyPreset(preset: SiteTheme) {
-    theme.value = { ...DEFAULT_THEME, ...preset }
+    theme.value = { ...theme.value, ...preset }
 }
+const sizes = [{ key: 'small', label: 'Small' }, { key: 'medium', label: 'Medium' }, { key: 'large', label: 'Large' }, { key: 'huge', label: 'Huge' }] as const
+const navSizes = [{ key: 'small', label: 'Small' }, { key: 'medium', label: 'Medium' }, { key: 'large', label: 'Large' }] as const
+const cases = [{ key: 'none', label: 'As typed' }, { key: 'capitalize', label: 'Title Case' }, { key: 'uppercase', label: 'CAPITALS' }] as const
+const caseFields = [{ key: 'headingCase', label: 'Headings' }, { key: 'navCase', label: 'Menu links' }, { key: 'buttonCase', label: 'Buttons' }] as const
 
 function setHex(key: typeof colours[number]['key'], value: string) {
     const v = value.trim().startsWith('#') ? value.trim() : `#${value.trim()}`
@@ -87,8 +93,43 @@ const sample: Block[] = [
                     </div>
                 </section>
 
+                <section class="panel box" aria-labelledby="b-h">
+                    <h2 id="b-h">Logo and icon</h2>
+                    <div class="field">
+                        <span class="lb">Logo</span>
+                        <div class="img-row">
+                            <img v-if="theme.logo" :src="theme.logo" alt="" class="logo-prev">
+                            <span v-else class="muted">No logo yet. Your site name shows instead.</span>
+                            <MediaPicker :site-id="siteId" @pick="theme.logo = $event.url" />
+                            <button v-if="theme.logo" class="btn btn-plain btn-sm" type="button" @click="theme.logo = ''">Remove</button>
+                        </div>
+                    </div>
+                    <div v-if="theme.logo" class="field">
+                        <label for="lh">Logo height: {{ theme.logoHeight }}px</label>
+                        <input id="lh" v-model.number="theme.logoHeight" type="range" min="20" max="96" step="2">
+                    </div>
+                    <div class="field">
+                        <span class="lb">Browser tab icon (favicon)</span>
+                        <div class="img-row">
+                            <img v-if="theme.favicon" :src="theme.favicon" alt="" class="fav-prev">
+                            <span v-else class="muted">None</span>
+                            <MediaPicker :site-id="siteId" @pick="theme.favicon = $event.url" />
+                            <button v-if="theme.favicon" class="btn btn-plain btn-sm" type="button" @click="theme.favicon = ''">Remove</button>
+                        </div>
+                        <span class="help">A square image works best, at least 64 × 64.</span>
+                    </div>
+                </section>
+
                 <section class="panel box" aria-labelledby="c-h">
                     <h2 id="c-h">Colours</h2>
+                    <div class="field">
+                        <span class="lb">Light or dark</span>
+                        <div class="seg" role="group" aria-label="Light or dark">
+                            <button type="button" :class="{ on: theme.scheme === 'light' }" :aria-pressed="theme.scheme === 'light'" @click="theme.scheme = 'light'">Light</button>
+                            <button type="button" :class="{ on: theme.scheme === 'dark' }" :aria-pressed="theme.scheme === 'dark'" @click="theme.scheme = 'dark'">Dark</button>
+                        </div>
+                        <span v-if="theme.scheme === 'dark'" class="help">Your Dark colour becomes the page background, with light text.</span>
+                    </div>
                     <div v-for="c in colours" :key="c.key" class="colour">
                         <label class="swatch" :style="{ background: theme[c.key] }">
                             <span class="visually-hidden">Change {{ c.name }} colour</span>
@@ -100,7 +141,7 @@ const sample: Block[] = [
                 </section>
 
                 <section class="panel box" aria-labelledby="t-h">
-                    <h2 id="t-h">Fonts and shapes</h2>
+                    <h2 id="t-h">Text and shapes</h2>
                     <div class="field">
                         <label for="fh">Headings</label>
                         <select id="fh" v-model="theme.headingFont" class="inp">
@@ -114,6 +155,30 @@ const sample: Block[] = [
                         </select>
                     </div>
                     <div class="field">
+                        <span class="lb">Page titles (the big heading at the top)</span>
+                        <div class="seg" role="group" aria-label="Page title size">
+                            <button v-for="z in sizes" :key="z.key" type="button" :class="{ on: theme.titleSize === z.key }" :aria-pressed="theme.titleSize === z.key" @click="theme.titleSize = z.key">{{ z.label }}</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <span class="lb">Section headings</span>
+                        <div class="seg" role="group" aria-label="Section heading size">
+                            <button v-for="z in sizes" :key="z.key" type="button" :class="{ on: theme.headingSize === z.key }" :aria-pressed="theme.headingSize === z.key" @click="theme.headingSize = z.key">{{ z.label }}</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <span class="lb">Menu links</span>
+                        <div class="seg" role="group" aria-label="Menu link size">
+                            <button v-for="z in navSizes" :key="z.key" type="button" :class="{ on: theme.navSize === z.key }" :aria-pressed="theme.navSize === z.key" @click="theme.navSize = z.key">{{ z.label }}</button>
+                        </div>
+                    </div>
+                    <div v-for="cf in caseFields" :key="cf.key" class="field">
+                        <span class="lb">{{ cf.label }} lettering</span>
+                        <div class="seg" role="group" :aria-label="`${cf.label} lettering`">
+                            <button v-for="c in cases" :key="c.key" type="button" :class="{ on: theme[cf.key] === c.key }" :aria-pressed="theme[cf.key] === c.key" @click="theme[cf.key] = c.key">{{ c.label }}</button>
+                        </div>
+                    </div>
+                    <div class="field">
                         <span class="lb">Button corners</span>
                         <div class="seg" role="group" aria-label="Button corners">
                             <button v-for="c in corners" :key="c.key" type="button" :class="{ on: theme.corners === c.key }" :aria-pressed="theme.corners === c.key" @click="theme.corners = c.key">{{ c.label }}</button>
@@ -125,9 +190,9 @@ const sample: Block[] = [
             <section aria-label="Theme preview" class="preview-col">
                 <span class="muted">Preview, updates as you change the theme</span>
                 <div class="preview" :style="siteThemeVars(theme)">
-                    <SiteHeader :name="site?.name ?? ''" :items="menus?.header ?? []" preview />
+                    <SiteHeader :name="site?.name ?? ''" :items="menus?.header ?? []" :theme="theme" :socials="(site?.socials as SiteSocials)" preview />
                     <BlockRenderer :blocks="sample" />
-                    <SiteFooter :name="site?.name ?? ''" :items="menus?.footer ?? []" :legal="menus?.legal ?? []" preview />
+                    <SiteFooter :name="site?.name ?? ''" :items="menus?.footer ?? []" :legal="menus?.legal ?? []" :theme="theme" :socials="(site?.socials as SiteSocials)" preview />
                 </div>
             </section>
         </div>
@@ -177,4 +242,8 @@ h2 { font-size: 18px; margin: 0; }
     .two { grid-template-columns: minmax(0, 1fr); }
     .preview-col { position: static; }
 }
+.img-row { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; }
+.logo-prev { background: var(--mist); border-radius: 4px; height: 40px; max-width: 180px; object-fit: contain; padding: 4px; }
+.fav-prev { border-radius: 4px; height: 32px; object-fit: cover; width: 32px; }
+input[type="range"] { width: 100%; }
 </style>

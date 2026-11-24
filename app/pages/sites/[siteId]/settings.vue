@@ -28,6 +28,31 @@ async function saveGeneral() {
     }
 }
 
+// ── Social links ──
+const SOCIAL_LABELS: Record<SocialNetwork, { name: string, placeholder: string }> = {
+    facebook: { name: 'Facebook', placeholder: 'facebook.com/yourpage' },
+    instagram: { name: 'Instagram', placeholder: 'instagram.com/yourname' },
+    x: { name: 'X (Twitter)', placeholder: 'x.com/yourname' },
+    linkedin: { name: 'LinkedIn', placeholder: 'linkedin.com/company/yourbusiness' },
+    tiktok: { name: 'TikTok', placeholder: 'tiktok.com/@yourname' },
+    youtube: { name: 'YouTube', placeholder: 'youtube.com/@yourchannel' },
+    pinterest: { name: 'Pinterest', placeholder: 'pinterest.com/yourname' },
+    threads: { name: 'Threads', placeholder: 'threads.net/@yourname' }
+}
+const socials = reactive<Record<string, string>>({ ...((site.value?.socials as SiteSocials) ?? {}) })
+const socialState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
+async function saveSocials() {
+    socialState.value = 'saving'
+    try {
+        const res = await $fetch<{ socials: SiteSocials }>(`/api/sites/${siteId}`, { method: 'PATCH', body: { socials } })
+        for (const k of SOCIAL_NETWORKS) socials[k] = res.socials[k] ?? ''
+        await refreshSite()
+        socialState.value = 'saved'
+    } catch {
+        socialState.value = 'error'
+    }
+}
+
 // ── Offline / delete ──
 const offlineBusy = ref(false)
 async function toggleOffline() {
@@ -76,6 +101,22 @@ async function deleteSite() {
             </section>
 
             <div class="col">
+                <section class="panel box" aria-labelledby="so-h">
+                    <h2 id="so-h">Social media</h2>
+                    <p class="muted">These show as icons in your footer, and in your header if you turn that on in <NuxtLink :to="`/sites/${siteId}/layout`">Layout</NuxtLink>. Leave any you don’t use empty.</p>
+                    <div class="soc-grid">
+                        <div v-for="n in SOCIAL_NETWORKS" :key="n" class="field">
+                            <label :for="`so-${n}`">{{ SOCIAL_LABELS[n].name }}</label>
+                            <input :id="`so-${n}`" v-model="socials[n]" class="inp" type="url" inputmode="url" :placeholder="SOCIAL_LABELS[n].placeholder" :disabled="!isAdmin" autocomplete="off">
+                        </div>
+                    </div>
+                    <div v-if="isAdmin" class="row">
+                        <button class="btn btn-ghost" type="button" :disabled="socialState === 'saving'" @click="saveSocials">{{ socialState === 'saving' ? 'Saving…' : 'Save social links' }}</button>
+                        <span v-if="socialState === 'saved'" class="muted" role="status">Saved.</span>
+                        <span v-if="socialState === 'error'" class="err" role="alert">Couldn’t save. Check the addresses and try again.</span>
+                    </div>
+                </section>
+
                 <section class="panel box" aria-labelledby="pp-h">
                     <h2 id="pp-h">People</h2>
                     <p class="muted">Invite people, change what they can do, or leave this site.</p>
@@ -157,4 +198,5 @@ h2 { font-size: 18px; margin: 0; }
 .err { color: var(--danger); font-size: 14px; margin: 0; }
 .del { background: var(--danger); color: var(--white); }
 @media (max-width: 1100px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.soc-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 </style>

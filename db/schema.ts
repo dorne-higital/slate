@@ -1,5 +1,5 @@
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
-import type { Block, MenuItem, MenuSlot, PageStatus, SiteIntegrations, SiteRole, SiteSeo, SiteTheme } from '../shared/types'
+import type { Block, MenuItem, MenuSlot, PageStatus, SiteIntegrations, SiteRole, SiteSeo, SiteSocials, SiteTheme } from '../shared/types'
 import type { DomainOrderStatus } from '../shared/utils/domainPrices'
 import type { FormField } from '../shared/utils/forms'
 
@@ -63,6 +63,7 @@ export const sites = pgTable('sites', {
     theme: jsonb('theme').$type<SiteTheme>(),
     seo: jsonb('seo').$type<SiteSeo>(),
     integrations: jsonb('integrations').$type<SiteIntegrations>(),
+    socials: jsonb('socials').$type<SiteSocials>(),
     // Whose plan this site runs on. Null = no bill (Slate's own / sites from before billing)
     billingUserId: text('billing_user_id').references(() => user.id, { onDelete: 'set null' }),
     // Where form reply notifications go (used once email sending is set up)

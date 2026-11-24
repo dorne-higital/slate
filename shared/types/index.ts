@@ -23,10 +23,41 @@ export interface SiteTheme {
     text?: string
     /** Main background */
     background?: string
+    /** Small highlights: labels, underlines, icons */
+    accent?: string
     headingFont?: string
     bodyFont?: string
     corners?: 'square' | 'soft' | 'round'
+    /** Dark swaps the page to the Dark colour with light text */
+    scheme?: 'light' | 'dark'
+    /** Media library or https image addresses */
+    logo?: string
+    logoHeight?: number
+    favicon?: string
+    /** Big page headings (hero) and section headings */
+    titleSize?: ThemeSize
+    headingSize?: ThemeSize
+    navSize?: 'small' | 'medium' | 'large'
+    headingCase?: TextCase
+    navCase?: TextCase
+    buttonCase?: TextCase
+    // ── Layout ──
+    headerStyle?: 'standard' | 'centred' | 'mega'
+    headerColour?: ThemeColourChoice
+    headerSticky?: boolean
+    headerSocials?: boolean
+    footerStyle?: 'simple' | 'columns'
+    footerColour?: ThemeColourChoice
 }
+
+export type ThemeSize = 'small' | 'medium' | 'large' | 'huge'
+export type TextCase = 'none' | 'uppercase' | 'capitalize'
+/** A section background picked from the theme's own colours */
+export type ThemeColourChoice = 'page' | 'soft' | 'dark' | 'primary' | 'accent'
+
+export const SOCIAL_NETWORKS = ['facebook', 'instagram', 'x', 'linkedin', 'tiktok', 'youtube', 'pinterest', 'threads'] as const
+export type SocialNetwork = typeof SOCIAL_NETWORKS[number]
+export type SiteSocials = Partial<Record<SocialNetwork, string>>
 
 /** Site-wide search and sharing defaults. */
 export interface SiteSeo {
