@@ -6,7 +6,7 @@ const columns = computed(() => menuTree(props.items))
 defineEmits<{ cookieSettings: [] }>()
 const year = new Date().getFullYear()
 // On a dark or coloured footer, use the light version of the logo if there is one
-const logo = computed(() => (t.value.footerColour !== 'page' && t.value.footerColour !== 'soft' && t.value.logoOnDark) || t.value.logo)
+const logo = computed(() => t.value.footerLogo || (t.value.footerColour !== 'page' && t.value.footerColour !== 'soft' && t.value.logoOnDark) || t.value.logo)
 </script>
 
 <template>

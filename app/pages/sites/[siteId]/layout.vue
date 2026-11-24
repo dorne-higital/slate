@@ -12,7 +12,7 @@ const [{ data: site, refresh: refreshSite }, { data: menus }] = await Promise.al
 useHead(() => ({ title: 'Layout · Slate', link: [{ rel: 'stylesheet', href: themeFontsHref(theme.value) }] }))
 
 const canEdit = computed(() => ROLE_RANK[me.value?.sites.find(s => s.id === siteId)?.role ?? 'viewer'] >= ROLE_RANK.admin)
-const LAYOUT_KEYS = ['headerStyle', 'headerColour', 'headerSticky', 'headerSocials', 'footerStyle', 'footerColour'] as const
+const LAYOUT_KEYS = ['headerStyle', 'headerColour', 'headerSticky', 'headerSocials', 'footerStyle', 'footerColour', 'footerLogo'] as const
 type LayoutSettings = Pick<Required<SiteTheme>, typeof LAYOUT_KEYS[number]>
 const full = computed<Required<SiteTheme>>(() => ({ ...DEFAULT_THEME, ...(site.value?.theme as SiteTheme) }))
 const pickLayout = (t: Required<SiteTheme>) => Object.fromEntries(LAYOUT_KEYS.map(k => [k, t[k]])) as LayoutSettings
@@ -117,6 +117,16 @@ const sample: Block[] = [{ id: 'l1', type: 'hero', props: { heading: 'Your page 
                             </button>
                         </div>
                     </div>
+                    <div class="field">
+                        <span class="lb">Footer logo</span>
+                        <div class="img-row">
+                            <img v-if="layout.footerLogo" :src="layout.footerLogo" alt="" class="logo-prev" :style="{ background: colourChoices.find(c => c.key === layout.footerColour)?.colour }">
+                            <span v-else class="muted">{{ full.logo ? (full.logoOnDark && layout.footerColour !== 'page' && layout.footerColour !== 'soft' ? 'Using your logo for dark backgrounds (from Theme).' : 'Using your main logo (from Theme).') : 'No logo: your site name shows.' }}</span>
+                            <MediaPicker v-if="canEdit" :site-id="siteId" @pick="layout.footerLogo = $event.url" />
+                            <button v-if="layout.footerLogo && canEdit" class="btn btn-plain btn-sm" type="button" @click="layout.footerLogo = ''">Use the Theme logo</button>
+                        </div>
+                        <span class="help">Pick a different image if your logo doesn’t show up well on the footer colour, e.g. a white version.</span>
+                    </div>
                     <p class="help">Social icons show in the footer whenever you’ve added links in <NuxtLink :to="`/sites/${siteId}/settings`">Settings</NuxtLink>.</p>
                 </section>
             </div>
@@ -166,4 +176,6 @@ h2 { font-size: 17px; margin: 0; }
 .preview-col { display: flex; flex-direction: column; gap: 8px; position: sticky; top: 16px; }
 .preview { border-radius: var(--radius-lg); box-shadow: 0 0 0 1px var(--line), 0 8px 24px rgb(46 52 69 / 8%); overflow: hidden; }
 @media (max-width: 1100px) { .two { grid-template-columns: minmax(0, 1fr); } .preview-col { position: static; } .cards { grid-template-columns: minmax(0, 1fr); } }
+.img-row { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.logo-prev { border-radius: 4px; height: 40px; max-width: 200px; object-fit: contain; padding: 6px; }
 </style>

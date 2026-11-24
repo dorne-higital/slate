@@ -33,6 +33,7 @@ export const DEFAULT_THEME: Required<SiteTheme> = {
     scheme: 'light',
     logo: '',
     logoOnDark: '',
+    footerLogo: '',
     logoHeight: 36,
     favicon: '',
     titleSize: 'large',
@@ -88,7 +89,7 @@ export function cleanTheme(input: unknown): SiteTheme {
     pick('footerColour', COLOUR_CHOICES)
     for (const key of ['headerSticky', 'headerSocials'] as const) if (typeof t[key] === 'boolean') out[key] = t[key] as boolean
     // Images: our own media addresses or https only (safeUrl also refuses javascript: etc.)
-    for (const key of ['logo', 'logoOnDark', 'favicon'] as const) {
+    for (const key of ['logo', 'logoOnDark', 'footerLogo', 'favicon'] as const) {
         if (typeof t[key] === 'string') {
             const v = safeUrl(String(t[key]).trim().slice(0, 1000))
             out[key] = v.startsWith('/media/') || v.startsWith('https://') ? v : ''

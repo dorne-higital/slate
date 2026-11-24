@@ -39,6 +39,8 @@ export interface SiteTheme {
     logo?: string
     /** Optional version of the logo for dark or coloured headers and footers (e.g. white lettering) */
     logoOnDark?: string
+    /** A different image for the footer only (empty: the light logo on dark footers, else the main logo) */
+    footerLogo?: string
     logoHeight?: number
     favicon?: string
     /** Big page headings (hero) and section headings */
