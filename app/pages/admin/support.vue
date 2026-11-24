@@ -12,6 +12,10 @@ type TicketRow = Omit<SupportTicket, 'messages'> & { messages: number }
 const filter = ref<'open' | 'answered' | 'closed' | 'all'>('open')
 const { data: tickets, refresh } = await useAsyncData('admin-support', () => useRequestFetch()<TicketRow[]>('/api/admin/support', { query: filter.value === 'all' ? {} : { status: filter.value } }), { watch: [filter], default: () => [] })
 
+const typeFilter = ref<TicketCategory | ''>('')
+const shown = computed(() => typeFilter.value ? tickets.value.filter(t => t.category === typeFilter.value) : tickets.value)
+const countOf = (c: TicketCategory) => tickets.value.filter(t => t.category === c).length
+
 const current = ref<SupportTicket | null>(null)
 const busy = ref(false)
 const error = ref('')
@@ -36,6 +40,7 @@ async function run(fn: () => Promise<SupportTicket>) {
     }
 }
 const reply = (body: string) => run(() => $fetch(`/api/admin/support/${current.value!.id}/messages`, { method: 'POST', body: { body } }))
+const refile = (body: { category?: TicketCategory, severity?: TicketSeverity | null }) => run(() => $fetch(`/api/admin/support/${current.value!.id}`, { method: 'PATCH', body }))
 const setStatus = (status: 'open' | 'closed') => run(() => $fetch(`/api/admin/support/${current.value!.id}/status`, { method: 'POST', body: { status } }))
 
 const statusLook = { open: { label: 'Needs a reply', cls: 'open' }, answered: { label: 'Waiting on customer', cls: 'answered' }, closed: { label: 'Closed', cls: 'closed' } } as const
@@ -52,14 +57,21 @@ const filters = [['open', 'Needs a reply'], ['answered', 'Waiting on customer'],
                     <button v-for="f in filters" :key="f[0]" type="button" :class="{ on: filter === f[0] }" :aria-pressed="filter === f[0]" @click="filter = f[0]">{{ f[1] }}</button>
                 </div>
             </div>
+            <div class="types" role="group" aria-label="Filter by type">
+                <button type="button" class="type-chip" :class="{ on: !typeFilter }" :aria-pressed="!typeFilter" @click="typeFilter = ''">All types</button>
+                <button v-for="c in TICKET_CATEGORIES" :key="c.key" type="button" class="type-chip" :class="{ on: typeFilter === c.key }" :aria-pressed="typeFilter === c.key" :style="{ '--tbg': c.colour.bg, '--tfg': c.colour.fg }" @click="typeFilter = typeFilter === c.key ? '' : c.key">
+                    <i class="sw" aria-hidden="true" />{{ c.name }} <span class="n">{{ countOf(c.key) }}</span>
+                </button>
+            </div>
             <p v-if="error" class="error-box" role="alert">{{ error }}</p>
 
             <div class="two">
                 <section class="panel list" aria-label="Tickets">
-                    <ul v-if="tickets.length">
-                        <li v-for="t in tickets" :key="t.id">
+                    <ul v-if="shown.length">
+                        <li v-for="t in shown" :key="t.id">
                             <button type="button" class="t-row" :class="{ sel: current?.id === t.id }" @click="open(t.id)">
                                 <span class="t-top"><b>{{ t.subject }}</b><span class="tag" :class="statusLook[t.status].cls">{{ statusLook[t.status].label }}</span></span>
+                                <TicketTags :category="t.category" :severity="t.severity" />
                                 <span class="muted small">{{ t.siteName }} · {{ t.openedByName }} · {{ formatWhen(t.updatedAt) }}</span>
                             </button>
                         </li>
@@ -77,6 +89,20 @@ const filters = [['open', 'Needs a reply'], ['answered', 'Waiting on customer'],
                             </span>
                         </div>
                         <span class="tag" :class="statusLook[current.status].cls">{{ statusLook[current.status].label }}</span>
+                    </div>
+                    <div class="refile">
+                        <TicketTags :category="current.category" :severity="current.severity" />
+                        <label class="small">Type
+                            <select class="inp sm" :value="current.category" :disabled="busy" @change="refile({ category: ($event.target as HTMLSelectElement).value as TicketCategory })">
+                                <option v-for="c in TICKET_CATEGORIES" :key="c.key" :value="c.key">{{ c.name }}</option>
+                            </select>
+                        </label>
+                        <label v-if="current.category === 'bug'" class="small">Severity
+                            <select class="inp sm" :value="current.severity ?? ''" :disabled="busy" @change="refile({ severity: (($event.target as HTMLSelectElement).value || null) as TicketSeverity | null })">
+                                <option value="">Not set</option>
+                                <option v-for="s in TICKET_SEVERITIES" :key="s.key" :value="s.key">{{ s.name }}</option>
+                            </select>
+                        </label>
                     </div>
                     <SupportThread :ticket="current" side="slate" :busy="busy" @reply="reply" @close="setStatus('closed')" @reopen="setStatus('open')" />
                 </section>
@@ -109,5 +135,13 @@ h2 { font-size: 18px; margin: 0; }
 .tag.answered { background: #fff3de; color: #8a5300; }
 .tag.closed { background: var(--mist); color: var(--text-muted); }
 .empty, .pick { margin: 0; padding: 20px; }
+.types { display: flex; flex-wrap: wrap; gap: 6px; }
+.type-chip { align-items: center; background: var(--white); border: 1.5px solid var(--line); border-radius: 999px; color: var(--quarry); cursor: pointer; display: inline-flex; font: inherit; font-size: 13px; font-weight: 600; gap: 6px; padding: 5px 12px; }
+.type-chip.on { background: var(--tbg, var(--quarry)); border-color: var(--tfg, var(--quarry)); color: var(--tfg, var(--white)); }
+.type-chip .sw { background: var(--tfg, var(--quarry)); border-radius: 50%; height: 8px; width: 8px; }
+.type-chip .n { color: var(--text-muted); font-weight: 500; }
+.refile { align-items: center; background: var(--paper); border-radius: var(--radius); display: flex; flex-wrap: wrap; gap: 12px; padding: 8px 12px; }
+.refile label { align-items: center; display: inline-flex; gap: 6px; }
+.inp.sm { font-size: 13px; height: 32px; padding: 0 8px; width: auto; }
 @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
 </style>

@@ -8,6 +8,25 @@ export default defineEventHandler(async (event) => {
     const one = async <T = number>(q: ReturnType<typeof sql>) => (await db.execute<{ n: T }>(q)).rows[0]?.n as T
 
     const supportOpen = await one(sql`select count(*)::int n from support_tickets where status = 'open'`)
+    const urgentBugs = await one(sql`select count(*)::int n from support_tickets where status = 'open' and severity = 'p1'`)
+    // The newer checks: errors today, overdue invoices, backups, trials about to end
+    const [errorKinds, overdue, trialsEnding, backups] = await Promise.all([
+        one(sql`select count(distinct fingerprint)::int n from error_logs where created_at > now() - interval '24 hours'`),
+        db.execute<{ number: string | null, total: number, due_at: string, site: string | null }>(sql`
+            select i.number, i.total, i.due_at, s.name as site from custom_invoices i left join sites s on s.id = i.site_id
+            where i.status = 'open' and i.due_at < now() order by i.due_at limit 5`).then(r => r.rows),
+        db.execute<{ name: string, email: string, trial_ends_at: string, site: string | null, site_id: string | null }>(sql`
+            select u.name, u.email, b.trial_ends_at,
+                (select s.name from sites s where s.billing_user_id = u.id and s.deleted_at is null order by s.created_at limit 1) as site,
+                (select s.id from sites s where s.billing_user_id = u.id and s.deleted_at is null order by s.created_at limit 1) as site_id
+            from billing_accounts b join "user" u on u.id = b.user_id
+            where b.stripe_subscription_id is null and u.is_platform_admin = false
+              and b.trial_ends_at between now() and now() + interval '3 days'
+            order by b.trial_ends_at limit 5`).then(r => r.rows),
+        listBackups().catch(() => [] as BackupInfo[])
+    ])
+    const lastBackup = backups[0] ? new Date(backups[0].createdAt) : null
+    const backupStale = !lastBackup || Date.now() - lastBackup.getTime() > 4 * 24 * 3600 * 1000
     const [accounts, sitesLive, sitesOffline, sitesDeleted, sites7, users, users7, users30, domainsActive, domainsPending, domainsError, ordersActive, ordersFailed, orderRevenue, replies7, published7, signupDays, recentUsers, failedOrders, pastDue, errorDomains] = await Promise.all([
         db.execute<{ user_id: string, plan: string | null, interval: string | null, status: string | null, trial_ends_at: string | null, stripe_subscription_id: string | null, cancel_at_period_end: boolean, is_platform_admin: boolean, sites: number }>(sql`
             select b.user_id, b.plan, b.interval, b.status, b.trial_ends_at, b.stripe_subscription_id, b.cancel_at_period_end, u.is_platform_admin,
@@ -75,9 +94,14 @@ export default defineEventHandler(async (event) => {
         signups: signupDays.map(d => ({ day: d.day, n: Number(d.n) })),
         recentUsers: recentUsers.map(u => ({ name: u.name, email: u.email, createdAt: new Date(u.created_at).toISOString(), siteName: u.site_name, siteId: u.site_id })),
         attention: [
-            ...(supportOpen ? [{ kind: 'support', text: `${supportOpen} support ${supportOpen === 1 ? 'ticket needs' : 'tickets need'} a reply`, detail: 'Open Support to answer' }] : []),
+            ...(urgentBugs ? [{ kind: 'p1', text: `${urgentBugs} urgent ${urgentBugs === 1 ? 'problem' : 'problems'} reported (P1)`, detail: 'A customer says their site is down or Slate isn’t working', link: '/admin/support' }] : []),
+            ...(supportOpen ? [{ kind: 'support', text: `${supportOpen} support ${supportOpen === 1 ? 'ticket needs' : 'tickets need'} a reply`, detail: 'Open Support to answer', link: '/admin/support' }] : []),
+            ...(errorKinds ? [{ kind: 'errors', text: `${errorKinds} kind${errorKinds === 1 ? '' : 's'} of error in the last 24 hours`, detail: 'See what went wrong and clear the ones you’ve fixed', link: '/admin/errors' }] : []),
+            ...(backupStale ? [{ kind: 'backup', text: lastBackup ? 'The last backup is more than 4 days old' : 'There are no backups yet', detail: lastBackup ? `Last one ${lastBackup.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. Check Errors for why, then back up now.` : 'Press Back up now to make the first one', link: '/admin/backups' }] : []),
+            ...overdue.map(i => ({ kind: 'invoice', text: `Invoice ${i.number ?? ''} for ${formatPence(i.total)} is overdue`.replace('  ', ' '), detail: `${i.site ?? 'A site'} · was due ${new Date(i.due_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`, link: '/admin/billing' })),
             ...failedOrders.map(o => ({ kind: 'domain-order', text: `Paid domain ${o.domain_name} didn’t finish setting up`, detail: o.error ?? '' })),
             ...pastDue.map(p => ({ kind: 'past-due', text: `${p.name}’s last payment failed`, detail: p.email })),
+            ...trialsEnding.map(t => ({ kind: 'trial', text: `${t.name}’s trial ends ${new Date(t.trial_ends_at).toLocaleDateString('en-GB', { weekday: 'long' })}`, detail: `${t.email}${t.site ? ` · ${t.site}` : ''}. A good time to check in.`, link: t.site_id ? `/sites/${t.site_id}` : undefined })),
             ...errorDomains.map(d => ({ kind: 'domain', text: `${d.hostname} has a problem`, detail: d.status_detail ?? '' }))
         ]
     }

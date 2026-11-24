@@ -108,3 +108,9 @@ Dan chose: refresh the design, projects as their own content type.
 4. [x] Browser errors in Admin → Errors (status "Browser"), capped and de-duplicated
 5. [x] Slate favicon (.ico, SVG, PNGs); danhorne. logo (light and dark) in Media and Theme
 6. [ ] Dan: add a card on name.com (needs an order first), one real test purchase, ICO number
+
+## Support and attention (24 Nov 2026)
+
+1. [x] Ticket types (broken, new block, help, billing, domain) with icon cards and type-specific questions; P1/P2/P3 for bugs
+2. [x] Helpdesk: colour-coded tags, type filters with counts, open bugs by severity first, re-file type/severity
+3. [x] Needs your attention: urgent bugs, errors in 24h, stale backups, overdue invoices, trials ending in 3 days (with links)

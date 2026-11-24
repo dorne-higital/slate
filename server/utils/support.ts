@@ -16,6 +16,8 @@ export async function listTickets(where?: SQL) {
         siteName: schema.sites.name,
         subject: schema.supportTickets.subject,
         status: schema.supportTickets.status,
+        category: schema.supportTickets.category,
+        severity: schema.supportTickets.severity,
         createdAt: schema.supportTickets.createdAt,
         updatedAt: schema.supportTickets.updatedAt,
         openedByName: schema.user.name,

@@ -29,7 +29,7 @@ interface AdminOverview {
     support: { open: number }
     signups: { day: string, n: number }[]
     recentUsers: { name: string, email: string, createdAt: string, siteName: string | null, siteId: string | null }[]
-    attention: { kind: string, text: string, detail: string }[]
+    attention: { kind: string, text: string, detail: string, link?: string }[]
 }
 const { data: ov } = await useAsyncData('admin-overview', () => fetcher<AdminOverview>('/api/admin/overview'))
 const maxSignup = computed(() => Math.max(1, ...(ov.value?.signups ?? []).map(d => d.n)))
@@ -105,7 +105,11 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
                 <section class="panel box" aria-labelledby="at-h">
                     <h2 id="at-h">Needs your attention</h2>
                     <ul v-if="ov.attention.length" class="attn">
-                        <li v-for="(a, i) in ov.attention" :key="i"><b>{{ a.text }}</b><span class="muted">{{ a.detail }}</span></li>
+                        <li v-for="(a, i) in ov.attention" :key="i" :class="`k-${a.kind}`">
+                            <NuxtLink v-if="a.link" :to="a.link" class="attn-link"><b>{{ a.text }}</b></NuxtLink>
+                            <b v-else>{{ a.text }}</b>
+                            <span class="muted">{{ a.detail }}</span>
+                        </li>
                     </ul>
                     <p v-else class="muted">Nothing right now.</p>
                 </section>
@@ -233,4 +237,7 @@ h2 { font-size: 17px; margin: 0; }
 .plan-tag.expired, .plan-tag.past_due { background: #fbeceb; color: var(--danger); }
 @media (max-width: 900px) { .dash { grid-template-columns: minmax(0, 1fr); } .plan-bars li { grid-template-columns: 110px 1fr 30px; } }
 .kpi-link { color: inherit; display: flex; flex-direction: column; gap: 4px; text-decoration: none; }
+.attn-link { color: var(--quarry); text-decoration: none; }
+.attn-link:hover { text-decoration: underline; }
+.attn .k-p1 b { color: var(--danger); }
 </style>

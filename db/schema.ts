@@ -1,4 +1,5 @@
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
+import type { TicketCategory, TicketSeverity } from '../shared/utils/supportTypes'
 import type { Block, MenuItem, MenuSlot, PageStatus, ProjectMeta, SiteIntegrations, SiteRole, SiteSeo, SiteSocials, SiteTheme } from '../shared/types'
 import type { DomainOrderStatus } from '../shared/utils/domainPrices'
 import type { FormField } from '../shared/utils/forms'
@@ -308,6 +309,10 @@ export const supportTickets = pgTable('support_tickets', {
     subject: text('subject').notNull(),
     // open: waiting on Slate · answered: waiting on the customer · closed
     status: text('status').$type<'open' | 'answered' | 'closed'>().notNull().default('open'),
+    // What kind of request (supportTypes.ts) and, for bugs, how bad: p1 (down) to p3 (minor). Answers to the form's questions in details.
+    category: text('category').$type<TicketCategory>().notNull().default('help'),
+    severity: text('severity').$type<TicketSeverity>(),
+    details: jsonb('details').$type<Record<string, string>>(),
     // When someone on the site last opened it: Slate replies after this show as new
     customerSeenAt: timestamp('customer_seen_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

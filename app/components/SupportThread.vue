@@ -6,6 +6,8 @@ export interface SupportTicket {
     siteName: string
     subject: string
     status: 'open' | 'answered' | 'closed'
+    category: TicketCategory
+    severity: TicketSeverity | null
     createdAt: string
     updatedAt: string
     openedByName: string | null
