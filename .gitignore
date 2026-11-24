@@ -30,3 +30,7 @@ dist/
 # lint caches (--cache flag in package.json's lint scripts)
 .eslintcache
 .stylelintcache
+.neon
+
+# cloudflare
+.wrangler/

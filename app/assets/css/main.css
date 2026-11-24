@@ -1,0 +1,118 @@
+/* Slate brand tokens, from the brand sheet: Welsh roofing slate + orange lichen. */
+:root {
+    --quarry: #2e3445;
+    --heather: #5b5773;
+    --split: #8c93a3;
+    --mist: #e6e9ee;
+    --paper: #f7f8fa;
+    --lichen: #e8a33a;
+    --lichen-hover: #f0b24f;
+    --lichen-edge: #b87a1e;
+    --lichen-focus: #f5d59e;
+    --white: #fff;
+
+    --text: var(--quarry);
+    --text-body: #464d5f;
+    --text-muted: #555c6e;
+    --line: #d9dde4;
+    --line-soft: #e6e9ee;
+    --input-border: #b2b8c3;
+    --danger: #a3261b;
+    --ok: #4e9c77;
+    --ok-text: #1f5a3f;
+    --warn-text: #7a4b05;
+
+    --font: 'Schibsted Grotesk', system-ui, sans-serif;
+    --radius: 6px;
+    --radius-lg: 8px;
+    --sheet-edge: 1px 1px 0 #d4d8df, 2px 2px 0 #c3c8d1, 3px 3px 0 #b2b8c3, 4px 4px 0 #8c93a3;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    -webkit-font-smoothing: antialiased;
+    background: var(--paper);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    margin: 0;
+}
+
+a { color: var(--text); }
+a:hover { color: var(--heather); }
+
+:focus-visible { outline: 3px solid var(--lichen); outline-offset: 2px; }
+
+.btn {
+    align-items: center;
+    border: 0;
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    gap: 8px;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn:disabled { cursor: progress; opacity: .7; }
+.btn-lg { font-size: 16px; min-height: 52px; padding: 0 24px; }
+.btn-sm { font-size: 14px; min-height: 34px; padding: 0 12px; }
+.btn-dark { background: var(--quarry); color: var(--white); }
+.btn-dark:hover { background: var(--heather); color: var(--white); }
+.btn-lichen { background: var(--lichen); box-shadow: 0 2px 0 var(--lichen-edge); color: var(--quarry); }
+.btn-lichen:hover { background: var(--lichen-hover); color: var(--quarry); }
+.btn-ghost { background: var(--white); box-shadow: inset 0 0 0 1.5px var(--input-border); color: var(--quarry); }
+.btn-ghost:hover { box-shadow: inset 0 0 0 1.5px var(--quarry); color: var(--quarry); }
+.btn-plain { background: transparent; color: var(--quarry); padding: 0 8px; text-decoration: underline; text-underline-offset: 4px; }
+
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label { font-size: 15px; font-weight: 600; }
+.field .help { color: var(--text-muted); font-size: 14px; }
+
+.inp {
+    background: var(--white);
+    border: 1.5px solid var(--input-border);
+    border-radius: var(--radius);
+    color: var(--quarry);
+    font-family: inherit;
+    font-size: 16px;
+    height: 48px;
+    padding: 0 14px;
+    width: 100%;
+}
+
+.inp:focus { border-color: var(--quarry); box-shadow: 0 0 0 3px var(--lichen-focus); outline: none; }
+
+.panel { background: var(--white); border-radius: var(--radius-lg); box-shadow: 0 0 0 1px var(--line); }
+.sheet { background: var(--white); border-radius: 4px; box-shadow: var(--sheet-edge); }
+.muted { color: var(--text-muted); font-size: 13px; }
+
+.error-box {
+    background: #fbeceb;
+    border-radius: var(--radius);
+    color: var(--danger);
+    font-size: 15px;
+    padding: 12px 14px;
+}
+
+.visually-hidden {
+    clip: rect(0 0 0 0);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.tbl { border-collapse: collapse; min-width: 560px; width: 100%; }
+.tbl th { border-bottom: 1px solid var(--line-soft); color: var(--text-muted); font-size: 13px; font-weight: 600; padding: 10px 20px; text-align: left; white-space: nowrap; }
+.tbl td { border-bottom: 1px solid var(--line-soft); padding: 13px 20px; vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tbody tr:hover td { background: #fafbfc; }

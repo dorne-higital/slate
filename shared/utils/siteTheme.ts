@@ -1,0 +1,66 @@
+/** Fonts a site can choose, all from Google Fonts. `css` is the css2 `family=` value. */
+export const SITE_FONTS = [
+    { name: 'Schibsted Grotesk', css: 'Schibsted+Grotesk:wght@400;600;700;800', stack: '\'Schibsted Grotesk\', system-ui, sans-serif' },
+    { name: 'Inter', css: 'Inter:wght@400;600;700;800', stack: 'Inter, system-ui, sans-serif' },
+    { name: 'DM Sans', css: 'DM+Sans:wght@400;600;700;800', stack: '\'DM Sans\', system-ui, sans-serif' },
+    { name: 'Manrope', css: 'Manrope:wght@400;600;700;800', stack: 'Manrope, system-ui, sans-serif' },
+    { name: 'Fraunces', css: 'Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700', stack: 'Fraunces, Georgia, serif' },
+    { name: 'Playfair Display', css: 'Playfair+Display:wght@500;600;700', stack: '\'Playfair Display\', Georgia, serif' },
+    { name: 'Lora', css: 'Lora:wght@400;600;700', stack: 'Lora, Georgia, serif' },
+    { name: 'Source Serif 4', css: 'Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700', stack: '\'Source Serif 4\', Georgia, serif' }
+] as const
+
+export const DEFAULT_THEME: Required<SiteTheme> = {
+    primary: '#2E3445',
+    dark: '#1D2230',
+    soft: '#F4F5F7',
+    text: '#464D5F',
+    background: '#FFFFFF',
+    headingFont: 'Schibsted Grotesk',
+    bodyFont: 'Schibsted Grotesk',
+    corners: 'soft'
+}
+
+export const THEME_PRESETS: { name: string, theme: SiteTheme }[] = [
+    { name: 'Slate', theme: { ...DEFAULT_THEME } },
+    { name: 'Workshop green', theme: { primary: '#2F5D50', dark: '#23302C', soft: '#F1EDE4', text: '#4A544F', background: '#FFFFFF', headingFont: 'Fraunces', bodyFont: 'Schibsted Grotesk', corners: 'soft' } },
+    { name: 'Harbour blue', theme: { primary: '#1F5FA8', dark: '#14243A', soft: '#EEF3F9', text: '#3E4A5C', background: '#FFFFFF', headingFont: 'DM Sans', bodyFont: 'DM Sans', corners: 'round' } },
+    { name: 'Terracotta', theme: { primary: '#B4532A', dark: '#3A2219', soft: '#F8EFE8', text: '#5A4A42', background: '#FFFCFA', headingFont: 'Playfair Display', bodyFont: 'Lora', corners: 'square' } },
+    { name: 'Clinic', theme: { primary: '#2A7D7B', dark: '#173B3A', soft: '#EEF6F5', text: '#475957', background: '#FFFFFF', headingFont: 'Manrope', bodyFont: 'Inter', corners: 'round' } }
+]
+
+const HEX = /^#[0-9a-f]{6}$/i
+
+/** Keeps only valid values; anything else falls back to the default when rendered. */
+export function cleanTheme(input: unknown): SiteTheme {
+    const t = (input && typeof input === 'object' ? input : {}) as Record<string, unknown>
+    const out: SiteTheme = {}
+    for (const key of ['primary', 'dark', 'soft', 'text', 'background'] as const) {
+        if (typeof t[key] === 'string' && HEX.test(t[key] as string)) out[key] = (t[key] as string).toUpperCase()
+    }
+    for (const key of ['headingFont', 'bodyFont'] as const) {
+        if (SITE_FONTS.some(f => f.name === t[key])) out[key] = t[key] as string
+    }
+    if (t.corners === 'square' || t.corners === 'soft' || t.corners === 'round') out.corners = t.corners
+    return out
+}
+
+/** White or near-black, whichever reads better on the given background. */
+export function readableOn(hex: string): string {
+    const n = Number.parseInt(hex.slice(1), 16)
+    const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+        const v = c / 255
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+    })
+    const lum = 0.2126 * r! + 0.7152 * g! + 0.0722 * b!
+    return lum > 0.4 ? '#1D2230' : '#FFFFFF'
+}
+
+/** The Google Fonts stylesheet URL for a theme's fonts. */
+export function themeFontsHref(theme: SiteTheme | null | undefined): string {
+    const t = { ...DEFAULT_THEME, ...theme }
+    const families = [...new Set([t.headingFont, t.bodyFont])]
+        .map(name => SITE_FONTS.find(f => f.name === name)?.css)
+        .filter(Boolean)
+    return `https://fonts.googleapis.com/css2?${families.map(f => `family=${f}`).join('&')}&display=swap`
+}

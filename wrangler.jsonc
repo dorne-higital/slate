@@ -1,0 +1,13 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "slate",
+    "main": "./.output/server/index.mjs",
+    "compatibility_date": "2026-11-01",
+    "compatibility_flags": ["nodejs_compat"],
+    "assets": {
+        "directory": "./.output/public",
+        "binding": "ASSETS"
+    },
+    "observability": { "enabled": true }
+    // Secrets (set with `wrangler secret put`): NUXT_DATABASE_URL, NUXT_BETTER_AUTH_SECRET
+}
