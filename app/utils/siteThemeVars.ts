@@ -3,7 +3,6 @@ const RADIUS = { square: '0px', soft: '6px', round: '999px' } as const
 /** A site's theme as CSS variables. Shared by the public site, the editor canvas and the theme preview. */
 export function siteThemeVars(theme: SiteTheme | null | undefined): Record<string, string> {
     const t = { ...DEFAULT_THEME, ...theme }
-    const font = (name: string) => SITE_FONTS.find(f => f.name === name)?.stack ?? 'system-ui, sans-serif'
     const dark = t.scheme === 'dark'
     // Dark scheme: the Dark colour becomes the page, with light text; soft sections are a lighter tint of it
     const bg = dark ? t.dark : t.background
@@ -30,8 +29,8 @@ export function siteThemeVars(theme: SiteTheme | null | undefined): Record<strin
         '--theme-primary-text': readableOn(t.primary),
         '--site-radius': RADIUS[t.corners],
         '--site-card-radius': t.corners === 'square' ? '0px' : '8px',
-        '--site-heading-font': font(t.headingFont),
-        '--site-body-font': font(t.bodyFont),
+        '--site-heading-font': themeFontStack(t, 'headingFont'),
+        '--site-body-font': themeFontStack(t, 'bodyFont'),
         '--site-h1-size': TITLE[t.titleSize],
         '--site-h2-size': HEADING[t.headingSize],
         '--site-nav-size': NAV[t.navSize],

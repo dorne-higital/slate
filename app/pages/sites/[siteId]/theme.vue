@@ -36,6 +36,10 @@ const corners = [
 // Presets change colours, fonts and corners only; logo, sizes and layout stay as they are
 function applyPreset(preset: SiteTheme) {
     theme.value = { ...theme.value, ...preset }
+    for (const key of ['headingFont', 'bodyFont'] as const) {
+        const f = findGoogleFont(theme.value[key])
+        if (f) setFont(key, f)
+    }
 }
 const sizes = [{ key: 'small', label: 'Small' }, { key: 'medium', label: 'Medium' }, { key: 'large', label: 'Large' }, { key: 'huge', label: 'Huge' }] as const
 const navSizes = [{ key: 'small', label: 'Small' }, { key: 'medium', label: 'Medium' }, { key: 'large', label: 'Large' }] as const
@@ -65,6 +69,12 @@ const sample: Block[] = [
     { id: 's2', type: 'services', props: { heading: 'What we do', intro: '', items: [{ title: 'First service', text: 'Short description.' }, { title: 'Second service', text: 'Short description.' }, { title: 'Third service', text: 'Short description.' }] } },
     { id: 's3', type: 'cta', props: { heading: 'Ready to start?', text: '', buttonLabel: 'Book a call', buttonUrl: '' } }
 ]
+
+function setFont(key: 'headingFont' | 'bodyFont', f: GoogleFont) {
+    theme.value[key] = f.name
+    theme.value[`${key}Css`] = fontCss(f)
+    theme.value[`${key}Kind`] = f.kind
+}
 </script>
 
 <template>
@@ -142,18 +152,8 @@ const sample: Block[] = [
 
                 <section class="panel box" aria-labelledby="t-h">
                     <h2 id="t-h">Text and shapes</h2>
-                    <div class="field">
-                        <label for="fh">Headings</label>
-                        <select id="fh" v-model="theme.headingFont" class="inp">
-                            <option v-for="f in SITE_FONTS" :key="f.name" :value="f.name">{{ f.name }}</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label for="fb">Paragraphs</label>
-                        <select id="fb" v-model="theme.bodyFont" class="inp">
-                            <option v-for="f in SITE_FONTS" :key="f.name" :value="f.name">{{ f.name }}</option>
-                        </select>
-                    </div>
+                    <FontPicker id="fh" label="Headings font" :model-value="theme.headingFont" @pick="setFont('headingFont', $event)" />
+                    <FontPicker id="fb" label="Paragraphs font" :model-value="theme.bodyFont" @pick="setFont('bodyFont', $event)" />
                     <div class="field">
                         <span class="lb">Page titles (the big heading at the top)</span>
                         <div class="seg" role="group" aria-label="Page title size">

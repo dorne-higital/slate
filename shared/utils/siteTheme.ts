@@ -25,6 +25,10 @@ export const DEFAULT_THEME: Required<SiteTheme> = {
     accent: '#E8A33A',
     headingFont: 'Schibsted Grotesk',
     bodyFont: 'Schibsted Grotesk',
+    headingFontCss: '',
+    headingFontKind: '',
+    bodyFontCss: '',
+    bodyFontKind: '',
     corners: 'soft',
     scheme: 'light',
     logo: '',
@@ -61,8 +65,12 @@ export function cleanTheme(input: unknown): SiteTheme {
     for (const key of ['primary', 'dark', 'soft', 'text', 'background', 'accent'] as const) {
         if (typeof t[key] === 'string' && HEX.test(t[key] as string)) out[key] = (t[key] as string).toUpperCase()
     }
+    // Any Google Font name; the server checks it against the full list (resolveThemeFonts) when saving
     for (const key of ['headingFont', 'bodyFont'] as const) {
-        if (SITE_FONTS.some(f => f.name === t[key])) out[key] = t[key] as string
+        if (typeof t[key] === 'string' && /^[A-Za-z0-9 ]{2,60}$/.test(t[key] as string)) out[key] = t[key] as string
+        const css = t[`${key}Css`], kind = t[`${key}Kind`]
+        if (typeof css === 'string' && /^[A-Za-z0-9+]{2,80}(:wght@[0-9;]{3,40})?$/.test(css)) out[`${key}Css`] = css
+        if (typeof kind === 'string' && /^[srdhm]$/.test(kind)) out[`${key}Kind`] = kind
     }
     const pick = <K extends keyof SiteTheme>(key: K, allowed: readonly string[]) => {
         if (typeof t[key] === 'string' && allowed.includes(t[key] as string)) out[key] = t[key] as SiteTheme[K]
@@ -116,11 +124,20 @@ export function readableOn(hex: string): string {
     return lum > 0.4 ? '#1D2230' : '#FFFFFF'
 }
 
+const FALLBACK: Record<string, string> = { s: 'system-ui, sans-serif', r: 'Georgia, serif', d: 'system-ui, sans-serif', h: 'cursive', m: 'ui-monospace, monospace' }
+
+/** CSS font-family for a theme font, with a fallback that suits its kind. */
+export function themeFontStack(theme: SiteTheme | null | undefined, key: 'headingFont' | 'bodyFont'): string {
+    const t = { ...DEFAULT_THEME, ...theme }
+    const curated = SITE_FONTS.find(f => f.name === t[key])
+    if (!t[`${key}Css`] && curated) return curated.stack
+    return `'${t[key]}', ${FALLBACK[t[`${key}Kind`] || 's']}`
+}
+
 /** The Google Fonts stylesheet URL for a theme's fonts. */
 export function themeFontsHref(theme: SiteTheme | null | undefined): string {
     const t = { ...DEFAULT_THEME, ...theme }
-    const families = [...new Set([t.headingFont, t.bodyFont])]
-        .map(name => SITE_FONTS.find(f => f.name === name)?.css)
-        .filter(Boolean)
+    const css = (key: 'headingFont' | 'bodyFont') => t[`${key}Css`] || SITE_FONTS.find(f => f.name === t[key])?.css
+    const families = [...new Set([css('headingFont'), css('bodyFont')])].filter(Boolean)
     return `https://fonts.googleapis.com/css2?${families.map(f => `family=${f}`).join('&')}&display=swap`
 }

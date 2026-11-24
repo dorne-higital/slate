@@ -27,6 +27,11 @@ export interface SiteTheme {
     accent?: string
     headingFont?: string
     bodyFont?: string
+    /** Set by the server from the Google Fonts list when saved: the css2 family value and the kind (s, r, d, h, m) */
+    headingFontCss?: string
+    headingFontKind?: string
+    bodyFontCss?: string
+    bodyFontKind?: string
     corners?: 'square' | 'soft' | 'round'
     /** Dark swaps the page to the Dark colour with light text */
     scheme?: 'light' | 'dark'
