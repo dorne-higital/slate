@@ -73,7 +73,7 @@ const made: string[] = []
 export async function newAccount(label: string) {
     const c = new Client()
     const email = testEmail(label)
-    const r = await c.post('/api/signup', { name: `Test ${label}`, email, password: 'correct-horse-battery', siteName: `Test ${label} ${run}`, layout: 'blank', turnstile: TURNSTILE_TEST_TOKEN })
+    const r = await c.post('/api/signup', { name: `Test ${label}`, email, password: 'correct-horse-battery', siteName: `Test ${label} ${run}`, layout: 'blank', country: 'GB', turnstile: TURNSTILE_TEST_TOKEN })
     if (r.status !== 200) throw new Error(`Sign-up failed (${r.status}): ${r.text.slice(0, 200)}. Is the dev server running with yarn dev:test?`)
     made.push(email)
     const [{ id }] = await sql`select id from "user" where email = ${email}` as { id: string }[]

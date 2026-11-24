@@ -16,7 +16,8 @@ const step = ref<1 | 2 | 3>(1)
 // After the site exists: optional domain step
 const createdSiteId = ref<string | null>(null)
 const freeAddress = ref('')
-const form = reactive({ name: '', email: '', password: '', siteName: '', layout: 'trade' })
+const form = reactive({ name: '', email: '', password: '', siteName: '', layout: 'trade', country: 'GB' })
+const outsideUk = computed(() => form.country === 'other')
 const error = ref('')
 const busy = ref(false)
 
@@ -86,7 +87,15 @@ async function create() {
                     <span class="help">Your free address: <b>{{ slug }}.{{ sitesDomain }}</b>. You can connect your own domain later.</span>
                 </div>
                 <p class="small">By creating an account you agree to our <NuxtLink to="/terms" target="_blank">terms</NuxtLink> and <NuxtLink to="/privacy" target="_blank">privacy policy</NuxtLink>.</p>
-                <button class="btn btn-lichen btn-lg" type="submit" :disabled="busy">{{ busy ? 'Creating your account…' : invite ? 'Create account and join' : 'Create account' }}</button>
+                <div v-if="!invite" class="field">
+                    <label for="su-country">Where’s your business based?</label>
+                    <select id="su-country" v-model="form.country" class="inp">
+                        <option v-for="c in SELL_TO" :key="c.code" :value="c.code">{{ c.name }}</option>
+                        <option value="other">Somewhere else</option>
+                    </select>
+                    <p v-if="outsideUk" class="error-box" role="alert">{{ NOT_SELLING_MESSAGE }}</p>
+                </div>
+                <button class="btn btn-lichen btn-lg" type="submit" :disabled="busy || (!invite && outsideUk)">{{ busy ? 'Creating your account…' : invite ? 'Create account and join' : 'Create account' }}</button>
                 <p class="small">Already have an account? <NuxtLink to="/login">Log in</NuxtLink></p>
             </form>
 

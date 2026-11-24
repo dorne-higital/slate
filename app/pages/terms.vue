@@ -15,7 +15,7 @@ const plans = PLANS
         <ul>
             <li>You must be 18 or over and give us accurate details.</li>
             <li>Keep your password safe. You’re responsible for what happens in your account, including what people you invite do.</li>
-            <li>Slate is meant for businesses and organisations. If you’re using it as a consumer, your rights under UK consumer law aren’t affected by anything here.</li>
+            <li>Slate is meant for businesses and organisations based in the UK (including the Isle of Man and the Channel Islands). If you’re using it as a consumer, your rights under UK consumer law aren’t affected by anything here.</li>
         </ul>
 
         <h2>3. Free trial</h2>

@@ -14,8 +14,13 @@ describe('signing up and in', () => {
         const r = await new Client().post('/api/signup', { name: 'x', email: 'test+nobot@example.com', password: 'correct-horse-battery', siteName: 'x', layout: 'blank', turnstile: '' })
         expect(r.status).toBeGreaterThanOrEqual(400)
     })
+    it('only takes new sites from the UK', async () => {
+        const base = { name: 'x', email: `test+fr${Date.now()}@example.com`, password: 'correct-horse-battery', siteName: 'x', layout: 'blank', turnstile: 'XXXX.DUMMY.TOKEN.XXXX' }
+        expect((await new Client().post('/api/signup', { ...base, country: 'FR' })).json.statusMessage).toMatch(/only available to businesses based in the UK/)
+        expect((await new Client().post('/api/signup', base)).status).toBe(400)
+    })
     it('refuses throwaway email addresses', async () => {
-        const r = await new Client().post('/api/signup', { name: 'x', email: `x${Date.now()}@mailinator.com`, password: 'correct-horse-battery', siteName: 'x', layout: 'blank', turnstile: 'XXXX.DUMMY.TOKEN.XXXX' })
+        const r = await new Client().post('/api/signup', { name: 'x', email: `x${Date.now()}@mailinator.com`, password: 'correct-horse-battery', siteName: 'x', layout: 'blank', country: 'GB', turnstile: 'XXXX.DUMMY.TOKEN.XXXX' })
         expect(r.status).toBe(400)
     })
     it('knows who you are once signed up', async () => {
