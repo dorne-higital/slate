@@ -15,7 +15,8 @@ async function submit() {
         await $fetch('/api/auth/sign-in/email', { method: 'POST', body: { email: email.value, password: password.value } })
         const me = await refresh()
         const next = typeof route.query.next === 'string' && route.query.next.startsWith('/') ? route.query.next : null
-        await navigateTo(next ?? (me?.sites[0] ? `/sites/${me.sites[0].id}` : '/'))
+        const home = me?.isPlatformAdmin ? '/admin' : me?.sites[0] ? `/sites/${me.sites[0].id}` : '/'
+        await navigateTo(next ?? home)
     } catch {
         error.value = 'That email and password don’t match an account. Check them and try again.'
     } finally {

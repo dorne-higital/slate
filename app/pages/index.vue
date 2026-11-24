@@ -5,7 +5,7 @@ useHead({
 })
 const { me, ensure } = useMe()
 await ensure()
-const dashboard = computed(() => me.value?.sites[0] ? `/sites/${me.value.sites[0].id}` : '/signup')
+const dashboard = computed(() => me.value?.isPlatformAdmin ? '/admin' : me.value?.sites[0] ? `/sites/${me.value.sites[0].id}` : '/signup')
 const { sitesDomain } = useRuntimeConfig().public
 const freeDomain = sitesDomain.includes('localhost') ? 'slatecms.co.uk' : sitesDomain
 

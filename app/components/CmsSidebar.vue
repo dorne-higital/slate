@@ -45,13 +45,14 @@ function isActive(item: NavItem) {
             <BrandMark :size="19" />
         </NuxtLink>
 
-        <div class="site-switch">
+        <component :is="me?.isPlatformAdmin ? resolveComponent('NuxtLink') : 'div'" :to="me?.isPlatformAdmin ? '/admin' : undefined" class="site-switch" :aria-label="me?.isPlatformAdmin ? `${site?.name}. Go to all sites` : undefined">
             <span class="site-badge" aria-hidden="true">{{ site?.name?.[0] ?? '·' }}</span>
             <span class="site-text">
                 <b>{{ site?.name ?? 'Your site' }}</b>
                 <span>{{ site?.customDomain ?? `${site?.slug}` }}</span>
             </span>
-        </div>
+            <span v-if="me?.isPlatformAdmin" class="all">All sites</span>
+        </component>
 
         <nav aria-label="Site">
             <template v-for="group in groups" :key="group.title">
@@ -111,6 +112,8 @@ function isActive(item: NavItem) {
     padding: 10px;
 }
 
+.site-switch { color: var(--quarry); text-decoration: none; }
+.site-switch .all { color: var(--text-muted); flex: none; font-size: 12px; font-weight: 600; }
 .site-badge {
     align-items: center;
     background: #2f5d50;
