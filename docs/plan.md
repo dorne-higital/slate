@@ -68,6 +68,6 @@ Quick wins first, then the bigger customisation work.
 9. [x] Settings: social links, shown as icons in the footer and usable in menus
 10. [x] Theme: logo, favicon, extra brand colours, heading sizes, nav size, text transforms, light/dark
 11. [x] Layout section: header style (regular, centred, mega menu), header/footer colours, link to Menus
-12. [ ] Blocks: a gallery of every block to try out with sample content
-13. [ ] Integrations: list of candidates, including paid add-ons (answered in chat, then build the chosen ones)
+12. [x] Blocks: a gallery of every block to try out with sample content
+13. [ ] Integrations: candidate list sent to Dan 24 Nov; build the ones he picks
 14. [x] Support: tickets from each site (Support page in the CMS), listed in the platform dashboard; platform admins reply, both sides emailed
