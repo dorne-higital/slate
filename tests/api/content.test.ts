@@ -75,3 +75,23 @@ describe('theme', () => {
         expect(r.json.bodyFont).toBeUndefined()
     })
 })
+
+describe('multi-step forms', () => {
+    it('saves step breaks and takes a reply from every step', async () => {
+        const made = await ana.client.post(`/api/sites/${ana.siteId}/forms`, { name: 'Steps', fields: [
+            { label: 'About you', kind: 'step' }, { label: 'Name', kind: 'text', required: true },
+            { label: 'Your project', kind: 'step' }, { label: 'Details', kind: 'textarea', required: true }
+        ] })
+        expect(made.status).toBe(200)
+        expect(made.json.fields.map((f: { kind: string }) => f.kind)).toEqual(['step', 'text', 'step', 'textarea'])
+        const [, name, , details] = made.json.fields
+        const missing = await visitor.post(`/api/public/forms/${made.json.id}`, { answers: { [name.id]: 'Dan' }, startedAt: Date.now() - 10_000 })
+        expect(missing.status).toBe(400)
+        expect(missing.json.data.fieldId).toBe(details.id)
+        const ok = await visitor.post(`/api/public/forms/${made.json.id}`, { answers: { [name.id]: 'Dan', [details.id]: 'A new site' }, startedAt: Date.now() - 10_000 })
+        expect(ok.status).toBe(200)
+        const replies = await ana.client.get(`/api/sites/${ana.siteId}/forms/${made.json.id}/replies`)
+        expect(JSON.stringify(replies.json)).toContain('A new site')
+        expect(JSON.stringify(replies.json)).not.toContain('About you')
+    })
+})

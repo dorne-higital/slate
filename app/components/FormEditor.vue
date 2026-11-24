@@ -11,6 +11,13 @@ const confirmDelete = ref(false)
 function addField() {
     draft.fields.push({ id: crypto.randomUUID(), label: '', kind: 'text', required: false })
 }
+function addStep() {
+    draft.fields.push({ id: crypto.randomUUID(), label: '', kind: 'step', required: false })
+}
+// Question numbers skip step breaks; step numbers count from 2 (the first step needs no break)
+const numberOf = (i: number) => draft.fields.slice(0, i + 1).filter(f => f.kind !== 'step').length
+const stepOf = (i: number) => draft.fields.slice(0, i + 1).filter(f => f.kind === 'step').length + (draft.fields.slice(0, i).some(f => f.kind !== 'step') ? 1 : 0)
+const stepCount = computed(() => formSteps(draft.fields).length)
 function move(i: number, dir: -1 | 1) {
     const [f] = draft.fields.splice(i, 1)
     draft.fields.splice(i + dir, 0, f!)
@@ -61,10 +68,28 @@ async function remove() {
 
         <div class="qs">
             <b class="qs-title">Questions</b>
-            <div v-for="(f, i) in draft.fields" :key="f.id" class="q">
+            <p v-if="stepCount > 1" class="help">This form has {{ stepCount }} steps. Visitors see one step at a time, with Next and Back buttons.</p>
+            <template v-for="(f, i) in draft.fields" :key="f.id">
+            <div v-if="f.kind === 'step'" class="q step">
                 <div class="q-row">
                     <div class="field grow">
-                        <label :for="`q-${f.id}`">Question {{ i + 1 }}</label>
+                        <label :for="`q-${f.id}`">Step {{ stepOf(i) }} starts here. Title (optional)</label>
+                        <input :id="`q-${f.id}`" v-model="f.label" class="inp" type="text" maxlength="120" placeholder="e.g. About your project">
+                    </div>
+                </div>
+                <div class="q-tools">
+                    <span class="help">Questions below this line are on the next step.</span>
+                    <span>
+                        <button class="ib" type="button" :aria-label="`Move step break up`" :disabled="i === 0" @click="move(i, -1)">↑</button>
+                        <button class="ib" type="button" :aria-label="`Move step break down`" :disabled="i === draft.fields.length - 1" @click="move(i, 1)">↓</button>
+                        <button class="ib" type="button" :aria-label="`Remove step break`" @click="draft.fields.splice(i, 1)">✕</button>
+                    </span>
+                </div>
+            </div>
+            <div v-else class="q">
+                <div class="q-row">
+                    <div class="field grow">
+                        <label :for="`q-${f.id}`">Question {{ numberOf(i) }}</label>
                         <input :id="`q-${f.id}`" v-model="f.label" class="inp" type="text" maxlength="120" placeholder="e.g. Your name">
                     </div>
                     <div class="field">
@@ -81,13 +106,17 @@ async function remove() {
                 <div class="q-tools">
                     <label class="check"><input v-model="f.required" type="checkbox">Must be filled in</label>
                     <span>
-                        <button class="ib" type="button" :aria-label="`Move question ${i + 1} up`" :disabled="i === 0" @click="move(i, -1)">↑</button>
-                        <button class="ib" type="button" :aria-label="`Move question ${i + 1} down`" :disabled="i === draft.fields.length - 1" @click="move(i, 1)">↓</button>
-                        <button class="ib" type="button" :aria-label="`Remove question ${i + 1}`" @click="draft.fields.splice(i, 1)">✕</button>
+                        <button class="ib" type="button" :aria-label="`Move question ${numberOf(i)} up`" :disabled="i === 0" @click="move(i, -1)">↑</button>
+                        <button class="ib" type="button" :aria-label="`Move question ${numberOf(i)} down`" :disabled="i === draft.fields.length - 1" @click="move(i, 1)">↓</button>
+                        <button class="ib" type="button" :aria-label="`Remove question ${numberOf(i)}`" @click="draft.fields.splice(i, 1)">✕</button>
                     </span>
                 </div>
             </div>
-            <button class="btn btn-ghost btn-sm self-start" type="button" @click="addField">Add a question</button>
+            </template>
+            <span class="add-row">
+                <button class="btn btn-ghost btn-sm" type="button" @click="addField">Add a question</button>
+                <button class="btn btn-plain btn-sm" type="button" @click="addStep">Add a step break</button>
+            </span>
         </div>
 
         <div class="field"><label for="fe-btn">Button text</label><input id="fe-btn" v-model="draft.submitLabel" class="inp" type="text" maxlength="40"></div>
@@ -126,6 +155,8 @@ textarea.inp { height: auto; line-height: 1.5; padding: 10px 12px; resize: verti
 .ib:hover:not(:disabled) { background: var(--mist); }
 .ib:disabled { opacity: .3; }
 .self-start { align-self: flex-start; }
+.step { background: var(--white); border-left: 4px solid var(--lichen); }
+.add-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .fe-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; padding-top: 6px; }
 .danger { color: var(--danger); }
 .confirm { align-items: center; color: var(--danger); display: flex; flex-wrap: wrap; font-size: 14px; gap: 8px; }

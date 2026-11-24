@@ -1,4 +1,5 @@
-export type FormFieldKind = 'text' | 'email' | 'phone' | 'textarea' | 'select'
+/** 'step' isn't a question: it splits the form into steps, and its label is the next step's title */
+export type FormFieldKind = 'text' | 'email' | 'phone' | 'textarea' | 'select' | 'step'
 
 export interface FormField {
     id: string
@@ -38,12 +39,13 @@ export function defaultContactFields(): FormField[] {
 export function cleanFormInput(input: unknown) {
     const r = (input && typeof input === 'object' ? input : {}) as Record<string, unknown>
     const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '')
-    const kinds = FIELD_KINDS.map(k => k.kind)
+    const kinds: FormFieldKind[] = [...FIELD_KINDS.map(k => k.kind), 'step']
     const fields: FormField[] = (Array.isArray(r.fields) ? r.fields : []).slice(0, 30).flatMap((raw) => {
         const f = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
         const label = str(f.label, 120)
-        if (!label) return []
         const kind = kinds.includes(f.kind as FormFieldKind) ? f.kind as FormFieldKind : 'text'
+        if (kind === 'step') return [{ id: typeof f.id === 'string' && /^[\w-]{1,64}$/.test(f.id) ? f.id : crypto.randomUUID(), label, kind, required: false }]
+        if (!label) return []
         const field: FormField = {
             id: typeof f.id === 'string' && /^[\w-]{1,64}$/.test(f.id) ? f.id : crypto.randomUUID(),
             label,
@@ -70,6 +72,7 @@ export function validateSubmission(form: Pick<FormDefinition, 'fields'>, answers
     { ok: true, data: Record<string, string> } | { ok: false, fieldId: string, message: string } {
     const data: Record<string, string> = {}
     for (const field of form.fields) {
+        if (field.kind === 'step') continue
         const raw = answers[field.id]
         const value = typeof raw === 'string' ? raw.trim().slice(0, field.kind === 'textarea' ? 5000 : 300) : ''
         if (field.required && !value) return { ok: false, fieldId: field.id, message: `Please fill in “${field.label}”.` }
@@ -79,4 +82,20 @@ export function validateSubmission(form: Pick<FormDefinition, 'fields'>, answers
         if (value) data[field.label] = value
     }
     return { ok: true, data }
+}
+
+/** A form's questions grouped into steps (a form with no step breaks is one step). */
+export function formSteps(fields: FormField[]): { title: string, fields: FormField[] }[] {
+    const steps: { title: string, fields: FormField[] }[] = [{ title: '', fields: [] }]
+    for (const f of fields) {
+        if (f.kind !== 'step') {
+            steps[steps.length - 1]!.fields.push(f)
+            continue
+        }
+        const last = steps[steps.length - 1]!
+        // A break before any question just names the first step
+        if (!last.fields.length) last.title = f.label
+        else steps.push({ title: f.label, fields: [] })
+    }
+    return steps.filter(s => s.fields.length)
 }

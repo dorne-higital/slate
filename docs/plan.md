@@ -81,7 +81,7 @@ Dan chose: refresh the design, projects as their own content type.
 3. [x] New blocks: projects, gallery with lightbox, before and after, details list, numbers, steps, logos and tools, timeline, team, big statement, scrolling band, video, big image, contact details
 4. [x] Projects: own CMS screen (details, cover, category, buttons, order), pages at /work/…, case-study header, edited in the page editor
 5. [x] More fonts: Baloo 2, Quicksand, Space Grotesk, Outfit, Plus Jakarta Sans, Instrument Serif
-6. [ ] Multi-step forms
+6. [x] Multi-step forms (step breaks in the form editor; Next/Back with per-step checks)
 7. [x] Rebuild danhorne.co.uk in Slate with a refreshed design (danhorne.slatecms.co.uk, 24 Nov)
 8. [ ] Dan reviews it, then point danhorne.co.uk at it
 9. [x] Theme: any Google Font for headings and paragraphs
