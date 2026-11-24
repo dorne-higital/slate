@@ -4,6 +4,7 @@ const host = import.meta.server ? useRequestURL().host : window.location.host
 if (isAppHost(host, useRuntimeConfig().public.appHost)) {
     useHead({
         link: [
+            { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
             { rel: 'icon', type: 'image/svg+xml', href: '/slate-icon.svg' },
             { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/slate-icon-32.png' },
             { rel: 'apple-touch-icon', sizes: '180x180', href: '/slate-icon-180.png' }
