@@ -4,10 +4,13 @@ const route = useRoute()
 const siteId = String(route.params.siteId)
 const fetcher = useRequestFetch()
 
-const [{ data: site }, { data: pages }] = await Promise.all([
+const [{ data: site }, { data: pages }, { data: replies }] = await Promise.all([
     useAsyncData(`site-${siteId}`, () => fetcher(`/api/sites/${siteId}`)),
-    useAsyncData(`pages-${siteId}`, () => fetcher<PageListItem[]>(`/api/sites/${siteId}/pages`))
+    useAsyncData(`pages-${siteId}`, () => fetcher<PageListItem[]>(`/api/sites/${siteId}/pages`)),
+    useAsyncData(`recent-full-${siteId}`, () => fetcher<{ unread: number, latest: { id: string, formName: string, data: Record<string, string>, createdAt: string }[] }>(`/api/sites/${siteId}/replies/recent`))
 ])
+const replyName = (d: Record<string, string>) => Object.entries(d).find(([k]) => /name/i.test(k))?.[1] ?? Object.values(d)[0] ?? 'Someone'
+const replyText = (d: Record<string, string>) => (Object.entries(d).find(([k]) => /message|details/i.test(k)) ?? Object.entries(d).at(-1))?.[1] ?? ''
 useHead({ title: () => `Overview · ${site.value?.name ?? 'Slate'}` })
 
 const recent = computed(() => [...(pages.value ?? [])].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6))
@@ -58,6 +61,19 @@ const liveUrl = computed(() => {
                 </div>
             </section>
 
+            <div class="side">
+            <section class="panel replies" aria-labelledby="forms-h">
+                <div class="ph">
+                    <h2 id="forms-h">New form replies</h2>
+                    <NuxtLink :to="`/sites/${siteId}/forms`">Open inbox</NuxtLink>
+                </div>
+                <NuxtLink v-for="r in replies?.latest ?? []" :key="r.id" :to="`/sites/${siteId}/forms`" class="reply">
+                    <span class="reply-top"><b>{{ replyName(r.data) }}</b><span class="muted">{{ formatWhen(r.createdAt) }}</span></span>
+                    <span class="muted">{{ r.formName }}</span>
+                    <span class="reply-text">{{ replyText(r.data) }}</span>
+                </NuxtLink>
+                <p v-if="!replies?.latest.length" class="muted none">No replies yet. They’ll show here when someone fills in a form.</p>
+            </section>
             <section class="panel next" aria-labelledby="next-h">
                 <h2 id="next-h">Help people find your site</h2>
                 <ul>
@@ -65,6 +81,7 @@ const liveUrl = computed(() => {
                     <li><span class="ring" aria-hidden="true" /><span><NuxtLink :to="`/sites/${siteId}/domains`" class="rl">Connect your own domain</NuxtLink><span class="muted">Your free address works until you do.</span></span></li>
                 </ul>
             </section>
+            </div>
         </div>
     </div>
 </template>
@@ -90,6 +107,12 @@ h2 { font-size: 18px; font-weight: 700; margin: 0; }
 .rl { color: var(--quarry); font-weight: 600; text-decoration: none; }
 .rl:hover { text-decoration: underline; }
 
+.side { display: flex; flex-direction: column; gap: 24px; }
+.reply { border-top: 1px solid var(--line-soft); color: var(--quarry); display: flex; flex-direction: column; gap: 4px; padding: 14px 20px; text-decoration: none; }
+.reply:hover { background: #fafbfc; }
+.reply-top { display: flex; gap: 12px; justify-content: space-between; }
+.reply-text { color: var(--text-body); font-size: 14px; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.none { border-top: 1px solid var(--line-soft); margin: 0; padding: 14px 20px; }
 .next { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; }
 .next ul { display: flex; flex-direction: column; gap: 12px; list-style: none; margin: 0; padding: 0; }
 .next li { align-items: flex-start; display: flex; gap: 12px; }

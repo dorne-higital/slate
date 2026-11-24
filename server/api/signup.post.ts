@@ -36,6 +36,13 @@ export default defineEventHandler(async (event) => {
     const [site] = await db.insert(schema.sites).values({ name: siteName, slug }).returning({ id: schema.sites.id })
     const siteId = site!.id
 
+    // Every site starts with a contact form, placed on its contact-style pages
+    const contactPages = ['contact', 'get a quote', 'book', 'join', 'visit us']
+    const [contactForm] = await db.insert(schema.forms).values({
+        siteId,
+        ...cleanFormInput({ name: layout.pages.find(p => contactPages.includes(p.toLowerCase())) ?? 'Contact', fields: defaultContactFields() })
+    }).returning({ id: schema.forms.id })
+
     await db.batch([
         db.insert(schema.siteMembers).values({ siteId, userId, role: 'owner' }),
         db.insert(schema.pages).values(layout.pages.map((title, i) => {
@@ -45,6 +52,9 @@ export default defineEventHandler(async (event) => {
                 type: 'hero',
                 props: { heading: i === 0 ? layout.hero : title, text: '', buttonLabel: i === 0 ? 'Get in touch' : '', buttonUrl: '' }
             }]
+            if (contactPages.includes(title.toLowerCase())) {
+                blocks.push({ id: crypto.randomUUID(), type: 'form', props: { heading: 'Send us a message', intro: 'We’ll get back to you within a working day.', formId: contactForm!.id } })
+            }
             return { siteId, title, path, position: i, status: 'published' as const, blocks, publishedBlocks: blocks, publishedAt: new Date(), updatedBy: userId }
         }))
     ])

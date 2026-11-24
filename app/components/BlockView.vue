@@ -2,6 +2,7 @@
 import type { Component } from 'vue'
 import BlockCta from './blocks/BlockCta.vue'
 import BlockFaq from './blocks/BlockFaq.vue'
+import BlockForm from './blocks/BlockForm.vue'
 import BlockHero from './blocks/BlockHero.vue'
 import BlockImageText from './blocks/BlockImageText.vue'
 import BlockReviews from './blocks/BlockReviews.vue'
@@ -19,7 +20,8 @@ const registry: Record<string, Component> = {
     services: BlockServices,
     reviews: BlockReviews,
     faq: BlockFaq,
-    cta: BlockCta
+    cta: BlockCta,
+    form: BlockForm
 }
 </script>
 

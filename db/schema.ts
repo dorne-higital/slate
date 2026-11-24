@@ -1,5 +1,6 @@
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import type { Block, MenuItem, MenuSlot, PageStatus, SiteRole, SiteTheme } from '../shared/types'
+import type { FormField } from '../shared/utils/forms'
 
 // ── Better Auth tables (shape required by better-auth's drizzle adapter) ──
 
@@ -119,4 +120,36 @@ export const domains = pgTable('domains', {
     checkedAt: timestamp('checked_at', { withTimezone: true })
 }, t => [
     index('domains_site_idx').on(t.siteId)
+])
+
+// Forms a site's visitors can fill in. Placed on pages with the Form block.
+export const forms = pgTable('forms', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    fields: jsonb('fields').$type<FormField[]>().notNull().default([]),
+    submitLabel: text('submit_label').notNull().default('Send'),
+    successMessage: text('success_message').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [
+    index('forms_site_idx').on(t.siteId)
+])
+
+// What visitors sent. `data` is keyed by field label, as it was when they sent it.
+export const formReplies = pgTable('form_replies', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+    formId: uuid('form_id').notNull().references(() => forms.id, { onDelete: 'cascade' }),
+    data: jsonb('data').$type<Record<string, string>>().notNull(),
+    pagePath: text('page_path'),
+    readAt: timestamp('read_at', { withTimezone: true }),
+    doneAt: timestamp('done_at', { withTimezone: true }),
+    note: text('note'),
+    // Salted hash of the sender's IP, only for rate limiting. Never shown.
+    senderHash: text('sender_hash'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [
+    index('form_replies_form_idx').on(t.formId, t.createdAt),
+    index('form_replies_site_idx').on(t.siteId, t.createdAt)
 ])

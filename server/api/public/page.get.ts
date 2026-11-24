@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 
 /** The published version of one page on the site this request's Host belongs to. */
 export default defineEventHandler(async (event) => {
@@ -16,16 +16,24 @@ export default defineEventHandler(async (event) => {
     ])
     if (!page) throw createError({ statusCode: 404, statusMessage: 'Page not found' })
 
+    // The forms this page's Form blocks use
+    const blocks = page.publishedBlocks ?? []
+    const formIds = [...new Set(blocks.filter(b => b.type === 'form').map(b => String(b.props.formId ?? '')).filter(isUuid))]
+    const formRows = formIds.length
+        ? await useDb().select().from(schema.forms).where(and(eq(schema.forms.siteId, site.id), inArray(schema.forms.id, formIds)))
+        : []
+
     setResponseHeader(event, 'cache-control', 'public, max-age=30, stale-while-revalidate=300')
     return {
         site: { name: site.name, theme: site.theme ?? {} },
         menus: { header: menus.header, footer: menus.footer, legal: menus.legal },
+        forms: Object.fromEntries(formRows.map(f => [f.id, toFormDefinition(f)])) as Record<string, FormDefinition>,
         page: {
             title: page.title,
             path: page.path,
             seoTitle: page.seoTitle,
             seoDescription: page.seoDescription,
-            blocks: page.publishedBlocks ?? []
+            blocks
         }
     }
 })

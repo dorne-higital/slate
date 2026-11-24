@@ -11,7 +11,7 @@ const groups: { title: string, items: NavItem[] }[] = [
         { key: 'overview', label: 'Overview', icon: 'M3 8l6-5 6 5v7H3z', to: '' },
         { key: 'pages', label: 'Pages', icon: 'M4 2h7l3 3v11H4z', to: '/pages' },
         { key: 'blog', label: 'Blog', icon: 'M3 4h12M3 9h12M3 14h7' },
-        { key: 'forms', label: 'Forms', icon: 'M2 4h14v10H2zM2 4l7 6 7-6' },
+        { key: 'forms', label: 'Forms', icon: 'M2 4h14v10H2zM2 4l7 6 7-6', to: '/forms' },
         { key: 'media', label: 'Media', icon: 'M2 3h14v12H2zM2 12l4-4 4 4 2-2 4 4' },
         { key: 'menus', label: 'Menus', icon: 'M3 5h12M3 9h12M3 13h12', to: '/menus' }
     ] },
@@ -29,6 +29,15 @@ const groups: { title: string, items: NavItem[] }[] = [
 ]
 
 const base = computed(() => `/sites/${props.siteId}`)
+
+// Unread form replies, refreshed as you move around the CMS
+const { data: recent, refresh: refreshRecent } = useAsyncData(
+    () => `recent-${props.siteId}`,
+    () => $fetch<{ unread: number }>(`/api/sites/${props.siteId}/replies/recent`).catch(() => ({ unread: 0 })),
+    { server: false }
+)
+watch(() => route.fullPath, () => refreshRecent())
+const badge = (key: string) => key === 'forms' && recent.value?.unread ? `${recent.value.unread} new` : ''
 const site = computed(() => me.value?.sites.find(s => s.id === props.siteId))
 const initials = computed(() => (me.value?.name ?? '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase())
 
@@ -67,6 +76,7 @@ function isActive(item: NavItem) {
                     >
                         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path :d="item.icon" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
                         <span>{{ item.label }}</span>
+                        <small v-if="badge(item.key)" class="badge">{{ badge(item.key) }}</small>
                     </NuxtLink>
                     <span v-else class="nv soon" aria-disabled="true">
                         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path :d="item.icon" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
@@ -153,6 +163,7 @@ nav { display: flex; flex-direction: column; gap: 2px; }
 .nv.soon { color: #6b7284; cursor: default; }
 .nv.soon:hover { background: transparent; }
 .nv small { font-size: 12px; font-weight: 600; }
+.nv .badge { background: var(--lichen); border-radius: 999px; color: var(--quarry); font-weight: 700; padding: 2px 8px; }
 
 .me { align-items: center; display: flex; gap: 10px; margin-top: auto; padding: 24px 12px 12px; }
 

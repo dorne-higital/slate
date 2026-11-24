@@ -20,6 +20,7 @@ useHead(() => ({
 }))
 
 const themeVars = computed(() => siteThemeVars(data.value?.site.theme))
+provide('siteForms', computed(() => data.value?.forms ?? {}))
 </script>
 
 <template>

@@ -3,7 +3,7 @@
  * The editor builds its forms from this, and the server cleans every save against it,
  * so a block can only ever hold the fields listed here.
  */
-export type FieldKind = 'text' | 'textarea' | 'url' | 'image'
+export type FieldKind = 'text' | 'textarea' | 'url' | 'image' | 'form'
 
 export interface BlockField {
     key: string
@@ -88,6 +88,13 @@ export const BLOCK_TYPES: BlockType[] = [
         defaults: { heading: 'Questions people ask', items: [{ question: 'How long does it take?', answer: 'Answer the question here.' }] }
     },
     {
+        type: 'form',
+        name: 'Form',
+        desc: 'Any form from your Forms inbox',
+        fields: [heading, { key: 'intro', label: 'Intro', kind: 'textarea', max: 600 }, { key: 'formId', label: 'Form', kind: 'form', help: 'Replies go to your Forms inbox.' }],
+        defaults: { heading: 'Get in touch', intro: '', formId: '' }
+    },
+    {
         type: 'cta',
         name: 'Call to action',
         desc: 'A dark band with one button',
@@ -118,6 +125,7 @@ export function safeUrl(value: string): string {
 
 function cleanField(field: BlockField, raw: unknown): string {
     const value = typeof raw === 'string' ? raw : ''
+    if (field.kind === 'form') return /^[0-9a-f-]{36}$/i.test(value) ? value : ''
     const cut = value.slice(0, field.max ?? 1000)
     return field.kind === 'url' || field.kind === 'image' ? safeUrl(cut) : cut
 }

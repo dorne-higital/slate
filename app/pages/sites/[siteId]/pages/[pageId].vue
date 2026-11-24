@@ -24,6 +24,9 @@ const [{ data: site }, { data: loaded, error }, { data: allPages, refresh: refre
     useAsyncData(`pages-${siteId}`, () => fetcher<PageListItem[]>(`/api/sites/${siteId}/pages`)),
     useAsyncData(`menus-${siteId}`, () => fetcher(`/api/sites/${siteId}/menus`))
 ])
+const { data: forms } = await useAsyncData(`forms-${siteId}`, () => fetcher<FormDefinition[]>(`/api/sites/${siteId}/forms`))
+provide('siteForms', computed(() => Object.fromEntries((forms.value ?? []).map(f => [f.id, f]))))
+provide('blockPreview', true)
 if (error.value) throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
 
 const page = reactive({
@@ -304,7 +307,7 @@ onBeforeRouteLeave(async () => {
             </main>
 
             <aside class="right" aria-label="Block settings">
-                <BlockInspector v-if="selected" :key="selected.id" :block="selected" :pages="linkTargets" @change="onFieldChange" />
+                <BlockInspector v-if="selected" :key="selected.id" :block="selected" :pages="linkTargets" :forms="forms ?? []" :site-id="siteId" @change="onFieldChange" />
                 <div v-else class="page-settings">
                     <div class="insp-head">
                         <b>Page settings</b>

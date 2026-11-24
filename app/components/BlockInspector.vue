@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Settings for the selected block, built from the block catalogue. Edits the block in place.
-const props = defineProps<{ block: Block, pages: { title: string, path: string }[] }>()
+const props = defineProps<{ block: Block, pages: { title: string, path: string }[], forms?: FormDefinition[], siteId?: string }>()
 const emit = defineEmits<{ change: [] }>()
 
 const def = computed(() => findBlockType(props.block.type))
@@ -49,6 +49,13 @@ const inputValue = (e: Event) => (e.target as HTMLInputElement).value
         <div v-for="f in def.fields" :key="f.key" class="field">
             <label :for="`f-${block.id}-${f.key}`">{{ f.label }}</label>
             <textarea v-if="f.kind === 'textarea'" :id="`f-${block.id}-${f.key}`" class="inp" rows="4" :value="String(block.props[f.key] ?? '')" @input="set(f.key, inputValue($event))" />
+            <template v-else-if="f.kind === 'form'">
+                <select :id="`f-${block.id}-${f.key}`" class="inp" :value="String(block.props[f.key] ?? '')" @change="set(f.key, inputValue($event))">
+                    <option value="">Choose a form…</option>
+                    <option v-for="form in forms" :key="form.id" :value="form.id">{{ form.name }}</option>
+                </select>
+                <NuxtLink v-if="siteId" class="help" :to="`/sites/${siteId}/forms`">Edit forms and see replies</NuxtLink>
+            </template>
             <template v-else>
                 <input :id="`f-${block.id}-${f.key}`" class="inp" type="text" :value="String(block.props[f.key] ?? '')" :list="f.kind === 'url' ? `pages-${block.id}` : undefined" @input="set(f.key, inputValue($event))">
                 <datalist v-if="f.kind === 'url'" :id="`pages-${block.id}`">
