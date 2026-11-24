@@ -280,6 +280,8 @@ export const supportTickets = pgTable('support_tickets', {
     subject: text('subject').notNull(),
     // open: waiting on Slate · answered: waiting on the customer · closed
     status: text('status').$type<'open' | 'answered' | 'closed'>().notNull().default('open'),
+    // When someone on the site last opened it: Slate replies after this show as new
+    customerSeenAt: timestamp('customer_seen_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 }, t => [

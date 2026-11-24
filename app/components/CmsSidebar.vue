@@ -39,8 +39,21 @@ const { data: recent, refresh: refreshRecent } = useAsyncData(
     () => $fetch<{ unread: number }>(`/api/sites/${props.siteId}/replies/recent`).catch(() => ({ unread: 0 })),
     { server: false }
 )
-watch(() => route.fullPath, () => refreshRecent())
-const badge = (key: string) => key === 'forms' && recent.value?.unread ? `${recent.value.unread} new` : ''
+// Slate support replies nobody on this site has read yet
+const { data: support, refresh: refreshSupport } = useAsyncData(
+    () => `support-unread-${props.siteId}`,
+    () => $fetch<{ unread: number }>(`/api/sites/${props.siteId}/support/unread`).catch(() => ({ unread: 0 })),
+    { server: false }
+)
+watch(() => route.fullPath, () => {
+    refreshRecent()
+    refreshSupport()
+})
+const badge = (key: string) => {
+    if (key === 'forms' && recent.value?.unread) return `${recent.value.unread} new`
+    if (key === 'support' && support.value?.unread) return `${support.value.unread} ${support.value.unread === 1 ? 'reply' : 'replies'}`
+    return ''
+}
 const site = computed(() => me.value?.sites.find(s => s.id === props.siteId))
 const initials = computed(() => (me.value?.name ?? '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase())
 

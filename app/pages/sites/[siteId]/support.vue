@@ -5,7 +5,7 @@ definePageMeta({ layout: 'cms', middleware: 'auth' })
 const route = useRoute()
 const siteId = String(route.params.siteId)
 const fetcher = useRequestFetch()
-type TicketRow = Omit<SupportTicket, 'messages'> & { messages: number }
+type TicketRow = Omit<SupportTicket, 'messages'> & { messages: number, unread: boolean }
 
 const { data: tickets, refresh } = await useAsyncData(`support-${siteId}`, () => fetcher<TicketRow[]>(`/api/sites/${siteId}/support`), { default: () => [] })
 useHead({ title: 'Support · Slate' })
@@ -19,6 +19,9 @@ async function openTicket(id: string) {
     error.value = ''
     current.value = await $fetch<SupportTicket>(`/api/sites/${siteId}/support/${id}`).catch(() => null)
     navigateTo({ query: { ticket: id } }, { replace: true })
+    // Opening it marks Slate's reply as read: update the list and the sidebar badge
+    await refresh()
+    refreshNuxtData(`support-unread-${siteId}`)
 }
 onMounted(() => openId.value && openTicket(openId.value))
 
@@ -97,8 +100,8 @@ const statusLook = {
         <section v-else-if="!writing" class="panel" aria-label="Your questions">
             <ul v-if="tickets.length" class="list">
                 <li v-for="t in tickets" :key="t.id">
-                    <button type="button" class="t-row" @click="openTicket(t.id)">
-                        <span class="t-main"><b>{{ t.subject }}</b><span class="muted">{{ t.openedByName }} · {{ t.messages }} {{ t.messages === 1 ? 'message' : 'messages' }} · {{ formatWhen(t.updatedAt) }}</span></span>
+                    <button type="button" class="t-row" :class="{ unread: t.unread }" @click="openTicket(t.id)">
+                        <span class="t-main"><b><span v-if="t.unread" class="dot" aria-hidden="true" />{{ t.subject }}<span v-if="t.unread" class="visually-hidden"> (new reply from Slate)</span></b><span class="muted">{{ t.openedByName }} · {{ t.messages }} {{ t.messages === 1 ? 'message' : 'messages' }} · {{ formatWhen(t.updatedAt) }}</span></span>
                         <span class="tag" :class="statusLook[t.status].cls">{{ statusLook[t.status].label }}</span>
                     </button>
                 </li>
@@ -124,6 +127,8 @@ textarea.inp { height: auto; line-height: 1.5; padding: 10px 12px; resize: verti
 .list li + li { border-top: 1px solid var(--line-soft); }
 .t-row { align-items: center; background: none; border: 0; color: inherit; cursor: pointer; display: flex; font: inherit; gap: 12px; justify-content: space-between; padding: 14px 20px; text-align: left; width: 100%; }
 .t-row:hover { background: #fafbfc; }
+.t-row.unread { background: #fffaf0; }
+.dot { background: var(--lichen); border-radius: 50%; display: inline-block; height: 9px; margin-right: 8px; vertical-align: middle; width: 9px; }
 .t-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .tag { border-radius: 999px; flex: none; font-size: 12px; font-weight: 700; padding: 3px 10px; white-space: nowrap; }
 .tag.open { background: #eef1f7; color: #3b4a6b; }

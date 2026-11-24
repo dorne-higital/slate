@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
     const body = cleanMessage(b.body)
     const [ticket] = await useDb().insert(schema.supportTickets).values({ siteId: site.id, openedBy: user.id, subject }).returning({ id: schema.supportTickets.id })
     await addMessage(ticket!.id, user.id, body, false)
+    await markSeenBySite(ticket!.id)
     event.waitUntil?.(notifySlate({ id: ticket!.id, subject, siteName: site.name }, user.name, body, true))
     return await loadTicket(ticket!.id, site.id)
 })

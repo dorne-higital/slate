@@ -20,7 +20,9 @@ export async function listTickets(where?: SQL) {
         updatedAt: schema.supportTickets.updatedAt,
         openedByName: schema.user.name,
         openedByEmail: schema.user.email,
-        messages: sql<number>`(select count(*)::int from support_messages m where m.ticket_id = "support_tickets"."id")`
+        messages: sql<number>`(select count(*)::int from support_messages m where m.ticket_id = "support_tickets"."id")`,
+        // A Slate reply the site hasn't opened yet
+        unread: sql<boolean>`exists(select 1 from support_messages m where m.ticket_id = "support_tickets"."id" and m.from_slate and m.created_at > coalesce("support_tickets"."customer_seen_at", 'epoch'))`
     })
         .from(schema.supportTickets)
         .innerJoin(schema.sites, eq(schema.sites.id, schema.supportTickets.siteId))
@@ -83,4 +85,16 @@ export async function notifyCustomer(ticket: { id: string, siteId: string, subje
 
 export function requirePlatformAdmin(user: { isPlatformAdmin?: boolean | null }) {
     if (!user.isPlatformAdmin) throw createError({ statusCode: 404, statusMessage: 'Not found' })
+}
+
+/** Slate replies on this site's tickets that nobody on the site has opened yet. */
+export async function unreadSupport(siteId: string) {
+    const r = await useDb().execute<{ n: number }>(sql`
+        select count(*)::int n from support_tickets t
+        where t.site_id = ${siteId} and exists(select 1 from support_messages m where m.ticket_id = t.id and m.from_slate and m.created_at > coalesce(t.customer_seen_at, 'epoch'))`)
+    return Number(r.rows[0]?.n ?? 0)
+}
+
+export async function markSeenBySite(ticketId: string) {
+    await useDb().update(schema.supportTickets).set({ customerSeenAt: new Date() }).where(eq(schema.supportTickets.id, ticketId))
 }
