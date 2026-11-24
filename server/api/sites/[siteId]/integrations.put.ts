@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
     if (!value || !String(value).trim()) {
         delete next[info.key]
     } else {
+        await requireWithinPlan(site, l => integrationAllowed(l, info.key), `${info.name} comes with the Business and Studio plans.`)
         const clean = cleanIntegrationValue(info.key, value)
         if (!clean) throw createError({ statusCode: 400, statusMessage: `That doesn’t look like a ${info.name} ${info.label.toLowerCase()}. It should look like ${info.placeholder}` })
         next[info.key] = clean

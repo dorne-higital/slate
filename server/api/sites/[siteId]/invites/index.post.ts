@@ -1,6 +1,8 @@
 /** Make an invitation link (valid 14 days). You can only invite people to roles below your own. */
 export default defineEventHandler(async (event) => {
     const { site, user, role: actorRole } = await requireSiteAccess(event, getRouterParam(event, 'siteId')!, 'admin')
+    const { members, invites } = await loadPeople(site.id, actorRole)
+    await requireWithinPlan(site, l => members.length + invites.length < l.peoplePerSite, 'Your plan has room for no more people on this site.')
     const { role, label } = await readBody<{ role?: SiteRole, label?: string }>(event)
     if (!role || !assignableRoles(actorRole).includes(role)) throw createError({ statusCode: 403, statusMessage: 'Your role can’t invite people as that' })
 

@@ -25,6 +25,9 @@ export default defineNuxtConfig({
         betterAuthSecret: '',
         // Cloudflare for SaaS (client custom domains). Token needs SSL and Certificates: Edit on the zone.
         cloudflareApiToken: '',
+        stripeSecretKey: '',
+        stripeWebhookSecret: '',
+        stripePortalConfig: '',
         cloudflareZoneId: '',
         public: {
             // Host the CMS itself is served from. Any other host is treated as a client site.

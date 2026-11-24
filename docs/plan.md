@@ -27,14 +27,19 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
   banner for GA/Meta, cross-site request protection on the CMS API. Mailchimp, Kit, Stripe: coming soon
 - [x] Media library (R2): upload by button or drag and drop, file type checked from the bytes (no SVG/HTML),
   10 MB limit, alt text, search, delete; Choose image in block fields and post covers
+- [x] Billing (Stripe, test mode): Starter £9 / Business £19 / Studio £39 a month, yearly = 2 months free,
+  14-day trial with Business features, no card. Billed per person (Studio covers up to 10 sites).
+  Checkout, customer portal, signed webhook, invoices; plan limits on pages, forms, blog, people,
+  integrations and sites; sites pause publicly when a trial ends unpaid. New site / Your sites page.
+  Prices live in shared/utils/plans.ts; `yarn stripe:setup` syncs Stripe.
+  **To take real money:** live secret key, run `yarn stripe:setup --webhook https://slatecms.co.uk/api/stripe/webhook`
+  with it, update the Worker secrets. Decide on VAT (Stripe Tax) first.
 
 ## Next, in order
 
-1. [ ] **Billing** (**needs Dan: Stripe account + test keys**): plans, Stripe Checkout + customer portal,
-   webhooks, plan limits, Billing page with invoices
-2. [ ] **Domain buying** (**needs Dan: registrar reseller account**): search + buy a domain during sign-up
+1. [ ] **Domain buying** (**needs Dan: registrar reseller account**): search + buy a domain during sign-up
    and from Domains, auto-connect
-3. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
+2. [ ] **Email** (password reset, form reply notifications, invites): Cloudflare Email Sending or Resend
 
 ## Housekeeping (as I go)
 

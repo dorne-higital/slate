@@ -3,6 +3,8 @@ import { and, eq, max } from 'drizzle-orm'
 /** Creates a draft page, optionally underneath another one (/services → /services/sofas). */
 export default defineEventHandler(async (event) => {
     const { site, user } = await requireSiteAccess(event, getRouterParam(event, 'siteId')!, 'editor')
+    const pageCount = (await useDb().select({ id: schema.pages.id }).from(schema.pages).where(eq(schema.pages.siteId, site.id))).length
+    await requireWithinPlan(site, l => pageCount < l.pagesPerSite, `Your plan includes up to ${findPlan('starter')!.limits.pagesPerSite} pages.`)
     const body = await readBody<{ title?: string, parentId?: string | null }>(event)
     const title = String(body.title ?? '').trim().slice(0, 120)
     if (!title) throw createError({ statusCode: 400, statusMessage: 'Give the page a title' })

@@ -14,7 +14,8 @@ export default defineEventHandler(async (event) => {
     const site = await resolveTenant(event)
     if (!site) return
 
-    if (site.offline) {
+    const paused = !site.offline && await isSitePaused(site)
+    if (site.offline || paused) {
         setResponseStatus(event, 503)
         setResponseHeader(event, 'retry-after', 3600)
         if (event.path.startsWith('/api/')) return { error: true, statusMessage: 'This site is offline' }
@@ -22,7 +23,7 @@ export default defineEventHandler(async (event) => {
         const name = site.name.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
         return `<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${name}</title>
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;background:#f7f8fa;color:#2e3445}main{padding:24px;text-align:center}h1{font-size:28px;margin:0 0 8px}p{margin:0;color:#555c6e}</style>
-</head><body><main><h1>${name}</h1><p>This site is taking a short break. Please check back soon.</p></main></body></html>`
+</head><body><main><h1>${name}</h1><p>${paused ? 'This site isn’t available right now.' : 'This site is taking a short break. Please check back soon.'}</p></main></body></html>`
     }
 
     if (event.method !== 'GET' && event.method !== 'HEAD') return

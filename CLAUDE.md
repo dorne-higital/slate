@@ -19,6 +19,7 @@ yarn typecheck
 yarn db:generate    # after editing db/schema.ts → new SQL in db/migrations
 yarn db:migrate     # apply migrations to the local "dev" Neon branch
 yarn db:migrate:prod  # apply them to the live database — do this before deploying code that needs them
+yarn stripe:setup   # make Stripe products/prices/portal match shared/utils/plans.ts (safe to re-run)
 yarn preview        # build + run in the real Workers runtime (wrangler dev)
 yarn deploy         # build + deploy to Cloudflare
 ```
@@ -36,6 +37,7 @@ Local `.env` points at Neon's **dev** branch (a copy of production), so local te
 - **Every API route touching a site calls `requireSiteAccess(event, siteId, minRole)` first.** It answers 404 for sites you can't see. There's no RLS in this version, so this check is the boundary — never query site data without it.
 - `useMe()` / `middleware/auth.ts` are UX only.
 - `server/middleware/same-origin.ts` rejects state-changing `/api/` requests from any origin but Slate's own (client subdomains are same-site with slatecms.co.uk). `/api/public/*` is exempt.
+- Plan limits: `requireWithinPlan(site, limits => ..., message)` (server/utils/billing.ts). Plans and prices: `shared/utils/plans.ts`.
 - Platform plan and status of every feature: `docs/plan.md`.
 
 ## Tenant routing

@@ -64,6 +64,13 @@
       "when": 1795520096020,
       "tag": "0008_flashy_maximus",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795520598670,
+      "tag": "0009_fancy_veda",
+      "breakpoints": true
     }
   ]
 }

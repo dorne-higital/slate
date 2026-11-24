@@ -62,6 +62,8 @@ export const sites = pgTable('sites', {
     theme: jsonb('theme').$type<SiteTheme>(),
     seo: jsonb('seo').$type<SiteSeo>(),
     integrations: jsonb('integrations').$type<SiteIntegrations>(),
+    // Whose plan this site runs on. Null = no bill (Slate's own / sites from before billing)
+    billingUserId: text('billing_user_id').references(() => user.id, { onDelete: 'set null' }),
     // Where form reply notifications go (used once email sending is set up)
     replyEmail: text('reply_email'),
     // Visitors see a holding page; everything stays saved
@@ -229,3 +231,18 @@ export const media = pgTable('media', {
 }, t => [
     index('media_site_idx').on(t.siteId, t.createdAt)
 ])
+
+// One per paying person. A Studio plan covers several sites (sites.billing_user_id).
+export const billingAccounts = pgTable('billing_accounts', {
+    userId: text('user_id').primaryKey().references(() => user.id, { onDelete: 'cascade' }),
+    trialEndsAt: timestamp('trial_ends_at', { withTimezone: true }),
+    plan: text('plan'),
+    interval: text('interval'),
+    // Stripe subscription status: active, trialing, past_due, canceled, unpaid, incomplete…
+    status: text('status'),
+    currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
+    cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+    stripeCustomerId: text('stripe_customer_id').unique(),
+    stripeSubscriptionId: text('stripe_subscription_id'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+})

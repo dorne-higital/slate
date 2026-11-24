@@ -37,20 +37,17 @@ const exampleSites = [
     { name: 'Marlow Street Bakery', domain: 'marlowstreet.co.uk', initial: 'M', color: '#6B4C8A', live: true }
 ]
 
-// Prices still to be decided: replace [PRICE] and [N] here.
-const plans = [
-    { name: 'Starter', tagline: 'For a simple site', price: '[PRICE]', highlight: false },
-    { name: 'Business', tagline: 'Most small businesses pick this', price: '[PRICE]', highlight: true },
-    { name: 'Studio', tagline: 'For designers and agencies', price: '[PRICE]', highlight: false }
-]
+// Prices and limits come from shared/utils/plans.ts
+const plans = PLANS.map(p => ({ name: p.name, tagline: p.tagline, price: formatPence(p.monthly).slice(1), yearly: formatPence(p.yearly), highlight: p.key === 'business' }))
+const limit = (n: number, one: string) => n === Number.POSITIVE_INFINITY ? 'Unlimited' : n === 1 ? one : `Up to ${n}`
 const planRows = [
-    { label: 'Websites', values: ['1', '1', 'Up to [N]'] },
-    { label: 'Pages', values: ['Up to [N]', 'Unlimited', 'Unlimited'] },
+    { label: 'Websites', values: PLANS.map(p => limit(p.limits.sites, '1')) },
+    { label: 'Pages', values: PLANS.map(p => limit(p.limits.pagesPerSite, '1')) },
     { label: 'Your own domain', values: ['Yes', 'Yes', 'Yes, on every site'] },
     { label: 'Forms and replies inbox', values: ['1 form', 'Unlimited', 'Unlimited'] },
     { label: 'Blog', values: ['No', 'Yes', 'Yes'] },
     { label: 'Integrations', values: ['Analytics only', 'All', 'All'] },
-    { label: 'People who can edit', values: ['1', 'Up to [N]', 'Unlimited, with client roles'] }
+    { label: 'People who can edit', values: PLANS.map(p => p.limits.peoplePerSite === Number.POSITIVE_INFINITY ? 'Unlimited, with client roles' : limit(p.limits.peoplePerSite, '1')) }
 ]
 
 const faqs = [
@@ -180,7 +177,7 @@ const sheets = [
                 <div class="wrap col">
                     <div class="intro">
                         <h2>Pricing</h2>
-                        <p>Every plan includes hosting, HTTPS and the full editor. Prices exclude VAT. Cancel from your dashboard at any time.</p>
+                        <p>Every plan includes hosting, HTTPS and the full editor. Try it free for 14 days, no card needed. Cancel from your dashboard at any time.</p>
                     </div>
                     <div class="scroll">
                         <table class="price">
@@ -193,6 +190,7 @@ const sheets = [
                                             <b>{{ p.name }}</b>
                                             <span class="muted">{{ p.tagline }}</span>
                                             <span class="amount">£{{ p.price }}<span> a month</span></span>
+                                            <span class="muted yearly">or {{ p.yearly }} a year, 2 months free</span>
                                             <NuxtLink class="btn" :class="p.highlight ? 'btn-lichen' : 'btn-outline'" to="/signup">Choose {{ p.name }}</NuxtLink>
                                         </span>
                                     </th>
@@ -365,6 +363,7 @@ h1 { font-size: 72px; font-weight: 900; letter-spacing: -.045em; line-height: .9
 .price thead th { border-bottom: 2px solid var(--quarry); vertical-align: bottom; }
 .price td:first-child { color: var(--text-muted); }
 .price .hl { background: #fff6e6; }
+.yearly { font-size: 13px; }
 .plan { display: flex; flex-direction: column; gap: 8px; }
 .plan b { font-size: 22px; }
 .amount { font-size: 32px; font-weight: 800; letter-spacing: -.02em; }
