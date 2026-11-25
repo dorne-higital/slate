@@ -86,7 +86,7 @@ Dan chose: refresh the design, projects as their own content type.
 5. [x] More fonts: Baloo 2, Quicksand, Space Grotesk, Outfit, Plus Jakarta Sans, Instrument Serif
 6. [x] Multi-step forms (step breaks in the form editor; Next/Back with per-step checks)
 7. [x] Rebuild danhorne.co.uk in Slate with a refreshed design (danhorne.slatecms.co.uk, 24 Nov)
-8. [ ] Dan reviews it, then point danhorne.co.uk at it
+8. [x] danhorne.co.uk points at it (own Cloudflare zone, 25 Nov)
 9. [x] Theme: any Google Font for headings and paragraphs
 10. [x] Delete a page from the editor
 
