@@ -70,7 +70,12 @@ async function setUpDomainOrder(order: typeof schema.domainOrders.$inferSelect, 
     try {
         await pointDomainAtSlate(order.domainName)
         const site = order.siteId ? await db.query.sites.findFirst({ where: eq(schema.sites.id, order.siteId) }) : null
-        if (site && !site.deletedAt) await connectDomain(site, order.domainName)
+        if (site && !site.deletedAt) {
+            await connectDomain(site, order.domainName)
+            // Bare domains need Cloudflare's TXT ownership record (name.com flattens the ANAME); refreshing adds it
+            const rows = await db.select().from(schema.domains).where(eq(schema.domains.siteId, site.id))
+            await Promise.all(rows.filter(r => r.status !== 'active').map(refreshDomain))
+        }
         await db.update(schema.domainOrders).set({ status: 'active', error: null, updatedAt: new Date() }).where(eq(schema.domainOrders.id, order.id))
     } catch (err) {
         // Registered and paid for, but setup needs a hand: keep it visible for a platform admin

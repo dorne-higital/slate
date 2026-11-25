@@ -134,6 +134,9 @@ export const domains = pgTable('domains', {
     // pending: waiting for the client's DNS record · active: live with HTTPS · error: Cloudflare reported a problem
     status: text('status').$type<'pending' | 'active' | 'error'>().notNull().default('pending'),
     statusDetail: text('status_detail'),
+    // Cloudflare's TXT ownership record, while it still needs one (bare domains whose provider flattens the CNAME)
+    verifyName: text('verify_name'),
+    verifyValue: text('verify_value'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     checkedAt: timestamp('checked_at', { withTimezone: true })
 }, t => [

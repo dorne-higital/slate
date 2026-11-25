@@ -1,4 +1,4 @@
-import { asc, eq, inArray } from 'drizzle-orm'
+import { and, asc, eq, inArray } from 'drizzle-orm'
 
 /** Everything the Domains page shows for one site. */
 export async function loadSiteDomains(site: typeof schema.sites.$inferSelect) {
@@ -13,7 +13,8 @@ export async function loadSiteDomains(site: typeof schema.sites.$inferSelect) {
             status: d.status,
             detail: d.statusDetail,
             isMain: d.hostname === site.customDomain,
-            checkedAt: d.checkedAt?.toISOString() ?? null
+            checkedAt: d.checkedAt?.toISOString() ?? null,
+            verify: d.status !== 'active' && d.verifyName && d.verifyValue ? { name: d.verifyName, value: d.verifyValue } : null
         }))
     }
 }
@@ -22,10 +23,21 @@ export async function loadSiteDomains(site: typeof schema.sites.$inferSelect) {
 export async function refreshDomain(row: typeof schema.domains.$inferSelect) {
     const live = row.cloudflareId ? await getCustomHostname(row.cloudflareId) : await findCustomHostname(row.hostname)
     const { status, detail } = summariseHostname(live)
+    const verify = status === 'active' ? null : ownershipRecord(live)
     await useDb().update(schema.domains)
-        .set({ status, statusDetail: detail, cloudflareId: live?.id ?? row.cloudflareId, checkedAt: new Date() })
+        .set({ status, statusDetail: detail, cloudflareId: live?.id ?? row.cloudflareId, verifyName: verify?.name ?? null, verifyValue: verify?.value ?? null, checkedAt: new Date() })
         .where(eq(schema.domains.hostname, row.hostname))
+    // A domain we registered: we run its DNS, so add the ownership record ourselves
+    if (verify && status === 'pending') await addVerifyRecordIfOurs(row.hostname, verify).catch(err => console.error('[domains] TXT record', row.hostname, (err as Error).message))
     return status
+}
+
+async function addVerifyRecordIfOurs(hostname: string, verify: { name: string, value: string }) {
+    const apex = hostname.replace(/^www\./, '')
+    const order = await useDb().query.domainOrders.findFirst({ where: and(eq(schema.domainOrders.domainName, apex), eq(schema.domainOrders.simulated, false), inArray(schema.domainOrders.status, ['active', 'cancelled'])) })
+    if (!order || !verify.name.endsWith(apex)) return
+    const host = verify.name.slice(0, -apex.length).replace(/\.$/, '')
+    await ensureTxtRecord(apex, host, verify.value)
 }
 
 /** The address visitors should use: the main domain once it's live, otherwise the free one. */

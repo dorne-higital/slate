@@ -66,6 +66,12 @@ export async function deleteCustomHostname(id: string) {
     await cf(`/custom_hostnames/${id}`, { method: 'DELETE' })
 }
 
+/** The TXT record that proves we own the hostname, while Cloudflare still can't verify it any other way. */
+export function ownershipRecord(h: CfCustomHostname | null) {
+    if (!h || h.status === 'active' || !h.ownership_verification?.name || !h.ownership_verification.value) return null
+    return { name: h.ownership_verification.name, value: h.ownership_verification.value }
+}
+
 /** Our simple status from Cloudflare's: live only once both the hostname and its certificate are active. */
 export function summariseHostname(h: CfCustomHostname | null): { status: 'pending' | 'active' | 'error', detail: string | null } {
     if (!h) return { status: 'error', detail: 'Cloudflare has no record of this domain. Remove it and add it again.' }

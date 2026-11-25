@@ -148,6 +148,13 @@
       "when": 1795594804590,
       "tag": "0020_smart_skrulls",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1795602959011,
+      "tag": "0021_deep_giant_girl",
+      "breakpoints": true
     }
   ]
 }

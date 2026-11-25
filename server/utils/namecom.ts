@@ -105,6 +105,14 @@ export async function pointDomainAtSlate(domainName: string) {
     await namecom('POST', `domains/${domainName}/records`, { host: 'www', type: 'CNAME', answer: target, ttl: 300 })
 }
 
+/** Adds a TXT record unless the same one is already there. */
+export async function ensureTxtRecord(domainName: string, host: string, answer: string) {
+    const { records = [] } = await namecom<{ records?: { host?: string, type: string, answer: string }[] }>('GET', `domains/${domainName}/records`)
+    if (records.some(r => r.type === 'TXT' && (r.host ?? '') === host && r.answer.replace(/"/g, '') === answer)) return false
+    await namecom('POST', `domains/${domainName}/records`, { host, type: 'TXT', answer, ttl: 300 })
+    return true
+}
+
 export async function setAutorenew(domainName: string, on: boolean) {
     await namecom('POST', `domains/${domainName}:${on ? 'enableAutorenew' : 'disableAutorenew'}`)
 }

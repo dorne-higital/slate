@@ -8,7 +8,7 @@ interface DomainsData {
     freeAddress: string
     mainDomain: string | null
     cnameTarget: string
-    domains: { hostname: string, status: 'pending' | 'active' | 'error', detail: string | null, isMain: boolean, checkedAt: string | null }[]
+    domains: { hostname: string, status: 'pending' | 'active' | 'error', detail: string | null, isMain: boolean, checkedAt: string | null, verify: { name: string, value: string } | null }[]
 }
 
 const { data, error: loadError, refresh: refreshDomains } = await useAsyncData(`domains-${siteId}`, () => fetcher<DomainsData>(`/api/sites/${siteId}/domains`))
@@ -146,6 +146,14 @@ onBeforeUnmount(() => clearInterval(timer))
                                 <td class="mono">{{ data?.cnameTarget }}</td>
                                 <td class="copy-cell">
                                     <button class="btn btn-ghost btn-sm" type="button" @click="copy(data?.cnameTarget ?? '')">{{ copied === data?.cnameTarget ? 'Copied' : 'Copy' }}</button>
+                                </td>
+                            </tr>
+                            <tr v-for="d in g.list.filter(x => x.verify)" :key="`txt-${d.hostname}`">
+                                <td><b>TXT</b></td>
+                                <td>{{ recordName(d.verify!.name, g.root) }}</td>
+                                <td class="mono">{{ d.verify!.value }}</td>
+                                <td class="copy-cell">
+                                    <button class="btn btn-ghost btn-sm" type="button" @click="copy(d.verify!.value)">{{ copied === d.verify!.value ? 'Copied' : 'Copy' }}</button>
                                 </td>
                             </tr>
                         </tbody>
