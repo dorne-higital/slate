@@ -123,14 +123,15 @@ Dan chose: refresh the design, projects as their own content type.
 2. [x] Interest list in Admin → Dashboard (CSV, remove), email to admins for each new one, in the privacy policy
 3. [ ] To launch: set NUXT_PUBLIC_COMING_SOON to "false" in wrangler.jsonc and deploy; email the list (LAUNCH25 was promised as "a launch discount")
 
-## App showcase blocks (asked 25 Nov, for Dobie Dash; generic so any site can use them)
+## Showcase blocks (asked 25 Nov; generic brochure blocks for an app, product, service or place)
 
-Brochure-style blocks to show off an app and get people to download it. All work with the section options and any theme.
+Designs: https://claude.ai/artifact/2Azs3ZCJCw33uLwPwrd5CD. Every picture can sit in a phone, browser or photo frame;
+every button row can be regular buttons or app store badges (links set once in Settings), optional QR on computers.
 
-1. [ ] App hero: name, one-liner, App Store / Google Play badges (links set per site), phone mock-up with a screenshot, optional rating
-2. [ ] Download buttons: official store badges, QR code on desktop, picks the right store on phones
-3. [ ] Screenshot carousel: phone frames, swipe on mobile, captions
-4. [ ] Feature showcase: alternating phone screenshot + text rows, or a grid of icon features
-5. [ ] App stats / social proof: rating stars, downloads, review quotes from the stores
-6. [ ] Download call to action band: closing "Get the app" with badges and QR
-7. [ ] Site settings: app store links (iOS, Android) entered once and reused by every block
+1. [ ] Showcase hero: split, centred or coloured band; label, heading, text, buttons, optional rating
+2. [ ] Button row styles shared by every block (regular, store badges, QR, on a coloured background)
+3. [ ] Picture carousel: framed pictures with captions, arrows, swipe on phones
+4. [ ] Feature rows (picture and text, alternating) and feature grid (icons)
+5. [ ] Proof: big numbers plus review quotes
+6. [ ] Closing call to action band
+7. [ ] Settings: app store links (iOS, Android) entered once
