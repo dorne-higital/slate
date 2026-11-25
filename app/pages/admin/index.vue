@@ -52,6 +52,22 @@ const { data, refresh } = await useAsyncData('admin-sites', () => fetcher<{ tota
 useHead({ title: 'All sites · Slate' })
 
 // Register-interest list from the coming-soon page
+const signupLink = ref<{ url: string, expiresAt: string } | null>(null)
+const linkBusy = ref(false)
+const linkCopied = ref(false)
+async function makeSignupLink() {
+    linkBusy.value = true
+    try {
+        signupLink.value = await $fetch<{ url: string, expiresAt: string }>('/api/admin/signup-link', { method: 'POST' })
+    } finally {
+        linkBusy.value = false
+    }
+}
+async function copyLink() {
+    if (!signupLink.value) return
+    await navigator.clipboard?.writeText(signupLink.value.url).catch(() => {})
+    linkCopied.value = true
+}
 interface Interested { id: string, email: string, name: string | null, business: string | null, createdAt: string }
 const { data: interest, refresh: refreshInterest } = await useAsyncData('admin-interest', () => fetcher<Interested[]>('/api/admin/interest'), { default: () => [] })
 const showAllInterest = ref(false)
@@ -153,6 +169,16 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
                 </ul>
                 <button v-if="interest.length > 8" class="btn btn-plain btn-sm" type="button" @click="showAllInterest = !showAllInterest">{{ showAllInterest ? 'Show fewer' : `Show all ${interest.length}` }}</button>
                 <p v-if="!interest.length" class="muted">No one yet.</p>
+                <div v-if="comingSoon" class="link-box">
+                    <b>Let someone sign up before launch</b>
+                    <p class="muted small">Makes a private link to the sign-up form. It works for 7 days, for anyone who has it. Use it to try sign-up yourself or for early testers.</p>
+                    <button v-if="!signupLink" class="btn btn-ghost btn-sm" type="button" :disabled="linkBusy" @click="makeSignupLink">{{ linkBusy ? 'Making…' : 'Make a sign-up link' }}</button>
+                    <div v-else class="link-row">
+                        <input class="inp" type="text" readonly :value="signupLink.url" aria-label="Private sign-up link" @focus="($event.target as HTMLInputElement).select()">
+                        <button class="btn btn-ghost btn-sm" type="button" @click="copyLink">{{ linkCopied ? 'Copied' : 'Copy' }}</button>
+                        <span class="muted small">Works until {{ new Date(signupLink.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }}</span>
+                    </div>
+                </div>
             </section>
 
             <div class="list-head">
@@ -272,4 +298,9 @@ h2 { font-size: 17px; margin: 0; }
 .attn-link { color: var(--quarry); text-decoration: none; }
 .attn-link:hover { text-decoration: underline; }
 .attn .k-p1 b { color: var(--danger); }
+.link-box { border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 8px; margin-top: 8px; padding-top: 14px; }
+.link-box p { margin: 0; }
+.link-box .btn { align-self: flex-start; }
+.link-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+.link-row .inp { flex: 1 1 280px; font-size: 13px; min-width: 0; }
 </style>

@@ -38,6 +38,8 @@ export default defineEventHandler(async (event) => {
         billing_address_collection: 'auto',
         tax_id_collection: { enabled: true },
         allow_promotion_codes: true,
+        // A 100%-off code needs no card
+        payment_method_collection: 'if_required',
         success_url: appUrl(`/sites/${siteId}/billing?done=1`),
         cancel_url: appUrl(`/sites/${siteId}/billing`)
     })

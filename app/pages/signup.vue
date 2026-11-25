@@ -6,6 +6,11 @@ const route = useRoute()
 // Joining someone's site from an invitation link: account only, no layout step
 const inviteToken = typeof route.query.invite === 'string' ? route.query.invite : ''
 const { comingSoon } = useRuntimeConfig().public
+// A private sign-up link from Admin → Dashboard opens the form before launch
+const signupKey = typeof route.query.key === 'string' ? route.query.key : ''
+const { data: keyOpen } = await useAsyncData('signup-open', () => comingSoon && signupKey
+    ? useRequestFetch()<{ open: boolean }>('/api/public/signup-open', { query: { key: signupKey } }).then(r => r.open).catch(() => false)
+    : Promise.resolve(false))
 const { data: invite } = await useAsyncData('signup-invite', () => inviteToken
     ? useRequestFetch()<{ siteName: string, role: SiteRole }>(`/api/invites/${inviteToken}`).catch(() => null)
     : Promise.resolve(null))
@@ -16,8 +21,8 @@ const step = ref<1 | 2 | 3>(1)
 // After the site exists: optional domain step
 const createdSiteId = ref<string | null>(null)
 const freeAddress = ref('')
-// Before launch only people with a working invitation can make an account
-const closed = computed(() => comingSoon && !invite.value)
+// Before launch only people with a working invitation or private link can make an account
+const closed = computed(() => comingSoon && !invite.value && !keyOpen.value)
 useHead(() => ({ title: closed.value ? 'Coming soon · Slate' : 'Start your site · Slate' }))
 const form = reactive({ name: '', email: '', password: '', siteName: '', layout: 'trade', country: 'GB' })
 const outsideUk = computed(() => form.country === 'other')
@@ -41,7 +46,7 @@ async function create() {
     busy.value = true
     error.value = ''
     try {
-        const { siteId, slug } = await $fetch('/api/signup', { method: 'POST', body: { ...form, ...(inviteToken ? { invite: inviteToken } : {}), turnstile: turnstileToken.value } })
+        const { siteId, slug } = await $fetch('/api/signup', { method: 'POST', body: { ...form, ...(inviteToken ? { invite: inviteToken } : {}), ...(signupKey ? { key: signupKey } : {}), turnstile: turnstileToken.value } })
         await refresh()
         if (inviteToken || !slug) return await navigateTo(`/sites/${siteId}`)
         createdSiteId.value = siteId
@@ -66,7 +71,7 @@ async function create() {
             <div v-if="closed" class="stack">
                 <div class="intro">
                     <h1>We’re not open yet</h1>
-                    <p>{{ inviteToken ? 'This invitation has expired or has already been used. Ask whoever invited you for a new link.' : 'Slate opens for sign-ups soon. Leave your email and we’ll tell you as soon as it does.' }}</p>
+                    <p>{{ inviteToken ? 'This invitation has expired or has already been used. Ask whoever invited you for a new link.' : signupKey ? 'This sign-up link has expired. Ask for a new one, or leave your email and we’ll tell you when Slate opens.' : 'Slate opens for sign-ups soon. Leave your email and we’ll tell you as soon as it does.' }}</p>
                 </div>
                 <NuxtLink class="btn btn-lichen btn-lg" to="/">Register your interest</NuxtLink>
                 <p class="small">Already have an account? <NuxtLink to="/login">Log in</NuxtLink></p>
