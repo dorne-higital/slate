@@ -108,7 +108,8 @@ Dan chose: refresh the design, projects as their own content type.
 3. [x] Privacy policy (/privacy) and terms (/terms), linked from the footer and sign-up. Add the ICO number to shared/utils/legal.ts when it arrives
 4. [x] Browser errors in Admin → Errors (status "Browser"), capped and de-duplicated
 5. [x] Slate favicon (.ico, SVG, PNGs); danhorne. logo (light and dark) in Media and Theme
-6. [ ] Dan: add a card on name.com (needs an order first), one real test purchase, ICO number
+6. [x] name.com: card saved, $30 credit (25 Nov). Domain orders are paid from this balance; customers pay Slate via Stripe
+7. [ ] Dan: one real test purchase (a cheap domain through Slate tests Stripe, name.com and setup together), ICO number
 
 ## Support and attention (24 Nov 2026)
 
