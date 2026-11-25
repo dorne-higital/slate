@@ -172,6 +172,8 @@ export interface PageListItem {
     hasUnpublishedChanges: boolean
     updatedAt: string
     updatedByName: string | null
+    /** Projects (/work/…) are only included when asked for (?projects=1, the Pages screen) */
+    kind?: 'page' | 'project'
 }
 
 export interface Me {

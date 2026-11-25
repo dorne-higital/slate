@@ -5,7 +5,7 @@ const siteId = String(route.params.siteId)
 const fetcher = useRequestFetch()
 const { me } = useMe()
 
-const { data: pages } = await useAsyncData(`pages-${siteId}`, () => fetcher<PageListItem[]>(`/api/sites/${siteId}/pages`))
+const { data: pages } = await useAsyncData(`pages-${siteId}`, () => fetcher<PageListItem[]>(`/api/sites/${siteId}/pages`, { query: { projects: '1' } }))
 useHead({ title: 'Pages · Slate' })
 
 type Filter = 'all' | 'published' | 'changed' | 'draft'
@@ -99,7 +99,7 @@ const parentOptions = computed(() => {
     const out: { id: string, label: string }[] = []
     const walk = (parent: string | null, depth: number) => {
         for (const p of childrenOf.value.get(parent) ?? []) {
-            if (p.path !== '/') out.push({ id: p.id, label: `${'— '.repeat(depth)}${p.title}` })
+            if (p.path !== '/' && p.kind !== 'project') out.push({ id: p.id, label: `${'— '.repeat(depth)}${p.title}` })
             walk(p.id, depth + 1)
         }
     }
@@ -133,7 +133,7 @@ const dropTarget = ref<{ id: string, after: boolean } | null>(null)
 const orderError = ref('')
 function onDragOver(e: DragEvent, p: PageListItem) {
     const from = pages.value?.find(x => x.id === dragId.value)
-    if (!from || from.id === p.id || p.path === '/' || from.parentId !== p.parentId) {
+    if (!from || from.id === p.id || p.path === '/' || from.parentId !== p.parentId || from.kind === 'project' || p.kind === 'project') {
         dropTarget.value = null
         return
     }
@@ -154,7 +154,7 @@ async function onDrop() {
     pages.value = list
     orderError.value = ''
     try {
-        await $fetch(`/api/sites/${siteId}/pages/order`, { method: 'POST', body: { ids: list.map(p => p.id) } })
+        await $fetch(`/api/sites/${siteId}/pages/order`, { method: 'POST', body: { ids: list.filter(p => p.kind !== 'project').map(p => p.id) } })
     } catch (err) {
         pages.value = before
         orderError.value = (err as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'Couldn’t save the new order. Please try again.'
@@ -225,7 +225,7 @@ async function onDrop() {
                         <td>
                             <span class="pg" :style="{ paddingLeft: `${r.depth * 28}px` }">
                                 <span
-                                    v-if="canReorder && r.page.path !== '/'"
+                                    v-if="canReorder && r.page.path !== '/' && r.page.kind !== 'project'"
                                     class="handle"
                                     draggable="true"
                                     title="Drag to reorder"
@@ -247,7 +247,7 @@ async function onDrop() {
                                 </button>
                                 <span v-else class="caret-space" aria-hidden="true" />
                                 <span class="pg-text">
-                                    <NuxtLink class="rl" :to="`/sites/${siteId}/pages/${r.page.id}`">{{ r.page.title }}</NuxtLink>
+                                    <span class="rl-row"><NuxtLink class="rl" :to="`/sites/${siteId}/pages/${r.page.id}`">{{ r.page.title }}</NuxtLink><NuxtLink v-if="r.page.kind === 'project'" class="kind" :to="`/sites/${siteId}/projects`" title="Cover, category and order are on the Projects screen">Project</NuxtLink></span>
                                     <span class="muted">{{ r.page.path }}<template v-if="r.kids && !expanded.has(r.page.id) && !searching"> · {{ r.kids }} {{ r.kids === 1 ? 'page' : 'pages' }} inside</template></span>
                                 </span>
                             </span>
@@ -256,7 +256,7 @@ async function onDrop() {
                         <td class="muted">{{ formatWhen(r.page.updatedAt) }}</td>
                         <td class="muted">{{ r.page.updatedByName?.split(' ')[0] ?? '' }}</td>
                         <td class="end">
-                            <button v-if="canEdit && r.page.path !== '/'" class="btn btn-plain btn-sm add-child" type="button" :aria-label="`Add a page under ${r.page.title}`" @click="startAdd(r.page.id)">+ Page inside</button>
+                            <button v-if="canEdit && r.page.path !== '/' && r.page.kind !== 'project'" class="btn btn-plain btn-sm add-child" type="button" :aria-label="`Add a page under ${r.page.title}`" @click="startAdd(r.page.id)">+ Page inside</button>
                         </td>
                     </tr>
                     <tr v-if="!rows.length"><td colspan="5" class="muted">No pages match.</td></tr>
@@ -272,6 +272,9 @@ async function onDrop() {
 .head-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 h1 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; margin: 0; }
 h2 { font-size: 18px; margin: 0; }
+.rl-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+.kind { background: var(--mist); border-radius: 999px; color: var(--text-muted); font-size: 11.5px; font-weight: 700; padding: 2px 8px; text-decoration: none; }
+.kind:hover { background: var(--line); color: var(--quarry); }
 .add { display: flex; flex-direction: column; gap: 14px; padding: 20px; }
 .add-row { align-items: flex-end; display: flex; flex-wrap: wrap; gap: 12px; }
 .grow { flex: 1 1 260px; }
