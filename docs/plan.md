@@ -147,3 +147,8 @@ every button row can be regular buttons or app store badges (links set once in S
 4. [x] SEO: choose share images from Media; share previews get the full image address
 5. [x] Local development: client sites stay local; local data refreshed from live on request
 6. [ ] Check visitor stats appear on Overview and email forwarding works on a Slate domain
+7. [x] System pages: editable Offline page (503) shown on every address while offline; form inbox search/sort/pages
+8. [x] Redirects (SEO page): one or a pasted list, used only when no page is at the address, hit counts; 301s for pages and blog posts
+9. [x] Page history: every publish kept (last 30), restore as draft from the editor's History button
+10. [x] Site health on Overview: score plus fixes (broken links, unpublished changes, descriptions, share images, privacy policy, waiting replies, big images, alt text, domain, icon, Search Console)
+11. [ ] Later, no extra cost: monthly "how your site did" email; image resizing at upload
