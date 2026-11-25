@@ -114,3 +114,9 @@ Dan chose: refresh the design, projects as their own content type.
 1. [x] Ticket types (broken, new block, help, billing, domain) with icon cards and type-specific questions; P1/P2/P3 for bugs
 2. [x] Helpdesk: colour-coded tags, type filters with counts, open bugs by severity first, re-file type/severity
 3. [x] Needs your attention: urgent bugs, errors in 24h, stale backups, overdue invoices, trials ending in 3 days (with links)
+
+## Coming soon (25 Nov 2026)
+
+1. [x] Home page shows "coming soon" with a register-interest form while `NUXT_PUBLIC_COMING_SOON` is "true" (wrangler.jsonc). Platform admins see the full page at /?full=1
+2. [x] Interest list in Admin → Dashboard (CSV, remove), email to admins for each new one, in the privacy policy
+3. [ ] To launch: set NUXT_PUBLIC_COMING_SOON to "false" in wrangler.jsonc and deploy; email the list (LAUNCH25 was promised as "a launch discount")

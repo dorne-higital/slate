@@ -42,7 +42,9 @@ export default defineNuxtConfig({
             // Client sites get a free address at {slug}.{sitesDomain}
             sitesDomain: 'localhost:3000',
             // What clients point their domain's CNAME record at
-            cnameTarget: 'sites.slatecms.co.uk'
+            cnameTarget: 'sites.slatecms.co.uk',
+            // Show the coming-soon page (with register-interest form) instead of the full home page
+            comingSoon: false
         }
     },
 

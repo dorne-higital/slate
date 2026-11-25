@@ -348,3 +348,12 @@ export const errorLogs = pgTable('error_logs', {
     userId: text('user_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 }, t => [index('error_logs_created_idx').on(t.createdAt), index('error_logs_fingerprint_idx').on(t.fingerprint, t.createdAt)])
+
+// People who registered interest on the coming-soon page
+export const interestSignups = pgTable('interest_signups', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    email: text('email').notNull().unique(),
+    name: text('name'),
+    business: text('business'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+})

@@ -51,6 +51,17 @@ const statusName: Record<BillingStatus, string> = { comped: 'No bill', trial: 'T
 const { data, refresh } = await useAsyncData('admin-sites', () => fetcher<{ totals: { sites: number, users: number }, sites: AdminSite[] }>('/api/admin/sites'))
 useHead({ title: 'All sites · Slate' })
 
+// Register-interest list from the coming-soon page
+interface Interested { id: string, email: string, name: string | null, business: string | null, createdAt: string }
+const { data: interest, refresh: refreshInterest } = await useAsyncData('admin-interest', () => fetcher<Interested[]>('/api/admin/interest'), { default: () => [] })
+const showAllInterest = ref(false)
+const interestShown = computed(() => showAllInterest.value ? interest.value : interest.value.slice(0, 8))
+async function removeInterest(id: string) {
+    await $fetch(`/api/admin/interest/${id}`, { method: 'DELETE' })
+    await refreshInterest()
+}
+const { comingSoon } = useRuntimeConfig().public
+
 const search = ref('')
 const shown = computed(() => {
     const q = search.value.trim().toLowerCase()
@@ -124,6 +135,25 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
                     </ul>
                 </section>
             </div>
+
+            <section class="panel box" aria-labelledby="ri-h">
+                <div class="ri-head">
+                    <h2 id="ri-h">Registered interest <span class="muted">{{ interest.length }}</span></h2>
+                    <span class="row">
+                        <NuxtLink v-if="comingSoon" class="btn btn-ghost btn-sm" to="/">See the coming-soon page</NuxtLink>
+                        <a v-if="interest.length" class="btn btn-ghost btn-sm" href="/api/admin/interest?format=csv" download>Download CSV</a>
+                    </span>
+                </div>
+                <p class="muted small">{{ comingSoon ? 'The home page is showing “coming soon”. People who leave their email appear here, and you get an email for each one.' : 'The full home page is live, so no new sign-ups come in here.' }}</p>
+                <ul v-if="interest.length" class="attn">
+                    <li v-for="p in interestShown" :key="p.id">
+                        <span class="nu-row"><b>{{ p.name ?? p.email }}</b><span class="row"><span class="muted small">{{ formatWhen(p.createdAt) }}</span><button class="btn btn-plain btn-sm" type="button" :aria-label="`Remove ${p.email}`" @click="removeInterest(p.id)">Remove</button></span></span>
+                        <span class="muted"><template v-if="p.name">{{ p.email }}</template><template v-if="p.business">{{ p.name ? ' · ' : '' }}{{ p.business }}</template></span>
+                    </li>
+                </ul>
+                <button v-if="interest.length > 8" class="btn btn-plain btn-sm" type="button" @click="showAllInterest = !showAllInterest">{{ showAllInterest ? 'Show fewer' : `Show all ${interest.length}` }}</button>
+                <p v-if="!interest.length" class="muted">No one yet.</p>
+            </section>
 
             <div class="list-head">
                 <h2>All sites <span class="muted">{{ data?.totals.sites ?? 0 }}</span></h2>
@@ -205,6 +235,8 @@ tr.deleted td { opacity: .75; }
 .kpi small { color: var(--text-body); font-size: 13px; }
 .kpi.hi { background: var(--quarry); color: var(--white); }
 .kpi.hi span, .kpi.hi small { color: #c3c8d1; }
+.ri-head { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+.ri-head .row, .nu-row .row { align-items: center; display: inline-flex; gap: 8px; }
 .dash { display: grid; gap: 20px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .box { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; }
 h2 { font-size: 17px; margin: 0; }

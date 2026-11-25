@@ -28,6 +28,7 @@ useSeoMeta({ description: 'How Slate collects, uses and protects personal inform
                 <tr><td>Domain registration details: name, address, email and phone</td><td>Domain registries require them to register a domain in your name</td><td>Contract</td></tr>
                 <tr><td>Support messages</td><td>To help you</td><td>Contract; legitimate interests</td></tr>
                 <tr><td>Technical information: IP address, browser, pages requested, errors</td><td>To keep Slate secure, stop abuse and fix problems</td><td>Legitimate interests</td></tr>
+                <tr><td>If you register interest before Slate opens: your email, and your name and business if you give them</td><td>To tell you when Slate opens</td><td>Consent (ask us to remove you at any time)</td></tr>
             </tbody>
         </table>
 
@@ -64,6 +65,7 @@ useSeoMeta({ description: 'How Slate collects, uses and protects personal inform
             <li><b>Form replies:</b> until the website owner deletes them or their website.</li>
             <li><b>Backups:</b> copies of the database are kept for about 4 weeks, then overwritten.</li>
             <li><b>Error logs:</b> 30 days.</li>
+            <li><b>Register-interest list:</b> until Slate opens and we’ve told you, or sooner if you ask us to remove you.</li>
         </ul>
 
         <h2>Keeping it safe</h2>

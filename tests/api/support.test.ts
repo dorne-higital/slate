@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { cleanUp, makeAdmin, newAccount, sql } from './helpers'
+import { Client, cleanUp, makeAdmin, newAccount, sql } from './helpers'
 
 let ana: Awaited<ReturnType<typeof newAccount>>
 let admin: Awaited<ReturnType<typeof newAccount>>
@@ -57,4 +57,24 @@ describe('support tickets', () => {
 
 afterAll(async () => {
     await sql`delete from support_tickets where site_id = ${ana.siteId}`
+})
+
+describe('register interest', () => {
+    const email = `test+interest${Date.now()}@example.com`
+    it('takes an email once, quietly ignores repeats and bots', async () => {
+        const c = new Client()
+        expect((await c.post('/api/public/interest', { email: 'nope', turnstile: 'XXXX.DUMMY.TOKEN.XXXX' })).status).toBe(400)
+        expect((await c.post('/api/public/interest', { email, name: 'Jo', turnstile: 'XXXX.DUMMY.TOKEN.XXXX' })).status).toBe(200)
+        expect((await c.post('/api/public/interest', { email, turnstile: 'XXXX.DUMMY.TOKEN.XXXX' })).status).toBe(200)
+        expect((await c.post('/api/public/interest', { email: `bot${email}`, website: 'spam', turnstile: 'XXXX.DUMMY.TOKEN.XXXX' })).status).toBe(200)
+        const rows = await sql`select email from interest_signups where email like ${'%' + email}`
+        expect(rows.map(r => r.email)).toEqual([email])
+    })
+    it('lists only for platform admins, with a CSV', async () => {
+        expect((await ana.client.get('/api/admin/interest')).status).toBe(404)
+        const list = await admin.client.get('/api/admin/interest')
+        expect(list.json.some((r: { email: string }) => r.email === email)).toBe(true)
+        expect((await admin.client.get('/api/admin/interest?format=csv')).text).toContain(email)
+    })
+    afterAll(async () => { await sql`delete from interest_signups where email like ${'%' + email}` })
 })
