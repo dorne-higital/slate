@@ -45,6 +45,16 @@ async function open(reply: Reply) {
     }
 }
 
+// Each reply's state, shown as a label: done wins, then unread, else read
+const stateOf = (r: Reply) => r.done ? { key: 'done', label: 'Done' } : r.read ? { key: 'read', label: 'Read' } : { key: 'unread', label: 'Unread' }
+
+async function markUnread(reply: Reply) {
+    reply.read = false
+    selectedId.value = null
+    await $fetch(`/api/sites/${siteId}/replies/${reply.id}`, { method: 'PATCH', body: { read: false } }).catch(() => {})
+    refreshForms()
+}
+
 async function toggleDone(reply: Reply) {
     const updated = await $fetch<Reply>(`/api/sites/${siteId}/replies/${reply.id}`, { method: 'PATCH', body: { done: !reply.done } })
     Object.assign(reply, updated)
@@ -140,7 +150,7 @@ const sentAt = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'nu
                         <i v-else class="dot-space" aria-hidden="true" />
                         <span class="item-text">
                             <span class="item-top"><b :class="{ unread: !r.read }">{{ nameOf(r) }}</b><span class="muted">{{ formatWhen(r.createdAt) }}</span></span>
-                            <span class="snippet">{{ previewOf(r) }}</span>
+                            <span class="item-bottom"><span class="snippet">{{ previewOf(r) }}</span><span class="state" :class="stateOf(r).key">{{ stateOf(r).label }}</span></span>
                         </span>
                     </button>
                     <p v-if="!replies?.length && repliesStatus !== 'pending'" class="none muted">
@@ -151,12 +161,13 @@ const sentAt = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'nu
                 <article v-if="selected" class="panel detail" aria-labelledby="r-h">
                     <div class="detail-head">
                         <div class="detail-title">
-                            <h2 id="r-h">{{ nameOf(selected) }}</h2>
+                            <h2 id="r-h">{{ nameOf(selected) }} <span class="state" :class="stateOf(selected).key">{{ stateOf(selected).label }}</span></h2>
                             <span class="muted">Sent through {{ current?.name }}{{ selected.pagePath ? ` on ${selected.pagePath}` : '' }}, {{ sentAt(selected.createdAt) }}</span>
                         </div>
                         <div class="row">
                             <a v-if="emailOf(selected)" class="btn btn-dark" :href="`mailto:${emailOf(selected)}`">Reply by email</a>
                             <button v-if="canEdit" class="btn btn-ghost" type="button" @click="toggleDone(selected)">{{ selected.done ? 'Move back to to do' : 'Mark as done' }}</button>
+                            <button v-if="!selected.done" class="btn btn-plain" type="button" @click="markUnread(selected)">Mark as unread</button>
                             <button v-if="canEdit" class="ib" type="button" aria-label="Delete reply" @click="removeReply(selected)">
                                 <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 4h12M7 4V2.5h4V4M4.5 4l.7 11.5h7.6l.7-11.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
                             </button>
@@ -207,6 +218,13 @@ h1 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; margin: 0; }
 .item-top { display: flex; gap: 8px; justify-content: space-between; }
 .item-top b { font-size: 15px; font-weight: 600; }
 .item-top b.unread { font-weight: 800; }
+.item-bottom { align-items: center; display: flex; gap: 10px; justify-content: space-between; min-width: 0; }
+.item-bottom .snippet { flex: 1; min-width: 0; }
+.state { border-radius: 999px; display: inline-block; flex: none; font-size: 11.5px; font-weight: 700; letter-spacing: .01em; padding: 2px 8px; vertical-align: middle; }
+h2 .state { font-size: 12px; margin-left: 6px; position: relative; top: -3px; }
+.state.unread { background: var(--lichen); color: var(--quarry); }
+.state.read { background: var(--mist); color: var(--text-muted); }
+.state.done { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok-text); }
 .snippet { color: var(--text-body); font-size: 14px; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .none { margin: 0; padding: 20px 16px; }
 

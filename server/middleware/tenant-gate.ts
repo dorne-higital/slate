@@ -29,6 +29,8 @@ export default defineEventHandler(async (event) => {
     if (event.method !== 'GET' && event.method !== 'HEAD') return
     if (event.path.startsWith('/api/')) return
     if (!site.customDomain || stripPort(host) === site.customDomain) return
+    // Local development ({slug}.localhost): stay local, so forms and changes go to the local database
+    if (/(^|\.)localhost$|^127\.0\.0\.1$/.test(stripPort(host))) return
     const target = await liveAddress(site)
     if (target === stripPort(host) || target !== site.customDomain) return
     return sendRedirect(event, `https://${target}${event.path}`, 301)

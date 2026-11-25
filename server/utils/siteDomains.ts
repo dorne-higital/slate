@@ -42,6 +42,9 @@ async function addVerifyRecordIfOurs(hostname: string, verify: { name: string, v
 
 /** The address visitors should use: the main domain once it's live, otherwise the free one. */
 export async function liveAddress(site: typeof schema.sites.$inferSelect) {
+    const free = `${site.slug}.${useRuntimeConfig().public.sitesDomain}`
+    // Running locally: always the local address, never the real domain
+    if (free.includes('localhost')) return free
     if (site.customDomain) {
         const main = await useDb().query.domains.findFirst({ where: eq(schema.domains.hostname, site.customDomain) })
         if (main?.status === 'active') return site.customDomain
