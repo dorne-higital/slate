@@ -8,13 +8,18 @@ export default defineEventHandler(async (event) => {
     const rawPath = String(getQuery(event).path ?? '/')
     const path = rawPath === '/' ? '/' : `/${rawPath.replace(/^\/+|\/+$/g, '')}`
 
-    const [page, shell] = await Promise.all([
-        useDb().query.pages.findFirst({
+    const [found, shell] = await Promise.all([
+        isSystemPath(path) ? undefined : useDb().query.pages.findFirst({
             where: and(eq(schema.pages.siteId, site.id), eq(schema.pages.path, path), eq(schema.pages.status, 'published'))
         }),
         publicShell(site)
     ])
+    // Nothing at this address: the site's own "Page not found" page, if it's published
+    const page = found ?? await useDb().query.pages.findFirst({
+        where: and(eq(schema.pages.siteId, site.id), eq(schema.pages.path, '/_404'), eq(schema.pages.kind, 'system'), eq(schema.pages.status, 'published'))
+    })
     if (!page) throw createError({ statusCode: 404, statusMessage: 'Page not found' })
+    const notFound = !found
 
     // The forms this page's Form blocks use
     const blocks = page.publishedBlocks ?? []
@@ -32,6 +37,7 @@ export default defineEventHandler(async (event) => {
     setResponseHeader(event, 'cache-control', 'public, max-age=30, stale-while-revalidate=300')
     return {
         ...shell,
+        notFound,
         posts,
         projects,
         forms: Object.fromEntries(formRows.map(f => [f.id, toFormDefinition(f)])) as Record<string, FormDefinition>,
@@ -41,7 +47,7 @@ export default defineEventHandler(async (event) => {
             seoTitle: page.seoTitle,
             seoDescription: page.seoDescription,
             shareImage: page.shareImage,
-            noIndex: page.noIndex,
+            noIndex: page.noIndex || notFound,
             kind: page.kind,
             project: page.kind === 'project' ? { ...cleanProjectMeta({}), ...(page.project ?? {}) } : null,
             blocks

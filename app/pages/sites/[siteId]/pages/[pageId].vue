@@ -13,7 +13,7 @@ interface EditorPageData {
     shareImage: string | null
     noIndex: boolean
     hasUnpublishedChanges: boolean
-    kind: 'page' | 'project'
+    kind: 'page' | 'project' | 'system'
     project: ProjectMeta | null
 }
 
@@ -67,7 +67,9 @@ const themeVars = computed(() => siteThemeVars(site.value?.theme as SiteTheme))
 const liveUrl = computed(() => {
     if (!site.value) return '#'
     const host = site.value.liveAddress
-    return `${host.includes('localhost') ? 'http' : 'https'}://${host}${loaded.value!.path}`
+    // System pages have no address of their own: show the 404 page at an address that doesn't exist
+    const path = loaded.value!.kind === 'system' ? '/this-page-does-not-exist' : loaded.value!.path
+    return `${host.includes('localhost') ? 'http' : 'https'}://${host}${path}`
 })
 
 // ── Undo ──
@@ -425,7 +427,8 @@ async function deletePage() {
                     <div class="field"><label for="ps-title">Page title</label><input id="ps-title" v-model="page.title" class="inp" type="text" @input="queueSave"></div>
                     <div class="field">
                         <span class="lbl">Address</span>
-                        <span class="addr">{{ loaded?.path }}</span>
+                        <span v-if="loaded?.kind === 'system'" class="addr">Shown wherever an address doesn’t exist</span>
+                        <span v-else class="addr">{{ loaded?.path }}</span>
                     </div>
                     <div class="field">
                         <label for="ps-seo-title">Title in search results</label>
@@ -443,7 +446,7 @@ async function deletePage() {
                     </div>
                     <label class="check"><input v-model="page.noIndex" type="checkbox" @change="queueSave">Hide this page from search engines</label>
                     <NuxtLink class="help" :to="`/sites/${siteId}/seo`">See search details for every page</NuxtLink>
-                    <div v-if="loaded?.path !== '/' && loaded?.kind !== 'project'" class="del-zone">
+                    <div v-if="loaded?.path !== '/' && loaded?.kind !== 'project' && loaded?.kind !== 'system'" class="del-zone">
                         <button v-if="!confirmDeletePage" class="btn btn-plain btn-sm del-link" type="button" @click="confirmDeletePage = true">Delete this page…</button>
                         <div v-else class="del-confirm" role="alert">
                             <span>Delete <b>{{ page.title }}</b>? Links to it will stop working. This can’t be undone.</span>

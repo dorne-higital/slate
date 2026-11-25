@@ -5,6 +5,7 @@ import * as fontCatalogue from '../shared/utils/fontCatalogue'
 import * as forms from '../shared/utils/forms'
 import * as googleFonts from '../shared/utils/googleFonts'
 import * as integrations from '../shared/utils/integrations'
+import * as systemPages from '../shared/utils/systemPages'
 import * as menus from '../shared/utils/menus'
 import * as plans from '../shared/utils/plans'
 import * as projects from '../shared/utils/projects'
@@ -14,4 +15,4 @@ import * as roles from '../shared/utils/roles'
 import * as showcaseIcons from '../shared/utils/showcaseIcons'
 import * as sharedTypes from '../shared/types'
 
-Object.assign(globalThis, blockTypes, domainPrices, fontCatalogue, forms, googleFonts, menus, plans, projects, siteTheme, slugify, roles, showcaseIcons, sharedTypes, integrations)
+Object.assign(globalThis, blockTypes, domainPrices, fontCatalogue, forms, googleFonts, menus, plans, projects, siteTheme, slugify, roles, showcaseIcons, sharedTypes, integrations, systemPages)

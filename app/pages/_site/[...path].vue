@@ -12,6 +12,8 @@ const { data, error } = await useAsyncData(() => `public-${path.value}`, () => f
 if (error.value && !data.value) {
     throw createError({ statusCode: error.value.statusCode ?? 404, statusMessage: 'Page not found', fatal: true })
 }
+// The site's own "Page not found" page: still a 404 for browsers and search engines
+if (import.meta.server && data.value?.notFound) setResponseStatus(useRequestEvent()!, 404)
 
 // Canonical uses the site's live address, so free-address and www copies point search engines at one URL
 useSiteSeo(() => {
@@ -22,7 +24,7 @@ useSiteSeo(() => {
         shortTitle: page.seoTitle || page.title,
         description: page.seoDescription || site.seo.defaultDescription,
         image: page.shareImage || site.seo.defaultShareImage,
-        url: `https://${site.address}${page.path}`,
+        url: `https://${site.address}${data.value.notFound ? path.value : page.path}`,
         siteName: site.name,
         noIndex: page.noIndex
     }

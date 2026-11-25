@@ -108,7 +108,7 @@ export const pages = pgTable('pages', {
     noIndex: boolean('no_index').notNull().default(false),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     // 'page', or 'project' (a portfolio item shown by the Projects block, at /work/…)
-    kind: text('kind').$type<'page' | 'project'>().notNull().default('page'),
+    kind: text('kind').$type<'page' | 'project' | 'system'>().notNull().default('page'),
     project: jsonb('project').$type<ProjectMeta>(),
     updatedBy: text('updated_by').references(() => user.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

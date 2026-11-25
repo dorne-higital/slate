@@ -5,7 +5,14 @@ const siteId = String(route.params.siteId)
 const fetcher = useRequestFetch()
 const { me } = useMe()
 
-const { data: pages } = await useAsyncData(`pages-${siteId}`, () => fetcher<PageListItem[]>(`/api/sites/${siteId}/pages`, { query: { projects: '1' } }))
+const { data: allRows } = await useAsyncData(`pages-${siteId}`, () => fetcher<PageListItem[]>(`/api/sites/${siteId}/pages`, { query: { projects: '1' } }))
+// System pages (404…) get their own section; everything else is the tree
+const pages = computed({
+    get: () => (allRows.value ?? []).filter(p => p.kind !== 'system'),
+    set: v => (allRows.value = [...v, ...systemRows.value])
+})
+const systemRows = computed(() => (allRows.value ?? []).filter(p => p.kind === 'system'))
+const systemInfo = (p: PageListItem) => systemPageFor(p.path)
 useHead({ title: 'Pages · Slate' })
 
 type Filter = 'all' | 'published' | 'changed' | 'draft'
@@ -263,6 +270,24 @@ async function onDrop() {
                 </tbody>
             </table>
         </section>
+
+        <section v-if="systemRows.length" class="panel sys" aria-labelledby="sys-h">
+            <div class="sys-head">
+                <h2 id="sys-h">System pages</h2>
+                <span class="muted">Every site has these. Change what they say; they can’t be deleted or moved.</span>
+            </div>
+            <ul class="sys-list">
+                <li v-for="p in systemRows" :key="p.id">
+                    <span class="lock" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg></span>
+                    <span class="sys-text">
+                        <NuxtLink class="rl" :to="`/sites/${siteId}/pages/${p.id}`">{{ p.title }}</NuxtLink>
+                        <span class="muted">{{ systemInfo(p)?.desc }}</span>
+                    </span>
+                    <StatusPill :status="p.status" :changed="p.hasUnpublishedChanges" />
+                    <NuxtLink v-if="canEdit" class="btn btn-ghost btn-sm" :to="`/sites/${siteId}/pages/${p.id}`">Edit</NuxtLink>
+                </li>
+            </ul>
+        </section>
     </div>
 </template>
 
@@ -272,6 +297,12 @@ async function onDrop() {
 .head-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 h1 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; margin: 0; }
 h2 { font-size: 18px; margin: 0; }
+.sys { display: flex; flex-direction: column; }
+.sys-head { display: flex; flex-direction: column; gap: 4px; padding: 16px 20px 12px; }
+.sys-list { list-style: none; margin: 0; padding: 0; }
+.sys-list li { align-items: center; border-top: 1px solid var(--line-soft); display: flex; flex-wrap: wrap; gap: 12px 16px; padding: 14px 20px; }
+.lock { align-items: center; background: var(--mist); border-radius: 8px; color: var(--text-muted); display: flex; height: 30px; justify-content: center; width: 30px; }
+.sys-text { display: flex; flex: 1 1 260px; flex-direction: column; gap: 2px; }
 .rl-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
 .kind { background: var(--mist); border-radius: 999px; color: var(--text-muted); font-size: 11.5px; font-weight: 700; padding: 2px 8px; text-decoration: none; }
 .kind:hover { background: var(--line); color: var(--quarry); }

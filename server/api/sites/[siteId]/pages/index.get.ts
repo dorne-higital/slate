@@ -5,6 +5,7 @@ export default defineEventHandler(async (event): Promise<PageListItem[]> => {
     const { site } = await requireSiteAccess(event, getRouterParam(event, 'siteId')!)
     const db = useDb()
     const withProjects = getQuery(event).projects === '1'
+    if (withProjects) await ensureSystemPages(site.id)
 
     const rows = await db
         .select({
@@ -21,7 +22,7 @@ export default defineEventHandler(async (event): Promise<PageListItem[]> => {
         })
         .from(schema.pages)
         .leftJoin(schema.user, eq(schema.user.id, schema.pages.updatedBy))
-        .where(and(eq(schema.pages.siteId, site.id), inArray(schema.pages.kind, withProjects ? ['page', 'project'] : ['page'])))
+        .where(and(eq(schema.pages.siteId, site.id), inArray(schema.pages.kind, withProjects ? ['page', 'project', 'system'] : ['page'])))
         .orderBy(asc(schema.pages.position), asc(schema.pages.path))
 
     // Projects hang off the Work page (or whichever page sits at /work)
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event): Promise<PageListItem[]> => {
     return rows.map(r => ({
         id: r.id,
         parentId: r.kind === 'project' ? (r.parentId ?? work) : r.parentId,
-        kind: r.kind as 'page' | 'project',
+        kind: r.kind as 'page' | 'project' | 'system',
         title: r.title,
         path: r.path,
         status: r.status,
