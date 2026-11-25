@@ -118,4 +118,4 @@ a:hover { color: var(--heather); }
 .tbl tbody tr:hover td { background: #fafbfc; }
 
 /* Phones: a wide table scrolls sideways inside its panel instead of widening the whole page */
-.panel:has(> table), .panel:has(> .tbl), .scroll:has(> table), .panel:has(> .scroll > table) { max-width: 100%; min-width: 0; overflow-x: auto; }
+.panel:has(> table), .panel:has(> .tbl), .scroll:has(> table), .panel:has(> .scroll > table) { max-width: 100%; min-width: 0; overflow-x: auto; position: relative; }
