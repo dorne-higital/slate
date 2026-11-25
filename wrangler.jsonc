@@ -17,7 +17,7 @@
     // The old workers.dev address is switched off so there's only one address for the CMS.
     "workers_dev": false,
     // 03:00 UTC daily: purge sites deleted over 30 days ago (server/tasks/purge/deleted-sites.ts)
-    "triggers": { "crons": ["0 3 * * *", "0 9 * * *", "0 2 * * 1,4"] },
+    "triggers": { "crons": ["0 3 * * *", "0 9 * * *", "0 2 * * 1,4", "*/10 * * * *"] },
     "routes": [
         { "pattern": "slatecms.co.uk/*", "zone_name": "slatecms.co.uk" },
         { "pattern": "*.slatecms.co.uk/*", "zone_name": "slatecms.co.uk" },
