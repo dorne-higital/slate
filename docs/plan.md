@@ -107,11 +107,11 @@ Dan chose: refresh the design, projects as their own content type.
 
 1. [x] Stripe live (restricted key), live products, portal, webhook; Stripe receipts and billing emails on
 2. [x] Discount codes WELCOME20, FRIENDS, LAUNCH25 (Dan to switch off the 13 pre-Slate codes)
-3. [x] Privacy policy (/privacy) and terms (/terms), linked from the footer and sign-up. Add the ICO number to shared/utils/legal.ts when it arrives
+3. [x] Privacy policy (/privacy) and terms (/terms), linked from the footer and sign-up. ICO number in shared/utils/legal.ts
 4. [x] Browser errors in Admin → Errors (status "Browser"), capped and de-duplicated
 5. [x] Slate favicon (.ico, SVG, PNGs); danhorne. logo (light and dark) in Media and Theme
 6. [x] name.com: card saved, $30 credit (25 Nov). Domain orders are paid from this balance; customers pay Slate via Stripe
-7. [ ] Dan: one real test purchase (a cheap domain through Slate tests Stripe, name.com and setup together), ICO number
+7. [x] Real purchase done (dobiedash.co.uk, 25 Nov). ICO registration ZC311643 on /privacy
 
 ## Support and attention (24 Nov 2026)
 

@@ -4,6 +4,6 @@ export const LEGAL = {
     tradingAs: 'Slate',
     email: 'hello@slatecms.co.uk',
     location: 'Warrington, England',
-    icoNumber: '',
+    icoNumber: 'ZC311643',
     updated: '24 November 2026'
 }
