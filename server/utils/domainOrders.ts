@@ -16,11 +16,30 @@ export async function fulfilDomainOrder(orderId: string, session: Record<string,
         .where(and(eq(schema.domainOrders.id, orderId), eq(schema.domainOrders.status, 'pending_payment')))
         .returning()
     if (!order) return
+    await setUpDomainOrder(order, session)
+}
 
+/**
+ * Platform admin: try a failed order again. Skips registering if the name is already in
+ * Slate's name.com account (the first attempt may have got that far), then does the setup.
+ */
+export async function retryDomainOrder(orderId: string) {
+    const db = useDb()
+    const [order] = await db.update(schema.domainOrders)
+        .set({ status: 'registering', error: null, updatedAt: new Date() })
+        .where(and(eq(schema.domainOrders.id, orderId), eq(schema.domainOrders.status, 'failed')))
+        .returning()
+    if (!order) throw createError({ statusCode: 409, statusMessage: 'This order isn’t waiting for a retry any more. Refresh the page.' })
+    const session = order.stripeSessionId ? await stripe('GET', `checkout/sessions/${order.stripeSessionId}`) : {}
+    await setUpDomainOrder(order, session)
+}
+
+async function setUpDomainOrder(order: typeof schema.domainOrders.$inferSelect, session: Record<string, any>) {
+    const db = useDb()
     const fail = async (message: string) => {
         console.error('[domains] order failed', order.domainName, message)
         await db.update(schema.domainOrders).set({ status: 'failed', error: message.slice(0, 500), updatedAt: new Date() }).where(eq(schema.domainOrders.id, order.id))
-        await alertPlatformAdmins(`Domain order failed: ${order.domainName}`, `A customer paid for ${order.domainName} but setting it up failed.\n\n${message}\n\nOrder ${order.id}. It needs finishing by hand at name.com.`)
+        await alertPlatformAdmins(`Domain order failed: ${order.domainName}`, `A customer paid for ${order.domainName} but setting it up failed.\n\n${message}\n\nOrder ${order.id}. Try again from Admin → Domains, or finish it by hand at name.com.`)
     }
 
     if (order.simulated) {
@@ -30,15 +49,21 @@ export async function fulfilDomainOrder(orderId: string, session: Record<string,
     }
 
     try {
-        const d = session.customer_details ?? {}
-        const a = d.address ?? {}
-        const [firstName, ...rest] = String(d.name ?? 'Domain Owner').trim().split(/\s+/)
-        const { expiresAt } = await registerDomain(order.domainName, {
-            firstName: firstName!, lastName: rest.join(' ') || firstName!,
-            address1: a.line1 ?? '', address2: a.line2 ?? undefined, city: a.city ?? '', state: a.state ?? undefined,
-            zip: a.postal_code ?? '', country: a.country ?? 'GB', phone: namecomPhone(d.phone, a.country ?? 'GB'), email: d.email ?? ''
-        })
-        await db.update(schema.domainOrders).set({ expiresAt, updatedAt: new Date() }).where(eq(schema.domainOrders.id, order.id))
+        const owned = await ownedDomain(order.domainName)
+        if (owned) {
+            await db.update(schema.domainOrders).set({ expiresAt: owned.expiresAt, updatedAt: new Date() }).where(eq(schema.domainOrders.id, order.id))
+        } else {
+            const d = session.customer_details ?? {}
+            const a = d.address ?? {}
+            if (!d.email || !a.line1) throw new Error('No name and address on the Stripe payment to register it with')
+            const [firstName, ...rest] = String(d.name ?? 'Domain Owner').trim().split(/\s+/)
+            const { expiresAt } = await registerDomain(order.domainName, {
+                firstName: firstName!, lastName: rest.join(' ') || firstName!,
+                address1: a.line1 ?? '', address2: a.line2 ?? undefined, city: a.city ?? '', state: a.state ?? undefined,
+                zip: a.postal_code ?? '', country: a.country ?? 'GB', phone: namecomPhone(d.phone, a.country ?? 'GB'), email: d.email ?? ''
+            })
+            await db.update(schema.domainOrders).set({ expiresAt, updatedAt: new Date() }).where(eq(schema.domainOrders.id, order.id))
+        }
     } catch (err) {
         return fail(`Registration: ${(err as Error).message}`)
     }

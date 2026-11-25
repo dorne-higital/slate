@@ -19,9 +19,9 @@ const numberOf = (i: number) => draft.fields.slice(0, i + 1).filter(f => f.kind 
 const stepOf = (i: number) => draft.fields.slice(0, i + 1).filter(f => f.kind === 'step').length + (draft.fields.slice(0, i).some(f => f.kind !== 'step') ? 1 : 0)
 const stepCount = computed(() => formSteps(draft.fields).length)
 function move(i: number, dir: -1 | 1) {
-    const [f] = draft.fields.splice(i, 1)
-    draft.fields.splice(i + dir, 0, f!)
+    moveInPlace(draft.fields, i, i + dir)
 }
+const dr = useDragReorder((from, to) => moveInPlace(draft.fields, from, to))
 function optionsText(f: FormField) {
     return (f.options ?? []).join('\n')
 }
@@ -70,7 +70,7 @@ async function remove() {
             <b class="qs-title">Questions</b>
             <p v-if="stepCount > 1" class="help">This form has {{ stepCount }} steps. Visitors see one step at a time, with Next and Back buttons.</p>
             <template v-for="(f, i) in draft.fields" :key="f.id">
-            <div v-if="f.kind === 'step'" class="q step">
+            <div v-if="f.kind === 'step'" class="q step" data-drag-row :class="dr.rowClass(i)" @dragover="dr.overRow($event, i)" @drop.prevent="dr.drop">
                 <div class="q-row">
                     <div class="field grow">
                         <label :for="`q-${f.id}`">Step {{ stepOf(i) }} starts here. Title (optional)</label>
@@ -79,14 +79,15 @@ async function remove() {
                 </div>
                 <div class="q-tools">
                     <span class="help">Questions below this line are on the next step.</span>
-                    <span>
+                    <span class="q-btns">
+                        <DragGrip @dragstart="dr.start($event, i)" @dragend="dr.end" />
                         <button class="ib" type="button" :aria-label="`Move step break up`" :disabled="i === 0" @click="move(i, -1)">↑</button>
                         <button class="ib" type="button" :aria-label="`Move step break down`" :disabled="i === draft.fields.length - 1" @click="move(i, 1)">↓</button>
                         <button class="ib" type="button" :aria-label="`Remove step break`" @click="draft.fields.splice(i, 1)">✕</button>
                     </span>
                 </div>
             </div>
-            <div v-else class="q">
+            <div v-else class="q" data-drag-row :class="dr.rowClass(i)" @dragover="dr.overRow($event, i)" @drop.prevent="dr.drop">
                 <div class="q-row">
                     <div class="field grow">
                         <label :for="`q-${f.id}`">Question {{ numberOf(i) }}</label>
@@ -105,7 +106,8 @@ async function remove() {
                 </div>
                 <div class="q-tools">
                     <label class="check"><input v-model="f.required" type="checkbox">Must be filled in</label>
-                    <span>
+                    <span class="q-btns">
+                        <DragGrip @dragstart="dr.start($event, i)" @dragend="dr.end" />
                         <button class="ib" type="button" :aria-label="`Move question ${numberOf(i)} up`" :disabled="i === 0" @click="move(i, -1)">↑</button>
                         <button class="ib" type="button" :aria-label="`Move question ${numberOf(i)} down`" :disabled="i === draft.fields.length - 1" @click="move(i, 1)">↓</button>
                         <button class="ib" type="button" :aria-label="`Remove question ${numberOf(i)}`" @click="draft.fields.splice(i, 1)">✕</button>
@@ -149,6 +151,7 @@ textarea.inp { height: auto; line-height: 1.5; padding: 10px 12px; resize: verti
 .q-row { display: flex; flex-wrap: wrap; gap: 12px; }
 .grow { flex: 1 1 240px; }
 .q-tools { align-items: center; display: flex; justify-content: space-between; }
+.q-btns { align-items: center; display: inline-flex; gap: 2px; }
 .check { align-items: center; display: flex; font-size: 14px; gap: 8px; }
 .check input { accent-color: var(--quarry); height: 18px; width: 18px; }
 .ib { background: transparent; border: 0; border-radius: var(--radius); cursor: pointer; height: 32px; width: 32px; }

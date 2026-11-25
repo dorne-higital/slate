@@ -75,6 +75,29 @@ export async function registerDomain(domainName: string, contact: Registrant) {
     return { expiresAt: res.domain?.expireDate ? new Date(res.domain.expireDate) : null }
 }
 
+/** The domain if it's already in Slate's name.com account, or null. */
+export async function ownedDomain(domainName: string): Promise<{ expiresAt: Date | null } | null> {
+    try {
+        const d = await namecom<{ domainName?: string, expireDate?: string }>('GET', `domains/${domainName}`)
+        return d.domainName ? { expiresAt: d.expireDate ? new Date(d.expireDate) : null } : null
+    } catch {
+        return null
+    }
+}
+
+/** .uk names don't use transfer codes: Nominet moves them by changing the IPS tag. */
+export function isUkDomain(domainName: string) {
+    return /\.uk$/i.test(domainName)
+}
+
+/** Unlocks the domain and returns its transfer (EPP/auth) code, for moving it to another registrar. */
+export async function transferCode(domainName: string) {
+    await namecom('POST', `domains/${domainName}:unlock`).catch(() => {})
+    const { authCode } = await namecom<{ authCode?: string }>('GET', `domains/${domainName}:getAuthCode`)
+    if (!authCode) throw new Error('name.com didn’t return a code')
+    return authCode
+}
+
 /** Points the domain at Slate: apex via ANAME, www via CNAME, both to the fallback origin. */
 export async function pointDomainAtSlate(domainName: string) {
     const target = useRuntimeConfig().public.cnameTarget

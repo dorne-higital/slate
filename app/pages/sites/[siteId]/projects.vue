@@ -36,12 +36,15 @@ async function create() {
 
 // ── Order ──
 async function move(i: number, d: number) {
+    await moveTo(i, i + d)
+}
+async function moveTo(from: number, to: number) {
     const list = [...(projects.value ?? [])]
-    const [p] = list.splice(i, 1)
-    list.splice(i + d, 0, p!)
+    moveInPlace(list, from, to)
     projects.value = list
     await $fetch(`/api/sites/${siteId}/projects/order`, { method: 'POST', body: { ids: list.map(x => x.id) } })
 }
+const dr = useDragReorder(moveTo)
 
 // ── Details form ──
 const selectedId = ref<string | null>(projects.value?.[0]?.id ?? null)
@@ -109,7 +112,7 @@ const status = (p: ProjectRow) => p.status === 'draft' ? 'Draft' : p.hasUnpublis
         <div class="two">
             <section class="panel" aria-label="Projects">
                 <ul class="list">
-                    <li v-for="(p, i) in projects" :key="p.id" :class="{ on: p.id === selectedId }">
+                    <li v-for="(p, i) in projects" :key="p.id" :class="[{ on: p.id === selectedId }, canEdit && dr.rowClass(i)]" data-drag-row @dragover="dr.overRow($event, i)" @drop.prevent="dr.drop">
                         <button type="button" class="pick" @click="select(p.id)">
                             <img v-if="p.project.cover" :src="p.project.cover" alt="" class="thumb">
                             <span v-else class="thumb" aria-hidden="true" />
@@ -119,6 +122,7 @@ const status = (p: ProjectRow) => p.status === 'draft' ? 'Draft' : p.hasUnpublis
                             </span>
                         </button>
                         <span v-if="canEdit" class="tools">
+                            <DragGrip @dragstart="dr.start($event, i)" @dragend="dr.end" />
                             <button class="ib" type="button" :aria-label="`Move ${p.title} up`" :disabled="i === 0" @click="move(i, -1)">↑</button>
                             <button class="ib" type="button" :aria-label="`Move ${p.title} down`" :disabled="i === (projects?.length ?? 0) - 1" @click="move(i, 1)">↓</button>
                         </span>
@@ -218,7 +222,7 @@ h2 { font-size: 18px; margin: 0; }
 .txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .txt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thumb { background: #dce4df; border-radius: 4px; flex: none; height: 44px; object-fit: cover; width: 64px; }
-.tools { display: flex; padding-right: 6px; }
+.tools { align-items: center; display: flex; padding-right: 6px; }
 .ib { align-items: center; background: transparent; border: 0; border-radius: var(--radius); color: var(--quarry); cursor: pointer; display: inline-flex; height: 32px; justify-content: center; width: 32px; }
 .ib:hover:not(:disabled) { background: var(--white); }
 .ib:disabled { cursor: default; opacity: .35; }

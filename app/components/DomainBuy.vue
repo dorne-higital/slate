@@ -51,6 +51,23 @@ onMounted(async () => {
     navigateTo({ query: {} }, { replace: true })
 })
 
+// Moving a domain to another registrar: the transfer code, or for .uk names the IPS tag route
+const transfer = reactive<Record<string, { busy?: boolean, kind?: 'code' | 'uk' | 'test', code?: string, error?: string }>>({})
+async function getTransfer(id: string) {
+    transfer[id] = { busy: true }
+    try {
+        const res = await $fetch<{ kind: 'code' | 'uk' | 'test', code?: string }>(`/api/sites/${props.siteId}/domains/orders/${id}/transfer`, { method: 'POST' })
+        transfer[id] = res
+    } catch (err) {
+        transfer[id] = { error: (err as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'Couldn’t get the code just now. Please try again.' }
+    }
+}
+const copied = ref('')
+async function copy(id: string, code: string) {
+    await navigator.clipboard?.writeText(code).catch(() => {})
+    copied.value = id
+}
+
 const statusText: Record<DomainOrderStatus, string> = {
     pending_payment: 'Waiting for payment',
     registering: 'Registering…',
@@ -92,6 +109,21 @@ const statusText: Record<DomainOrderStatus, string> = {
                     <span class="tag" :class="o.status">{{ statusText[o.status] }}<template v-if="o.simulated"> (test)</template></span>
                     <span v-if="o.status === 'active' && o.expiresAt" class="muted small">Renews {{ new Date(o.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }} · {{ formatPence(o.price) }}</span>
                     <span v-else-if="o.status === 'failed'" class="muted small">You’ve paid and we’re on it. We’ll finish setting it up and let you know.</span>
+                    <button v-if="canBuy && (o.status === 'active' || o.status === 'cancelled') && !transfer[o.id]" class="btn btn-plain btn-sm" type="button" @click="getTransfer(o.id)">Move to another provider</button>
+                    <div v-if="transfer[o.id]" class="move" role="status">
+                        <template v-if="transfer[o.id]!.busy">Getting your transfer code…</template>
+                        <p v-else-if="transfer[o.id]!.error" class="error-box">{{ transfer[o.id]!.error }}</p>
+                        <template v-else-if="transfer[o.id]!.kind === 'test'">This was a test purchase, so there’s no real domain to move.</template>
+                        <template v-else-if="transfer[o.id]!.kind === 'uk'">
+                            <p><b>.uk names move a little differently.</b> There’s no code. Ask your new provider for their <b>IPS tag</b>, then send it to us from Support and we’ll hand the domain over, usually within a working day.</p>
+                            <p class="muted small">Once it’s moved, cancel the domain in Billing so we stop renewing it.</p>
+                        </template>
+                        <template v-else>
+                            <p>Give this code to your new provider when they ask for it. We’ve unlocked the domain so the move can go ahead.</p>
+                            <div class="code-row"><code>{{ transfer[o.id]!.code }}</code><button class="btn btn-ghost btn-sm" type="button" @click="copy(o.id, transfer[o.id]!.code!)">{{ copied === o.id ? 'Copied' : 'Copy' }}</button></div>
+                            <p class="muted small">Your site keeps working while it moves, as long as the new provider keeps the same DNS records. Once it’s moved, cancel the domain in Billing so we stop renewing it.</p>
+                        </template>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -115,4 +147,8 @@ h2 { font-size: 18px; margin: 0; }
 .tag.active { background: #e8f3ec; color: var(--ok-text); }
 .tag.failed { background: #fbeceb; color: var(--danger); }
 .small { font-size: 13px; }
+.move { background: var(--paper); border-radius: var(--radius); display: flex; flex: 1 1 100%; flex-direction: column; font-size: 14px; gap: 8px; padding: 12px 14px; }
+.move p { margin: 0; }
+.code-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+.code-row code { background: var(--white); border-radius: var(--radius); box-shadow: 0 0 0 1px var(--line); font-size: 15px; overflow-wrap: anywhere; padding: 6px 10px; user-select: all; }
 </style>

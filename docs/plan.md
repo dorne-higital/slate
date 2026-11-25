@@ -26,7 +26,7 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
 - [x] Integrations: Google Analytics, Plausible, Meta Pixel, Calendly (+ Booking block), cookie consent
   banner for GA/Meta, cross-site request protection on the CMS API. Mailchimp, Kit, Stripe: coming soon
 - [x] Media library (R2): upload by button or drag and drop (done: blocks in editor incl. from library, pages list; browser check of the drag still to do), file type checked from the bytes (no SVG/HTML),
-  10 MB limit, alt text, search, delete; Choose image in block fields and post covers
+  10 MB limit, alt text, search, delete; Choose image in block fields and post covers. Drag-and-drop upload checked in the browser (25 Nov)
 - [x] Billing (Stripe, test mode): Starter £15 / Business £29 / Studio £49 a month (were £9/£19/£39 until 25 Nov 2026), yearly = 2 months free,
   14-day trial with Business features, no card. Billed per person (Studio covers up to 10 sites).
   Checkout, customer portal, signed webhook, invoices; plan limits on pages, forms, blog, people,
@@ -38,7 +38,8 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
   prices (shared/utils/domainPrices.ts, only offered if renewal cost + margin fits); pay yearly via Stripe;
   registered in the customer's name, ANAME/CNAME to Slate, connected with HTTPS. Simulated (nothing bought)
   while Stripe is in test mode. Cancelling the domain subscription turns auto-renew off.
-  Later: admin view to retry failed orders, offer a domain during sign-up, transfer-out codes.
+  Admin → Domains: failed orders first, Try again (skips registering if name.com already has it), Mark as done.
+  Owners get a transfer code from Domains (domain unlocked, admins emailed); .uk names go by IPS tag through Support.
 - [x] Email (Resend, slatecms.co.uk verified, DKIM/SPF/DMARC): form replies to the reply email or owner
   (reply-to = visitor), invites by email, password reset, trial ending reminder (daily 09:00 UTC),
   failed domain orders to platform admins. Locally emails are logged, not sent.
@@ -48,7 +49,7 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
 ## Housekeeping (as I go)
 
 - [x] Separate Neon branch for local development (`dev`); `yarn db:migrate:prod` for live
-- Drag and drop for blocks and pages
+- [x] Drag to reorder: blocks, pages, menu links, form questions, block items (reviews, steps…), projects. Arrows stay for keyboards
 - [x] Old Vercel DNS records removed (proxied AAAA 100:: placeholders for the Worker)
 - [x] Daily job (03:00 UTC): purge sites deleted more than 30 days ago, their Cloudflare hostnames, old invites
 - [x] Site export: Settings › Download everything (zip: site.json, pages/posts as text, replies CSV, media)

@@ -119,3 +119,10 @@ a:hover { color: var(--heather); }
 
 /* Phones: a wide table scrolls sideways inside its panel instead of widening the whole page */
 .panel:has(> table), .panel:has(> .tbl), .scroll:has(> table), .panel:has(> .scroll > table) { max-width: 100%; min-width: 0; overflow-x: auto; position: relative; }
+
+/* Drag to reorder (useDragReorder) */
+[data-drag-row] { position: relative; }
+.dr-dragging { opacity: .4; }
+.dr-before::before, .dr-after::after { background: var(--quarry); border-radius: 2px; content: ''; height: 3px; left: 0; pointer-events: none; position: absolute; right: 0; z-index: 2; }
+.dr-before::before { top: -2px; }
+.dr-after::after { bottom: -2px; }

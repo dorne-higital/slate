@@ -31,13 +31,13 @@ function addItem() {
     emit('change')
 }
 
-function moveItem(i: number, dir: -1 | 1) {
+function moveItem(i: number, to: number) {
     const list = [...items.value]
-    const [row] = list.splice(i, 1)
-    list.splice(i + dir, 0, row!)
+    moveInPlace(list, i, to)
     props.block.props.items = list
     emit('change')
 }
+const dr = useDragReorder(moveItem)
 
 function removeItem(i: number) {
     props.block.props.items = items.value.filter((_, j) => j !== i)
@@ -74,12 +74,13 @@ function pickItemImage(i: number, key: string, item: MediaItem) {
 
         <div v-if="def.items" class="items">
             <b class="items-title">{{ def.items.label }}s</b>
-            <div v-for="(item, i) in items" :key="i" class="item">
+            <div v-for="(item, i) in items" :key="i" class="item" data-drag-row :class="dr.rowClass(i)" @dragover="dr.overRow($event, i)" @drop.prevent="dr.drop">
                 <div class="item-bar">
                     <span>{{ def.items.label }} {{ i + 1 }}</span>
                     <span class="item-tools">
-                        <button class="ib" type="button" :aria-label="`Move ${def.items.label.toLowerCase()} ${i + 1} up`" :disabled="i === 0" @click="moveItem(i, -1)">↑</button>
-                        <button class="ib" type="button" :aria-label="`Move ${def.items.label.toLowerCase()} ${i + 1} down`" :disabled="i === items.length - 1" @click="moveItem(i, 1)">↓</button>
+                        <DragGrip @dragstart="dr.start($event, i)" @dragend="dr.end" />
+                        <button class="ib" type="button" :aria-label="`Move ${def.items.label.toLowerCase()} ${i + 1} up`" :disabled="i === 0" @click="moveItem(i, i - 1)">↑</button>
+                        <button class="ib" type="button" :aria-label="`Move ${def.items.label.toLowerCase()} ${i + 1} down`" :disabled="i === items.length - 1" @click="moveItem(i, i + 1)">↓</button>
                         <button class="ib" type="button" :aria-label="`Remove ${def.items.label.toLowerCase()} ${i + 1}`" @click="removeItem(i)">✕</button>
                     </span>
                 </div>
@@ -123,7 +124,7 @@ textarea.inp { height: auto; line-height: 1.5; min-height: 84px; padding: 10px 1
 .items-title { font-size: 15px; }
 .item { background: var(--paper); border-radius: var(--radius-lg); box-shadow: 0 0 0 1px var(--line-soft); display: flex; flex-direction: column; gap: 12px; padding: 12px; }
 .item-bar { align-items: center; display: flex; font-size: 13px; font-weight: 700; justify-content: space-between; }
-.item-tools { display: flex; gap: 2px; }
+.item-tools { align-items: center; display: flex; gap: 2px; }
 .ib { align-items: center; background: transparent; border: 0; border-radius: var(--radius); color: var(--quarry); cursor: pointer; display: inline-flex; font-size: 14px; height: 32px; justify-content: center; width: 32px; }
 .ib:hover:not(:disabled) { background: var(--mist); }
 .ib:disabled { cursor: default; opacity: .35; }

@@ -62,4 +62,4 @@ export function useMediaUpload(siteId: string) {
     return { upload, uploading, error }
 }
 
-export const formatBytes = (n: number) => n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`
+export const formatBytes = (n: number) => n === 0 ? '0 KB' : n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`

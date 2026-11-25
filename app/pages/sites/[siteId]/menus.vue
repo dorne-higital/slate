@@ -64,11 +64,14 @@ function addLink() {
 }
 
 function move(i: number, dir: -1 | 1) {
+    moveTo(i, i + dir)
+}
+function moveTo(from: number, to: number) {
     const list = items.value
-    const [it] = list.splice(i, 1)
-    list.splice(i + dir, 0, it!)
+    moveInPlace(list, from, to)
     if (list[0]) list[0].depth = 0
 }
+const dr = useDragReorder(moveTo)
 
 function remove(id: string) {
     drafts[slot.value] = items.value.filter(i => i.id !== id)
@@ -118,12 +121,13 @@ const themeVars = computed(() => siteThemeVars(site.value?.theme as SiteTheme))
                     <span class="muted">{{ slotInfo.help }}</span>
                 </div>
                 <ul class="list">
-                    <li v-for="(item, i) in items" :key="item.id" :class="{ sel: item.id === selectedId, sub: item.depth === 1 }">
+                    <li v-for="(item, i) in items" :key="item.id" :class="[{ sel: item.id === selectedId, sub: item.depth === 1 }, dr.rowClass(i)]" data-drag-row @dragover="dr.overRow($event, i)" @drop.prevent="dr.drop">
                         <button class="pick" type="button" :aria-pressed="item.id === selectedId" @click="selectedId = item.id">
                             <b>{{ item.label || 'Untitled link' }}</b>
                             <span class="muted">{{ describe(item) }}</span>
                         </button>
                         <span class="tools">
+                            <DragGrip @dragstart="dr.start($event, i)" @dragend="dr.end" />
                             <button v-if="slot === 'header' && i > 0" class="ib" type="button" :aria-label="item.depth ? `Move ${item.label} out of the dropdown` : `Put ${item.label} in a dropdown under the link above`" :title="item.depth ? 'Out of dropdown' : 'Into dropdown'" @click="item.depth = item.depth ? 0 : 1">
                                 {{ item.depth ? '←' : '→' }}
                             </button>
@@ -194,7 +198,7 @@ h2 { font-size: 18px; margin: 0; }
 .list li.empty { box-shadow: none; padding: 8px 0; }
 .pick { background: none; border: 0; color: var(--quarry); cursor: pointer; display: flex; flex: 1; flex-direction: column; font-family: inherit; gap: 1px; padding: 8px; text-align: left; }
 .pick b { font-size: 15px; font-weight: 600; }
-.tools { display: flex; gap: 2px; }
+.tools { align-items: center; display: flex; gap: 2px; }
 .ib { align-items: center; background: transparent; border: 0; border-radius: var(--radius); color: var(--quarry); cursor: pointer; display: inline-flex; font-size: 15px; height: 34px; justify-content: center; width: 34px; }
 .ib:hover:not(:disabled) { background: var(--mist); }
 .ib:disabled { cursor: default; opacity: .3; }
