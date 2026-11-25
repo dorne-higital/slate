@@ -15,7 +15,12 @@ export function useSiteSeo(input: () => null | undefined | {
         description: () => seo.value?.description || undefined,
         ogTitle: () => seo.value?.shortTitle,
         ogDescription: () => seo.value?.description || undefined,
-        ogImage: () => seo.value?.image || undefined,
+        // Media library images are stored as /media/…; share previews need the full address
+        ogImage: () => {
+            const img = seo.value?.image
+            if (!img) return undefined
+            return img.startsWith('/') && !img.startsWith('//') ? new URL(img, seo.value!.url).href : img
+        },
         ogUrl: () => seo.value?.url,
         ogSiteName: () => seo.value?.siteName,
         ogType: () => seo.value?.type ?? 'website',

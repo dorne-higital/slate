@@ -116,8 +116,13 @@ const breadcrumb = computed(() => selected.value && data.value ? `${data.value.a
                     </div>
                     <div class="field">
                         <label for="sd-img">Share image for pages without one</label>
-                        <input id="sd-img" v-model="defaults.defaultShareImage" class="inp" type="text" placeholder="https://…" :disabled="!canEditDefaults">
-                        <span class="help">Paste an image address for now. Best at 1200 × 630 pixels.</span>
+                        <span class="img-row">
+                            <img v-if="defaults.defaultShareImage" :src="defaults.defaultShareImage" alt="" class="img-thumb">
+                            <MediaPicker v-if="canEditDefaults" :site-id="siteId" @pick="defaults.defaultShareImage = $event.url" />
+                            <button v-if="defaults.defaultShareImage && canEditDefaults" class="btn btn-plain btn-sm" type="button" @click="defaults.defaultShareImage = ''">Remove</button>
+                        </span>
+                        <input id="sd-img" v-model="defaults.defaultShareImage" class="inp" type="text" placeholder="Or paste an image address: https://…" :disabled="!canEditDefaults">
+                        <span class="help">Best at 1200 × 630 pixels.</span>
                     </div>
                 </section>
             </div>
@@ -137,8 +142,13 @@ const breadcrumb = computed(() => selected.value && data.value ? `${data.value.a
                 </div>
                 <div class="field">
                     <label for="simg">Share image</label>
-                    <input id="simg" v-model="draft.shareImage" class="inp" type="text" placeholder="https://…" :disabled="!canEdit">
-                    <span class="help">Shown when someone posts a link to this page. Choosing from Media comes with the media library.</span>
+                    <span class="img-row">
+                        <img v-if="draft.shareImage" :src="draft.shareImage" alt="" class="img-thumb">
+                        <MediaPicker v-if="canEdit" :site-id="siteId" @pick="draft.shareImage = $event.url" />
+                        <button v-if="draft.shareImage && canEdit" class="btn btn-plain btn-sm" type="button" @click="draft.shareImage = ''">Remove</button>
+                    </span>
+                    <input id="simg" v-model="draft.shareImage" class="inp" type="text" placeholder="Or paste an image address: https://…" :disabled="!canEdit">
+                    <span class="help">Shown when someone posts a link to this page. Best at 1200 × 630 pixels.</span>
                 </div>
 
                 <div class="google">
@@ -188,4 +198,6 @@ textarea.inp { height: auto; line-height: 1.5; padding: 10px 12px; resize: verti
 .check { align-items: center; display: flex; font-size: 15px; gap: 10px; }
 .check input { accent-color: var(--quarry); height: 18px; width: 18px; }
 @media (max-width: 1100px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.img-row { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; }
+.img-thumb { border-radius: var(--radius); box-shadow: 0 0 0 1px var(--line); height: 63px; object-fit: cover; width: 120px; }
 </style>
