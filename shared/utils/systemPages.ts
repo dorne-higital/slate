@@ -29,6 +29,24 @@ export const SYSTEM_PAGES: SystemPageInfo[] = [
             })
             return [hero]
         }
+    },
+    {
+        key: 'offline',
+        path: '/_offline',
+        title: 'Offline',
+        desc: 'Shown on every address while the site is offline (Settings › Offline or delete). Good as a “coming soon” page.',
+        blocks: () => {
+            const hero = newBlock('hero')
+            Object.assign(hero.props, {
+                layout: 'centred',
+                eyebrow: 'Back soon',
+                heading: 'We’re making a few changes',
+                text: 'The site is taking a short break. Please check back soon.',
+                buttonLabel: '',
+                buttonUrl: ''
+            })
+            return [hero]
+        }
     }
 ]
 

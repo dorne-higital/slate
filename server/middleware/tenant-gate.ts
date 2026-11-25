@@ -15,6 +15,17 @@ export default defineEventHandler(async (event) => {
     if (!site) return
 
     const paused = !site.offline && await isSitePaused(site)
+    // Offline by choice, with an Offline page published: show that page on every address.
+    // Its page data, forms and images still load; blog addresses go to the home page.
+    if (site.offline && await hasOfflinePage(site.id)) {
+        if (/^\/(api\/public\/(page|forms\/)|media\/|favicon|robots\.txt)/.test(event.path)) return
+        if (event.path.startsWith('/api/')) {
+            setResponseStatus(event, 503)
+            return { error: true, statusMessage: 'This site is offline' }
+        }
+        if (event.path.startsWith('/blog')) return sendRedirect(event, '/', 302)
+        return
+    }
     if (site.offline || paused) {
         setResponseStatus(event, 503)
         setResponseHeader(event, 'retry-after', 3600)

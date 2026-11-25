@@ -176,7 +176,7 @@ async function deleteSite() {
             </div>
             <div class="panel set-body list danger-zone">
                 <div class="line">
-                    <span class="line-text"><b>{{ site?.offline ? 'Your site is offline' : 'Take the site offline' }}</b><span class="muted">{{ site?.offline ? 'Visitors see a short holding page.' : 'Visitors see a short holding page. Everything stays saved and you can turn it back on.' }}</span></span>
+                    <span class="line-text"><b>{{ site?.offline ? 'Your site is offline' : 'Take the site offline' }}</b><span class="muted">{{ site?.offline ? 'Visitors see your Offline page.' : 'Visitors see your Offline page (edit it in Pages › System pages). Everything stays saved and you can turn it back on.' }}</span></span>
                     <button class="btn btn-sm" :class="site?.offline ? 'btn-dark' : 'btn-danger'" type="button" :disabled="offlineBusy" @click="toggleOffline">{{ site?.offline ? 'Put back online' : 'Take offline' }}</button>
                 </div>
                 <div v-if="isOwner" class="line">

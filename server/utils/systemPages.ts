@@ -14,3 +14,12 @@ export async function ensureSystemPages(siteId: string) {
         return { siteId, kind: 'system' as const, path: p.path, title: p.title, position: (last ?? 0) + 100 + i, status: 'published' as const, blocks, publishedBlocks: blocks, publishedAt: now, noIndex: true }
     })).onConflictDoNothing()
 }
+
+/** Whether the site has a published Offline page (so taking it offline shows that rather than the plain holding page). */
+export async function hasOfflinePage(siteId: string) {
+    const row = await useDb().query.pages.findFirst({
+        where: and(eq(schema.pages.siteId, siteId), eq(schema.pages.path, '/_offline'), eq(schema.pages.kind, 'system'), eq(schema.pages.status, 'published')),
+        columns: { id: true }
+    })
+    return !!row
+}

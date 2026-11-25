@@ -8,10 +8,13 @@ export default defineEventHandler(async (event) => {
     const rawPath = String(getQuery(event).path ?? '/')
     const path = rawPath === '/' ? '/' : `/${rawPath.replace(/^\/+|\/+$/g, '')}`
 
+    const offlinePage = site.offline
+        ? await useDb().query.pages.findFirst({ where: and(eq(schema.pages.siteId, site.id), eq(schema.pages.path, '/_offline'), eq(schema.pages.kind, 'system'), eq(schema.pages.status, 'published')) })
+        : undefined
     const [found, shell] = await Promise.all([
-        isSystemPath(path) ? undefined : useDb().query.pages.findFirst({
+        offlinePage ?? (isSystemPath(path) ? undefined : useDb().query.pages.findFirst({
             where: and(eq(schema.pages.siteId, site.id), eq(schema.pages.path, path), eq(schema.pages.status, 'published'))
-        }),
+        })),
         publicShell(site)
     ])
     // Nothing at this address: the site's own "Page not found" page, if it's published
@@ -20,6 +23,7 @@ export default defineEventHandler(async (event) => {
     })
     if (!page) throw createError({ statusCode: 404, statusMessage: 'Page not found' })
     const notFound = !found
+    const offline = !!offlinePage
 
     // The forms this page's Form blocks use
     const blocks = page.publishedBlocks ?? []
@@ -37,7 +41,8 @@ export default defineEventHandler(async (event) => {
     setResponseHeader(event, 'cache-control', 'public, max-age=30, stale-while-revalidate=300')
     return {
         ...shell,
-        notFound,
+        notFound: notFound && !offline,
+        offline,
         posts,
         projects,
         forms: Object.fromEntries(formRows.map(f => [f.id, toFormDefinition(f)])) as Record<string, FormDefinition>,
@@ -47,7 +52,7 @@ export default defineEventHandler(async (event) => {
             seoTitle: page.seoTitle,
             seoDescription: page.seoDescription,
             shareImage: page.shareImage,
-            noIndex: page.noIndex || notFound,
+            noIndex: page.noIndex || notFound || offline,
             kind: page.kind,
             project: page.kind === 'project' ? { ...cleanProjectMeta({}), ...(page.project ?? {}) } : null,
             blocks

@@ -14,6 +14,12 @@ if (error.value && !data.value) {
 }
 // The site's own "Page not found" page: still a 404 for browsers and search engines
 if (import.meta.server && data.value?.notFound) setResponseStatus(useRequestEvent()!, 404)
+// The Offline page: "back soon" for browsers and search engines, so the site keeps its place in search
+if (import.meta.server && data.value?.offline) {
+    const event = useRequestEvent()!
+    setResponseStatus(event, 503)
+    event.node.res.setHeader('retry-after', '3600')
+}
 
 // Canonical uses the site's live address, so free-address and www copies point search engines at one URL
 useSiteSeo(() => {
@@ -24,7 +30,7 @@ useSiteSeo(() => {
         shortTitle: page.seoTitle || page.title,
         description: page.seoDescription || site.seo.defaultDescription,
         image: page.shareImage || site.seo.defaultShareImage,
-        url: `https://${site.address}${data.value.notFound ? path.value : page.path}`,
+        url: `https://${site.address}${data.value.notFound || data.value.offline ? path.value : page.path}`,
         siteName: site.name,
         noIndex: page.noIndex
     }

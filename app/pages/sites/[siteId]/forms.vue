@@ -107,6 +107,19 @@ const previewOf = (r: Reply) => {
     const entry = Object.entries(r.data).find(([k, v]) => /message|details|what|tell/i.test(k) && v) ?? Object.entries(r.data).at(-1)
     return entry?.[1] ?? ''
 }
+
+// Search, sort and pages for the reply list
+const replySort = ref<'newest' | 'oldest' | 'name' | 'unread'>('newest')
+const replyTable = useDataTable(() => replies.value ?? [], {
+    sorters: { created: r => r.createdAt, name: r => nameOf(r), unread: r => r.read },
+    search: r => `${Object.values(r.data).join(' ')} ${r.note ?? ''}`,
+    initialSort: { key: 'created', dir: 'desc' },
+    pageSize: 25
+})
+watch(replySort, (v) => {
+    replyTable.sortKey = v === 'name' ? 'name' : v === 'unread' ? 'unread' : 'created'
+    replyTable.sortDir = v === 'oldest' || v === 'name' || v === 'unread' ? 'asc' : 'desc'
+})
 const sentAt = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 </script>
 
@@ -145,7 +158,16 @@ const sentAt = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'nu
                         <span class="muted">{{ current?.total ?? 0 }} {{ current?.total === 1 ? 'reply' : 'replies' }}, {{ current?.unread ?? 0 }} new</span>
                         <a v-if="current?.total" :href="`/api/sites/${siteId}/forms/${formId}/replies.csv`" class="dl">Download as CSV</a>
                     </div>
-                    <button v-for="r in replies" :key="r.id" type="button" class="item" :class="{ sel: r.id === selectedId }" @click="open(r)">
+                    <div v-if="(replies?.length ?? 0) > 3 || replyTable.q" class="list-tools">
+                        <input v-model="replyTable.q" class="inp" type="search" placeholder="Search replies" aria-label="Search replies">
+                        <select v-model="replySort" class="sel" aria-label="Sort replies">
+                            <option value="newest">Newest first</option>
+                            <option value="oldest">Oldest first</option>
+                            <option value="unread">Unread first</option>
+                            <option value="name">Name A–Z</option>
+                        </select>
+                    </div>
+                    <button v-for="r in replyTable.rows" :key="r.id" type="button" class="item" :class="{ sel: r.id === selectedId }" @click="open(r)">
                         <i v-if="!r.read" class="dot" aria-label="Unread" />
                         <i v-else class="dot-space" aria-hidden="true" />
                         <span class="item-text">
@@ -153,9 +175,11 @@ const sentAt = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'nu
                             <span class="item-bottom"><span class="snippet">{{ previewOf(r) }}</span><span class="state" :class="stateOf(r).key">{{ stateOf(r).label }}</span></span>
                         </span>
                     </button>
+                    <p v-if="replies?.length && !replyTable.total" class="none muted">No replies match “{{ replyTable.q }}”.</p>
                     <p v-if="!replies?.length && repliesStatus !== 'pending'" class="none muted">
                         {{ filter === 'todo' ? 'Nothing to do. New replies will appear here.' : filter === 'done' ? 'Nothing marked as done yet.' : 'No replies yet.' }}
                     </p>
+                    <TablePager :table="replyTable" noun="replies" />
                 </section>
 
                 <article v-if="selected" class="panel detail" aria-labelledby="r-h">
@@ -208,6 +232,9 @@ h1 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; margin: 0; }
 .inbox { align-items: start; display: grid; gap: 24px; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); }
 .list { overflow: hidden; }
 .list-head { align-items: center; display: flex; justify-content: space-between; padding: 12px 16px; }
+.list-tools { display: flex; gap: 8px; padding: 0 16px 12px; }
+.list-tools .inp { flex: 1; font-size: 14px; height: 36px; min-width: 0; }
+.list-tools .sel { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--radius); font: inherit; font-size: 14px; height: 36px; padding: 0 6px; }
 .dl { font-size: 14px; font-weight: 600; }
 .item { background: var(--white); border: 0; border-top: 1px solid var(--line-soft); color: var(--quarry); cursor: pointer; display: flex; font-family: inherit; gap: 10px; padding: 14px 16px; text-align: left; width: 100%; }
 .item:hover { background: #fafbfc; }
