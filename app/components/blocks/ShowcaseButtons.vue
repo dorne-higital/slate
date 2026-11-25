@@ -80,7 +80,7 @@ const qrPath = computed(() => {
 .badge span { display: flex; flex-direction: column; font-size: 18px; font-weight: 600; line-height: 1.1; text-align: left; }
 .badge small { font-size: 11px; font-weight: 400; }
 .badge:hover { filter: brightness(1.25); }
-:global(.sec.bg-dark) .badge, :global(.sec.bg-primary) .badge, :global(.sec.bg-accent) .badge, .inverse .badge { background: #fff; color: #111; }
+.sec.bg-dark .badge, .sec.bg-primary .badge, .sec.bg-accent .badge, .inverse .badge { background: #fff; color: #111; }
 .inverse .blk-btn { background: var(--site-primary-text); color: var(--site-primary); }
 .inverse .blk-btn.outline { background: transparent; color: var(--site-primary-text); }
 .qr { align-items: center; display: flex; gap: 10px; margin-left: 8px; }
