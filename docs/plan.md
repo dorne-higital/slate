@@ -39,6 +39,8 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
   registered in the customer's name, ANAME/CNAME to Slate, connected with HTTPS. Simulated (nothing bought)
   while Stripe is in test mode. Cancelling the domain subscription turns auto-renew off.
   Admin → Domains: failed orders first, Try again (skips registering if name.com already has it), Mark as done.
+  Bought domains get their own Cloudflare zone (needs NUXT_CLOUDFLARE_DOMAINS_TOKEN): www → Slate, bare domain 301 → https://www.
+  Admin → Domains › Move DNS to Cloudflare for ones bought before. Later: remove the zone when a domain lapses or moves away.
   Owners get a transfer code from Domains (domain unlocked, admins emailed); .uk names go by IPS tag through Support.
 - [x] Email (Resend, slatecms.co.uk verified, DKIM/SPF/DMARC): form replies to the reply email or owner
   (reply-to = visitor), invites by email, password reset, trial ending reminder (daily 09:00 UTC),
