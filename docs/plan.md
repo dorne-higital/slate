@@ -72,7 +72,7 @@ Quick wins first, then the bigger customisation work.
 10. [x] Theme: logo, favicon, extra brand colours, heading sizes, nav size, text transforms, light/dark
 11. [x] Layout section: header style (regular, centred, mega menu), header/footer colours, link to Menus
 12. [x] Blocks: a gallery of every block to try out with sample content
-13. [ ] Integrations: candidate list sent to Dan 24 Nov; build the ones he picks
+13. [x] Integrations (25 Nov): new page with tabs; webhook, Slack, Discord, Mailchimp, Brevo, WhatsApp, Search Console/Bing, IndexNow, Smart App Banner, iOS/Android app links, Map block, built-in visitor stats (Cloudflare Web Analytics), email forwarding for Slate domains. Still to come: Kit, Stripe deposits
 14. [x] Support: tickets from each site (Support page in the CMS), listed in the platform dashboard; platform admins reply, both sides emailed
 
 ## Portfolio push (for danhorne.co.uk, 24 Nov 2026)
@@ -138,3 +138,12 @@ every button row can be regular buttons or app store badges (links set once in S
 6. [x] Closing call to action band
 7. [x] Settings: app store links (iOS, Android) entered once; /get-app on each site sends phones to the right store (the QR code's target)
 8. [ ] Official Apple/Google badge artwork (needs the files from Apple and Google; drawn badges for now)
+
+## 25 Nov 2026
+
+1. [x] Settings: one row per section; Pages: projects under Work; Forms: Unread/Read/Done
+2. [x] System pages: locked, editable Page not found (404)
+3. [x] Tables: sorting, search, filters and pages everywhere (useDataTable, SortTh, TablePager); Home always first
+4. [x] SEO: choose share images from Media; share previews get the full image address
+5. [x] Local development: client sites stay local; local data refreshed from live on request
+6. [ ] Check visitor stats appear on Overview and email forwarding works on a Slate domain
