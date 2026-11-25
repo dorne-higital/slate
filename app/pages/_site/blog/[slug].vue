@@ -5,7 +5,10 @@ const fetcher = useRequestFetch()
 const slug = computed(() => String(route.params.slug))
 
 const { data, error } = await useAsyncData(() => `post-${slug.value}`, () => fetcher(`/api/public/blog/${encodeURIComponent(slug.value)}`), { watch: [slug] })
-if (error.value && !data.value) throw createError({ statusCode: 404, statusMessage: 'Post not found', fatal: true })
+type Moved = { redirect?: { to: string, permanent: boolean }, data?: { redirect?: { to: string, permanent: boolean } } }
+const moved = (error.value?.data as Moved | undefined)?.redirect ?? (error.value?.data as Moved | undefined)?.data?.redirect
+if (moved) await navigateTo(moved.to, { redirectCode: moved.permanent ? 301 : 302, external: /^https?:\/\//i.test(moved.to) })
+else if (error.value && !data.value) throw createError({ statusCode: 404, statusMessage: 'Post not found', fatal: true })
 
 useSiteSeo(() => data.value && {
     title: fullTitle({ title: data.value.post.title }, data.value.site.name, data.value.site.seo),

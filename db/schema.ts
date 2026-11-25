@@ -117,6 +117,33 @@ export const pages = pgTable('pages', {
     uniqueIndex('pages_site_path_idx').on(t.siteId, t.path)
 ])
 
+// Every publish of a page, newest first, so an owner can go back to an earlier version (last 30 kept)
+export const pageVersions = pgTable('page_versions', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    pageId: uuid('page_id').notNull().references(() => pages.id, { onDelete: 'cascade' }),
+    siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    blocks: jsonb('blocks').$type<Block[]>().notNull(),
+    publishedBy: text('published_by').references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [
+    index('page_versions_page_idx').on(t.pageId, t.createdAt)
+])
+
+// Old addresses that send visitors somewhere else (used only when no page lives at the old address)
+export const redirects = pgTable('redirects', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),
+    fromPath: text('from_path').notNull(),
+    toUrl: text('to_url').notNull(),
+    permanent: boolean('permanent').notNull().default(true),
+    hits: integer('hits').notNull().default(0),
+    lastHitAt: timestamp('last_hit_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, t => [
+    uniqueIndex('redirects_site_from_idx').on(t.siteId, t.fromPath)
+])
+
 // One menu per slot per site: header, footer, legal (footer small print)
 export const menus = pgTable('menus', {
     siteId: uuid('site_id').notNull().references(() => sites.id, { onDelete: 'cascade' }),

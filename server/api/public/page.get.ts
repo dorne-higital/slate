@@ -17,7 +17,13 @@ export default defineEventHandler(async (event) => {
         })),
         publicShell(site)
     ])
-    // Nothing at this address: the site's own "Page not found" page, if it's published
+    // Nothing at this address: an old address the owner redirected…
+    if (!found) {
+        const redirect = await findRedirect(event, site.id, rawPath === '/' ? '/' : path)
+        // Sent as a "not found" carrying where to go, so the page data keeps one shape
+        if (redirect) throw createError({ statusCode: 404, statusMessage: 'Moved', data: { redirect } })
+    }
+    // …or else the site's own "Page not found" page, if it's published
     const page = found ?? await useDb().query.pages.findFirst({
         where: and(eq(schema.pages.siteId, site.id), eq(schema.pages.path, '/_404'), eq(schema.pages.kind, 'system'), eq(schema.pages.status, 'published'))
     })

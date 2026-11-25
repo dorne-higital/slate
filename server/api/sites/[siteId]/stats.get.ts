@@ -7,9 +7,9 @@ export default defineEventHandler(async (event) => {
     const db = useDb()
     const n = (q: ReturnType<typeof sql>) => db.execute<{ n: number }>(q).then(r => Number(r.rows[0]?.n ?? 0))
     const [pages, published, changed, postsLive, postsScheduled, postsDraft, forms, replies, toDo, replies7, mediaCount, mediaBytes, people, invites, domains, domainsLive, recent] = await Promise.all([
-        n(sql`select count(*)::int n from pages where site_id = ${id}`),
-        n(sql`select count(*)::int n from pages where site_id = ${id} and status = 'published'`),
-        n(sql`select count(*)::int n from pages where site_id = ${id} and status = 'published' and blocks::text is distinct from published_blocks::text`),
+        n(sql`select count(*)::int n from pages where site_id = ${id} and kind <> 'system'`),
+        n(sql`select count(*)::int n from pages where site_id = ${id} and kind <> 'system' and status = 'published'`),
+        n(sql`select count(*)::int n from pages where site_id = ${id} and kind <> 'system' and status = 'published' and blocks::text is distinct from published_blocks::text`),
         n(sql`select count(*)::int n from posts where site_id = ${id} and status = 'published' and published_at <= now()`),
         n(sql`select count(*)::int n from posts where site_id = ${id} and status = 'published' and published_at > now()`),
         n(sql`select count(*)::int n from posts where site_id = ${id} and status = 'draft'`),

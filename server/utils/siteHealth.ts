@@ -1,0 +1,143 @@
+import { and, eq, isNull, lt, sql } from 'drizzle-orm'
+
+/**
+ * The site health check on Overview: plain-English things to fix, each linking to where to fix it.
+ * Every check is cheap (a handful of queries over this site's own rows).
+ */
+export type HealthLevel = 'high' | 'medium' | 'low'
+export interface HealthCheck {
+    key: string
+    ok: boolean
+    level: HealthLevel
+    title: string
+    /** What it says once it's fine */
+    okTitle: string
+    detail: string
+    /** Where to fix it, inside the site's CMS (e.g. '/seo') */
+    to: string
+    fixLabel: string
+    /** Examples, at most a handful */
+    items?: string[]
+}
+
+const WEIGHT: Record<HealthLevel, number> = { high: 20, medium: 10, low: 4 }
+const BIG_IMAGE = 1.5 * 1024 * 1024
+
+type Site = typeof schema.sites.$inferSelect
+
+/** Every on-site link (starting with "/") in a block's settings, however deep. */
+function linksIn(value: unknown, out: string[] = []): string[] {
+    if (typeof value === 'string') {
+        if (value.startsWith('/') && !value.startsWith('//')) out.push(value)
+    } else if (Array.isArray(value)) {
+        value.forEach(v => linksIn(v, out))
+    } else if (value && typeof value === 'object') {
+        for (const [k, v] of Object.entries(value)) {
+            // Image addresses (/media/…) aren't page links
+            if (typeof v === 'string' && /image|cover|logo|photo|src/i.test(k)) continue
+            linksIn(v, out)
+        }
+    }
+    return out
+}
+
+/** Pictures in blocks that have no description for screen readers. */
+function picturesWithoutAlt(blocks: Block[]) {
+    let n = 0
+    const visit = (props: Record<string, unknown>) => {
+        for (const [k, v] of Object.entries(props)) {
+            const m = k.match(/^(image\d?|cover|photo)Url$/)
+            if (m && typeof v === 'string' && v) {
+                const alt = props[`${m[1]}Alt`]
+                if (props[`${m[1]}Alt`] !== undefined && !String(alt ?? '').trim()) n++
+            }
+            if (Array.isArray(v)) v.forEach(item => item && typeof item === 'object' && visit(item as Record<string, unknown>))
+        }
+    }
+    blocks.forEach(b => visit(b.props))
+    return n
+}
+
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
+
+export async function siteHealth(site: Site) {
+    const db = useDb()
+    const [pages, posts, menus, media, oldReplies, forms, redirects, live] = await Promise.all([
+        db.select({ title: schema.pages.title, path: schema.pages.path, kind: schema.pages.kind, status: schema.pages.status, noIndex: schema.pages.noIndex, seoDescription: schema.pages.seoDescription, shareImage: schema.pages.shareImage, blocks: schema.pages.blocks, publishedBlocks: schema.pages.publishedBlocks })
+            .from(schema.pages).where(eq(schema.pages.siteId, site.id)),
+        db.select({ slug: schema.posts.slug }).from(schema.posts).where(and(eq(schema.posts.siteId, site.id), eq(schema.posts.status, 'published'))),
+        loadMenus(site.id),
+        db.select({ filename: schema.media.filename, size: schema.media.size, contentType: schema.media.contentType }).from(schema.media).where(eq(schema.media.siteId, site.id)),
+        db.select({ n: sql<number>`count(*)::int` }).from(schema.formReplies)
+            .where(and(eq(schema.formReplies.siteId, site.id), isNull(schema.formReplies.doneAt), lt(schema.formReplies.createdAt, new Date(Date.now() - 7 * 86400000)))),
+        db.select({ n: sql<number>`count(*)::int` }).from(schema.forms).where(eq(schema.forms.siteId, site.id)),
+        db.select({ fromPath: schema.redirects.fromPath }).from(schema.redirects).where(eq(schema.redirects.siteId, site.id)),
+        liveAddress(site)
+    ])
+    const seo = site.seo ?? {}
+    const theme = site.theme ?? {}
+    const integrations = site.integrations ?? {}
+    const visible = pages.filter(p => p.kind !== 'system' && p.status === 'published' && !p.noIndex)
+    const checks: HealthCheck[] = []
+    const add = (c: HealthCheck) => checks.push(c)
+
+    // Offline
+    add({ key: 'offline', ok: !site.offline, level: 'high', title: 'Your site is offline', okTitle: 'Your site is online', detail: 'Visitors see your Offline page instead of your site.', to: '/settings', fixLabel: 'Put it back online' })
+
+    // Own domain
+    const ownDomain = !!site.customDomain && live === site.customDomain
+    add({ key: 'domain', ok: ownDomain, level: 'medium', title: 'Use your own domain', okTitle: 'Uses your own domain', detail: 'An address like yourbusiness.co.uk looks more trustworthy than a free Slate address, and is easier to remember.', to: '/domains', fixLabel: 'Get a domain' })
+
+    // Broken internal links (blocks on published pages, plus menus)
+    const valid = new Set<string>(['/', '/blog'])
+    pages.filter(p => p.status === 'published' && p.kind !== 'system').forEach(p => valid.add(redirectKey(p.path)))
+    posts.forEach(p => valid.add(`/blog/${p.slug}`))
+    redirects.forEach(r => valid.add(r.fromPath))
+    const broken = new Map<string, string>()
+    const checkLink = (link: string, where: string) => {
+        const key = redirectKey(link)
+        if (key === '/' || valid.has(key) || /^\/(media|get-app|blog\?|#)/.test(link) || key.startsWith('/blog/category')) return
+        if (!broken.has(key)) broken.set(key, `${link} (on ${where})`)
+    }
+    for (const p of pages.filter(p => p.status === 'published' && p.publishedBlocks)) {
+        for (const b of p.publishedBlocks!) linksIn(b.props).forEach(l => checkLink(l, p.title))
+    }
+    for (const [slot, items] of Object.entries(menus) as [string, MenuItem[] | boolean][]) {
+        if (Array.isArray(items)) items.forEach(i => i.url?.startsWith('/') && checkLink(i.url, `the ${slot} menu`))
+    }
+    add({ key: 'links', ok: !broken.size, level: 'high', title: `${plural(broken.size, 'link goes', 'links go')} to a page that doesn’t exist`, okTitle: 'Every link goes somewhere', detail: 'Visitors clicking these see “Page not found”. Change the link, publish the page, or add a redirect.', to: '/pages', fixLabel: 'Fix links', items: [...broken.values()].slice(0, 6) })
+
+    // Unpublished changes
+    const changed = pages.filter(p => p.status === 'published' && JSON.stringify(p.blocks) !== JSON.stringify(p.publishedBlocks))
+    add({ key: 'unpublished', ok: !changed.length, level: 'medium', title: `${plural(changed.length, 'page has', 'pages have')} changes that aren’t live`, okTitle: 'Everything is published', detail: 'Visitors still see the older version until you publish.', to: '/pages', fixLabel: 'Review pages', items: changed.map(p => p.title).slice(0, 6) })
+
+    // Search: descriptions and share images
+    const noDescription = seo.defaultDescription ? [] : visible.filter(p => !p.seoDescription)
+    add({ key: 'descriptions', ok: !noDescription.length, level: 'medium', title: `${plural(noDescription.length, 'page has', 'pages have')} no description for Google`, okTitle: 'Every page has a description for Google', detail: 'Google shows a description under your page in search results. Without one, it picks some text itself.', to: '/seo', fixLabel: 'Add descriptions', items: noDescription.map(p => p.title).slice(0, 6) })
+    const noImage = seo.defaultShareImage ? [] : visible.filter(p => !p.shareImage)
+    add({ key: 'shareImages', ok: !noImage.length, level: 'low', title: `${plural(noImage.length, 'page has', 'pages have')} no share image`, okTitle: 'Every page has a share image', detail: 'This is the picture shown when someone shares a link on WhatsApp, Facebook or LinkedIn.', to: '/seo', fixLabel: 'Add images', items: noImage.map(p => p.title).slice(0, 6) })
+    add({ key: 'searchConsole', ok: !!integrations.googleVerify, level: 'low', title: 'Connect Google Search Console', okTitle: 'Google Search Console is connected', detail: 'Free from Google: see which searches find you and spot problems early.', to: '/integrations?tab=search', fixLabel: 'Connect' })
+
+    // Privacy policy (UK GDPR) when the site collects anything
+    const collects = (forms[0]?.n ?? 0) > 0 || !!integrations.ga4 || !!integrations.metaPixel
+    const hasPrivacy = pages.some(p => p.status === 'published' && /privacy/i.test(`${p.path} ${p.title}`))
+    add({ key: 'privacy', ok: !collects || hasPrivacy, level: 'medium', title: 'Add a privacy policy', okTitle: hasPrivacy ? 'Has a privacy policy' : 'No privacy policy needed yet', detail: 'Your site collects details through forms or analytics, so UK law expects a page explaining what you keep and why.', to: '/pages', fixLabel: 'Add a page' })
+
+    // Forms waiting
+    const waiting = oldReplies[0]?.n ?? 0
+    add({ key: 'replies', ok: !waiting, level: 'medium', title: `${plural(waiting, 'form reply has', 'form replies have')} been waiting over a week`, okTitle: 'No form replies left waiting', detail: 'Someone got in touch. Reply, or mark them as done.', to: '/forms', fixLabel: 'Open Forms' })
+
+    // Pictures
+    const big = media.filter(m => m.contentType.startsWith('image/') && m.size > BIG_IMAGE)
+    add({ key: 'bigImages', ok: !big.length, level: 'low', title: `${plural(big.length, 'image is', 'images are')} very large`, okTitle: 'Images are a sensible size', detail: 'Big pictures make pages slow on phones, and Google ranks slow pages lower. Under 1 MB is plenty for most photos.', to: '/media', fixLabel: 'Open Media', items: big.map(m => `${m.filename} (${(m.size / 1048576).toFixed(1)} MB)`).slice(0, 6) })
+    const missingAlt = visible.reduce((n, p) => n + picturesWithoutAlt(p.publishedBlocks ?? []), 0)
+    add({ key: 'alt', ok: !missingAlt, level: 'low', title: `${plural(missingAlt, 'picture has', 'pictures have')} no description`, okTitle: 'Pictures have descriptions', detail: 'A short description (“alt text”) lets people using screen readers know what’s in a picture, and helps Google too.', to: '/pages', fixLabel: 'Open Pages' })
+
+    // Look
+    add({ key: 'favicon', ok: !!theme.favicon, level: 'low', title: 'Add a site icon', okTitle: 'Has a site icon', detail: 'The little picture in the browser tab and bookmarks. Without one, browsers show a blank page icon.', to: '/theme', fixLabel: 'Add an icon' })
+
+    const score = Math.max(0, Math.round(100 - checks.filter(c => !c.ok).reduce((n, c) => n + WEIGHT[c.level], 0)))
+    const order: Record<HealthLevel, number> = { high: 0, medium: 1, low: 2 }
+    checks.sort((a, b) => Number(a.ok) - Number(b.ok) || order[a.level] - order[b.level])
+    return { score, checks }
+}

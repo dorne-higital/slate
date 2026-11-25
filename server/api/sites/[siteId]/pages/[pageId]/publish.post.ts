@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
         .where(and(eq(schema.pages.id, pageId), eq(schema.pages.siteId, site.id)))
         .returning()
     if (!page) throw createError({ statusCode: 404, statusMessage: 'Page not found' })
+    await savePageVersion(page, user.id)
     if (!page.noIndex) event.waitUntil?.(pingIndexNow(site, [page.path]))
     return toEditorPage(page)
 })

@@ -240,6 +240,41 @@ async function publish() {
     }
 }
 
+// ── History: every publish is kept; restoring puts it back as the draft ──
+interface Version { id: string, title: string, createdAt: string, by: string | null, blockCount: number, summary: string, live: boolean }
+const historyOpen = ref(false)
+const versions = ref<Version[] | null>(null)
+const historyError = ref('')
+const restoring = ref<string | null>(null)
+async function openHistory() {
+    historyOpen.value = true
+    historyError.value = ''
+    versions.value = null
+    try {
+        versions.value = await $fetch<Version[]>(`/api/sites/${siteId}/pages/${pageId}/versions`)
+    } catch {
+        historyError.value = 'Couldn’t load the history. Please try again.'
+    }
+}
+async function restoreVersion(v: Version) {
+    restoring.value = v.id
+    historyError.value = ''
+    try {
+        if (saveState.value !== 'saved') await save()
+        snapshot()
+        const res = await $fetch<EditorPageData>(`/api/sites/${siteId}/pages/${pageId}/versions/${v.id}`, { method: 'POST' })
+        blocks.value = structuredClone(res.blocks)
+        selectedId.value = null
+        unpublished.value = res.hasUnpublishedChanges
+        historyOpen.value = false
+    } catch {
+        historyError.value = 'Couldn’t restore that version. Please try again.'
+    } finally {
+        restoring.value = null
+    }
+}
+const versionWhen = (iso: string) => new Date(iso).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+
 // ── New page ──
 const newTitle = ref('')
 const newUnder = ref<string>('')
@@ -306,6 +341,7 @@ async function deletePage() {
                 <button class="ib" type="button" aria-label="Undo" title="Undo (Ctrl/Cmd Z)" @click="undo">
                     <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5L3 9l4 4M3 9h9a5 5 0 0 1 0 10h-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
                 </button>
+                <button class="btn btn-ghost" type="button" @click="openHistory">History</button>
                 <a v-if="status === 'published' && loaded?.path !== '/_offline'" class="btn btn-ghost" :href="liveUrl" target="_blank" rel="noopener">View live</a>
                 <button class="btn btn-dark" type="button" :disabled="publishing || !unpublished" @click="publish">
                     {{ publishing ? 'Publishing…' : unpublished ? 'Publish' : 'Published' }}
@@ -460,6 +496,27 @@ async function deletePage() {
                 </div>
             </aside>
         </div>
+        <div v-if="historyOpen" class="hist-back" @click.self="historyOpen = false" @keydown.esc="historyOpen = false">
+            <div class="panel hist" role="dialog" aria-modal="true" aria-labelledby="hist-h">
+                <div class="hist-head">
+                    <h2 id="hist-h">History</h2>
+                    <button class="ib" type="button" aria-label="Close" @click="historyOpen = false">✕</button>
+                </div>
+                <p class="muted">Every time this page is published, a copy is kept (the last 30). Restoring one puts it back as your draft, so you can check it before publishing.</p>
+                <p v-if="historyError" class="error-box" role="alert">{{ historyError }}</p>
+                <p v-if="!versions && !historyError" class="muted">Loading…</p>
+                <p v-else-if="versions && !versions.length" class="muted">Nothing yet. A copy is kept from the next time you publish.</p>
+                <ol v-else-if="versions" class="hist-list">
+                    <li v-for="v in versions" :key="v.id">
+                        <span class="hist-text">
+                            <b>{{ versionWhen(v.createdAt) }}<span v-if="v.live" class="live-tag">Live now</span></b>
+                            <span class="muted">{{ v.by ? `Published by ${v.by.split(' ')[0]}` : 'Published' }} · {{ v.blockCount }} {{ v.blockCount === 1 ? 'block' : 'blocks' }}<template v-if="v.summary"> · {{ v.summary }}</template></span>
+                        </span>
+                        <button class="btn btn-ghost btn-sm" type="button" :disabled="!!restoring" @click="restoreVersion(v)">{{ restoring === v.id ? 'Restoring…' : v.live ? 'Back to this' : 'Restore' }}</button>
+                    </li>
+                </ol>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -478,6 +535,16 @@ async function deletePage() {
 .title span { color: var(--text-muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .title span.err { color: var(--danger); }
 .top-actions { align-items: center; display: flex; gap: 10px; }
+.hist-back { align-items: center; background: rgb(20 24 33 / 45%); display: flex; inset: 0; justify-content: center; padding: 16px; position: fixed; z-index: 80; }
+.hist { display: flex; flex-direction: column; gap: 12px; max-height: 85vh; max-width: 620px; overflow: auto; padding: 20px 22px; width: 100%; }
+.hist-head { align-items: center; display: flex; justify-content: space-between; }
+.hist-head h2 { font-size: 20px; margin: 0; }
+.hist p { margin: 0; }
+.hist-list { display: flex; flex-direction: column; list-style: none; margin: 0; padding: 0; }
+.hist-list li { align-items: center; border-top: 1px solid var(--line-soft); display: flex; gap: 14px; justify-content: space-between; padding: 12px 0; }
+.hist-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hist-text .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.live-tag { background: color-mix(in srgb, var(--ok) 16%, transparent); border-radius: 999px; color: var(--ok-text); font-size: 11.5px; font-weight: 700; margin-left: 8px; padding: 2px 8px; }
 
 .ib { align-items: center; background: transparent; border: 0; border-radius: var(--radius); color: var(--quarry); cursor: pointer; display: inline-flex; height: 36px; justify-content: center; width: 36px; }
 .ib:hover:not(:disabled) { background: var(--mist); }

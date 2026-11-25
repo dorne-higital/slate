@@ -169,6 +169,13 @@
       "when": 1795633732764,
       "tag": "0023_first_dreadnoughts",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795640110819,
+      "tag": "0024_robust_bushwacker",
+      "breakpoints": true
     }
   ]
 }

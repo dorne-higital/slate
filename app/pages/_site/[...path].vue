@@ -9,7 +9,12 @@ const path = computed(() => {
 })
 
 const { data, error } = await useAsyncData(() => `public-${path.value}`, () => fetcher('/api/public/page', { query: { path: path.value } }), { watch: [path] })
-if (error.value && !data.value) {
+// An old address the owner redirected somewhere else
+type Moved = { redirect?: { to: string, permanent: boolean }, data?: { redirect?: { to: string, permanent: boolean } } }
+const moved = (error.value?.data as Moved | undefined)?.redirect ?? (error.value?.data as Moved | undefined)?.data?.redirect
+if (moved) {
+    await navigateTo(moved.to, { redirectCode: moved.permanent ? 301 : 302, external: /^https?:\/\//i.test(moved.to) })
+} else if (error.value && !data.value) {
     throw createError({ statusCode: error.value.statusCode ?? 404, statusMessage: 'Page not found', fatal: true })
 }
 // The site's own "Page not found" page: still a 404 for browsers and search engines

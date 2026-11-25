@@ -14,7 +14,10 @@ export default defineEventHandler(async (event) => {
         .leftJoin(schema.user, eq(schema.user.id, schema.posts.authorId))
         .where(and(eq(schema.posts.siteId, site.id), eq(schema.posts.slug, slug), eq(schema.posts.status, 'published'), lte(schema.posts.publishedAt, new Date())))
         .limit(1)
-    if (!row) throw createError({ statusCode: 404, statusMessage: 'Post not found' })
+    if (!row) {
+        const redirect = await findRedirect(event, site.id, `/blog/${slug}`)
+        throw createError({ statusCode: 404, statusMessage: redirect ? 'Moved' : 'Post not found', data: redirect ? { redirect } : undefined })
+    }
 
     const [shell, more] = await Promise.all([publicShell(site), livePosts(site.id, { limit: 4 })])
     setResponseHeader(event, 'cache-control', 'public, max-age=30, stale-while-revalidate=300')

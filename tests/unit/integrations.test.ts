@@ -71,3 +71,20 @@ describe('connections', () => {
         expect(integrationAllowed(starter!.limits, 'metaPixel')).toBe(false)
     })
 })
+
+describe('redirect addresses', () => {
+    it('cleans old addresses and destinations', async () => {
+        const { cleanRedirectFrom, cleanRedirectTo, redirectKey, parseRedirectLines } = await import('../../shared/utils/redirects')
+        expect(cleanRedirectFrom('https://oldsite.co.uk/About-Us/?ref=x')).toBe('/about-us')
+        expect(cleanRedirectFrom('services.html')).toBe('/services.html')
+        expect(cleanRedirectFrom('/')).toBeNull()
+        expect(cleanRedirectFrom('/api/x')).toBeNull()
+        expect(cleanRedirectFrom('/media/a.png')).toBeNull()
+        expect(cleanRedirectTo('/new')).toBe('/new')
+        expect(cleanRedirectTo('https://example.com/x')).toBe('https://example.com/x')
+        expect(cleanRedirectTo('javascript:alert(1)')).toBeNull()
+        expect(cleanRedirectTo('mailto:a@b.co')).toBeNull()
+        expect(redirectKey('/Old%20Page/')).toBe('/old page')
+        expect(parseRedirectLines('/a /b\n\n/c, https://x.co/d')).toEqual([{ from: '/a', to: '/b' }, { from: '/c', to: 'https://x.co/d' }])
+    })
+})

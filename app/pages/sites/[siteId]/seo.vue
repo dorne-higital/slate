@@ -181,6 +181,8 @@ const breadcrumb = computed(() => selected.value && data.value ? `${data.value.a
                 <span class="muted">Changes here go live as soon as you save. You don’t need to publish the page again.</span>
             </section>
         </div>
+
+        <RedirectsPanel :site-id="siteId" :can-edit="canEdit" />
     </div>
 </template>
 

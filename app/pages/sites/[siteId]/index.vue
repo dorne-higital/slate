@@ -78,6 +78,8 @@ const liveUrl = computed(() => {
             </li>
         </ul>
 
+        <SiteHealth :site-id="siteId" />
+
         <section v-if="visitors?.available" class="panel visitors" aria-labelledby="vis-h">
             <div class="vis-head">
                 <div>
