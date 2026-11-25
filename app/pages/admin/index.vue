@@ -78,11 +78,11 @@ async function removeInterest(id: string) {
 }
 const { comingSoon } = useRuntimeConfig().public
 
-const search = ref('')
-const shown = computed(() => {
-    const q = search.value.trim().toLowerCase()
-    if (statusFilter.value !== 'all') return (data.value?.sites ?? []).filter(x => x.billing.status === statusFilter.value && (!q || [x.name, x.address, x.ownerName ?? '', x.ownerEmail ?? ''].join(' ').toLowerCase().includes(q)))
-    return (data.value?.sites ?? []).filter(s => !q || [s.name, s.address, s.ownerName ?? '', s.ownerEmail ?? ''].some(v => v.toLowerCase().includes(q)))
+const table = useDataTable(() => data.value?.sites ?? [], {
+    sorters: { site: x => x.name, owner: x => x.ownerName ?? x.ownerEmail, plan: x => x.billing.plan ?? statusName[x.billing.status], pages: x => x.pageCount, created: x => x.createdAt },
+    search: x => [x.name, x.address, x.ownerName ?? '', x.ownerEmail ?? ''].join(' '),
+    filter: () => statusFilter.value === 'all' ? null : x => x.billing.status === statusFilter.value,
+    initialSort: { key: 'created', dir: 'desc' }
 })
 async function restore(id: string) {
     await $fetch(`/api/admin/sites/${id}/restore`, { method: 'POST' })
@@ -190,14 +190,14 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
 
             <label class="search">
                 <span class="visually-hidden">Search sites</span>
-                <input v-model="search" class="inp" type="search" placeholder="Search by site, address or owner">
+                <input v-model="table.q" class="inp" type="search" placeholder="Search by site, address or owner">
             </label>
 
             <section class="panel scroll" aria-label="All sites">
                 <table class="tbl">
-                    <thead><tr><th scope="col">Site</th><th scope="col">Owner</th><th scope="col">Plan</th><th scope="col">Pages</th><th scope="col">Created</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+                    <thead><tr><SortTh :table="table" col="site" label="Site" /><SortTh :table="table" col="owner" label="Owner" /><SortTh :table="table" col="plan" label="Plan" /><SortTh :table="table" col="pages" label="Pages" /><SortTh :table="table" col="created" label="Created" /><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
                     <tbody>
-                        <tr v-for="s in shown" :key="s.id" :class="{ deleted: s.deletedAt }">
+                        <tr v-for="s in table.rows" :key="s.id" :class="{ deleted: s.deletedAt }">
                             <td>
                                 <span class="site">
                                     <span class="badge" aria-hidden="true">{{ s.name[0] }}</span>
@@ -224,9 +224,10 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
                                 </template>
                             </td>
                         </tr>
-                        <tr v-if="!shown.length"><td colspan="6" class="muted">No sites match.</td></tr>
+                        <tr v-if="!table.total"><td colspan="6" class="muted">No sites match.</td></tr>
                     </tbody>
                 </table>
+                <TablePager :table="table" noun="sites" />
             </section>
         </main>
     </div>

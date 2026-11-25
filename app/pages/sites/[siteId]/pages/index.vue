@@ -17,7 +17,6 @@ useHead({ title: 'Pages · Slate' })
 
 type Filter = 'all' | 'published' | 'changed' | 'draft'
 const filter = ref<Filter>('all')
-const search = ref('')
 const canEdit = computed(() => ROLE_RANK[me.value?.sites.find(s => s.id === siteId)?.role ?? 'viewer'] >= ROLE_RANK.editor)
 
 const counts = computed(() => {
@@ -60,33 +59,40 @@ const allOpen = computed(() => [...childrenOf.value.keys()].filter(Boolean).ever
 const toggleAll = () => (expanded.value = allOpen.value ? new Set() : new Set([...childrenOf.value.keys()].filter(Boolean) as string[]))
 
 interface Row { page: PageListItem, depth: number, kids: number }
-const searching = computed(() => filter.value !== 'all' || !!search.value.trim())
-const rows = computed<Row[]>(() => {
-    const out: Row[] = []
-    const depthOf = (p: PageListItem) => {
-        let d = 0
-        let cur = p
-        const byId = new Map((pages.value ?? []).map(x => [x.id, x]))
-        while (cur.parentId && byId.has(cur.parentId) && d < 20) {
-            cur = byId.get(cur.parentId)!
-            d++
-        }
-        return d
+const matchesFilter = (p: PageListItem) =>
+    filter.value === 'all'
+    || (filter.value === 'published' && p.status === 'published' && !p.hasUnpublishedChanges)
+    || (filter.value === 'changed' && p.hasUnpublishedChanges)
+    || (filter.value === 'draft' && p.status === 'draft')
+// Sorting and searching (Home always first, whatever the sort)
+const table = useDataTable(() => pages.value ?? [], {
+    sorters: { title: p => p.title, path: p => p.path, status: p => (p.hasUnpublishedChanges ? 'changed' : p.status), updated: p => p.updatedAt, by: p => p.updatedByName },
+    search: p => `${p.title} ${p.path}`,
+    filter: () => filter.value === 'all' ? null : matchesFilter,
+    pin: p => p.path === '/'
+})
+// Off the tree: searching, filtering or sorting by a column shows a flat list
+const searching = computed(() => filter.value !== 'all' || !table.natural)
+const depthOf = (p: PageListItem) => {
+    const byId = new Map((pages.value ?? []).map(x => [x.id, x]))
+    let d = 0
+    let cur = p
+    while (cur.parentId && byId.has(cur.parentId) && d < 20) {
+        cur = byId.get(cur.parentId)!
+        d++
     }
-    if (searching.value) {
-        // Filtering: every match, flat, still indented so you can see where it lives
-        const q = search.value.trim().toLowerCase()
-        for (const p of pages.value ?? []) {
-            if (filter.value === 'published' && (p.status !== 'published' || p.hasUnpublishedChanges)) continue
-            if (filter.value === 'changed' && !p.hasUnpublishedChanges) continue
-            if (filter.value === 'draft' && p.status !== 'draft') continue
-            if (q && !p.title.toLowerCase().includes(q) && !p.path.includes(q)) continue
-            out.push({ page: p, depth: depthOf(p), kids: childrenOf.value.get(p.id)?.length ?? 0 })
-        }
-        return out
+    return d
+}
+const allRowsShown = computed<Row[]>(() => {
+    if (searching.value) return table.all.map(p => ({ page: p, depth: table.sortKey ? 0 : depthOf(p), kids: childrenOf.value.get(p.id)?.length ?? 0 }))
+    const out: Row[] = []
+    // Home first at the top level, then everything in its own order
+    const kidsOf = (parent: string | null) => {
+        const list = childrenOf.value.get(parent) ?? []
+        return parent ? list : [...list.filter(p => p.path === '/'), ...list.filter(p => p.path !== '/')]
     }
     const walk = (parent: string | null, depth: number) => {
-        for (const p of childrenOf.value.get(parent) ?? []) {
+        for (const p of kidsOf(parent)) {
             const kids = childrenOf.value.get(p.id)?.length ?? 0
             out.push({ page: p, depth, kids })
             if (kids && expanded.value.has(p.id)) walk(p.id, depth + 1)
@@ -95,6 +101,9 @@ const rows = computed<Row[]>(() => {
     walk(null, 0)
     return out
 })
+// Pages of rows, on whatever's showing (tree or flat)
+const paged = useDataTable(() => allRowsShown.value, { pageSize: 50 })
+const rows = computed(() => paged.rows)
 
 // ── New page ──
 const adding = ref(false)
@@ -134,7 +143,7 @@ async function createPage() {
 }
 
 // ── Drag to reorder among siblings (same parent). Not while filtering. ──
-const canReorder = computed(() => !searching.value && canEdit.value)
+const canReorder = computed(() => !searching.value && canEdit.value && paged.pageCount === 1)
 const dragId = ref<string | null>(null)
 const dropTarget = ref<{ id: string, after: boolean } | null>(null)
 const orderError = ref('')
@@ -208,19 +217,23 @@ async function onDrop() {
             <label class="search">
                 <span class="visually-hidden">Search pages</span>
                 <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="8" cy="8" r="5" fill="none" stroke="#555C6E" stroke-width="1.6" /><path d="M12 12l4 4" stroke="#555C6E" stroke-width="1.6" stroke-linecap="round" /></svg>
-                <input v-model="search" class="inp" type="search" placeholder="Search pages">
+                <input v-model="table.q" class="inp" type="search" placeholder="Search pages">
             </label>
         </div>
 
         <p v-if="orderError" class="error-box" role="alert">{{ orderError }}</p>
-        <div v-if="!searching" class="list-tools">
+        <div v-if="table.sortKey" class="list-tools">
+            <span class="muted">Sorted by a column, so pages show in a flat list. Home stays first.</span>
+            <button class="btn btn-plain btn-sm" type="button" @click="table.sortKey = null">Back to page order</button>
+        </div>
+        <div v-else-if="!searching" class="list-tools">
             <span v-if="canReorder" class="muted">Drag pages by the handle to change their order. Your automatic menu follows it.</span>
             <button v-if="childrenOf.size > 1" class="btn btn-plain btn-sm" type="button" @click="toggleAll">{{ allOpen ? 'Collapse all' : 'Expand all' }}</button>
         </div>
 
         <section class="panel scroll" aria-label="All pages">
             <table class="tbl">
-                <thead><tr><th scope="col">Page</th><th scope="col">Status</th><th scope="col">Last edited</th><th scope="col">By</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+                <thead><tr><SortTh :table="table" col="title" label="Page" /><SortTh :table="table" col="status" label="Status" /><SortTh :table="table" col="updated" label="Last edited" /><SortTh :table="table" col="by" label="By" /><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
                 <tbody>
                     <tr
                         v-for="r in rows"
@@ -269,6 +282,7 @@ async function onDrop() {
                     <tr v-if="!rows.length"><td colspan="5" class="muted">No pages match.</td></tr>
                 </tbody>
             </table>
+            <TablePager :table="paged" noun="pages" />
         </section>
 
         <section v-if="systemRows.length" class="panel sys" aria-labelledby="sys-h">

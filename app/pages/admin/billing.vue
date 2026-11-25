@@ -40,6 +40,13 @@ const endDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString('
 
 // ── Special price ──
 const price = reactive({ plan: 'business' as PlanKey, interval: 'month' as BillingInterval, pounds: '' })
+const invStatus = ref('')
+const invTable = useDataTable(() => invoices.value ?? [], {
+    sorters: { number: i => i.number, site: i => i.siteName, for: i => i.description, amount: i => i.total, status: i => i.status, created: i => i.createdAt },
+    search: i => `${i.number ?? ''} ${i.siteName ?? ''} ${i.description}`,
+    filter: () => invStatus.value ? (i => i.status === invStatus.value) : null,
+    initialSort: { key: 'created', dir: 'desc' }
+})
 const listPrice = computed(() => { const p = findPlan(price.plan)!; return price.interval === 'month' ? p.monthly : p.yearly })
 const priceMsg = ref('')
 const priceErr = ref('')
@@ -212,12 +219,21 @@ const randomCode = () => { disc.code = `SLATE-${Math.random().toString(36).slice
             </section>
 
             <section class="panel" aria-labelledby="inv-h">
-                <div class="ph"><h2 id="inv-h">Invoices sent</h2></div>
+                <div class="ph">
+                    <h2 id="inv-h">Invoices sent</h2>
+                    <div v-if="(invoices?.length ?? 0) > 5" class="t-tools">
+                        <select v-model="invStatus" class="t-sel" aria-label="Status">
+                            <option value="">Any status</option>
+                            <option v-for="(label, key) in statusLook" :key="key" :value="key">{{ label }}</option>
+                        </select>
+                        <input v-model="invTable.q" class="inp t-q" type="search" placeholder="Search invoices" aria-label="Search invoices">
+                    </div>
+                </div>
                 <div class="scroll">
                     <table class="tbl">
-                        <thead><tr><th scope="col">Invoice</th><th scope="col">Site</th><th scope="col">For</th><th scope="col">Amount</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+                        <thead><tr><SortTh :table="invTable" col="number" label="Invoice" /><SortTh :table="invTable" col="site" label="Site" /><SortTh :table="invTable" col="for" label="For" /><SortTh :table="invTable" col="amount" label="Amount" /><SortTh :table="invTable" col="status" label="Status" /><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
                         <tbody>
-                            <tr v-for="i in invoices" :key="i.id">
+                            <tr v-for="i in invTable.rows" :key="i.id">
                                 <td><span class="stack"><b>{{ i.number ?? '—' }}</b><span class="muted small">{{ date(i.createdAt) }}</span></span></td>
                                 <td>{{ i.siteName ?? '—' }}</td>
                                 <td class="desc">{{ i.description }}</td>
@@ -231,10 +247,11 @@ const randomCode = () => { disc.code = `SLATE-${Math.random().toString(36).slice
                                     </template>
                                 </td>
                             </tr>
-                            <tr v-if="!invoices?.length"><td colspan="6" class="muted">No invoices yet.</td></tr>
+                            <tr v-if="!invTable.total"><td colspan="6" class="muted">{{ invoices?.length ? 'No invoices match.' : 'No invoices yet.' }}</td></tr>
                         </tbody>
                     </table>
                 </div>
+                <TablePager :table="invTable" noun="invoices" />
             </section>
 
             <section class="panel box" aria-labelledby="disc-h">
@@ -272,7 +289,7 @@ h1 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; margin: 0; }
 h2 { font-size: 18px; margin: 0; }
 h3 { font-size: 16px; margin: 0; }
 .box { display: flex; flex-direction: column; gap: 14px; padding: 20px; }
-.ph { padding: 16px 20px; }
+.ph { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; padding: 16px 20px; }
 .inp { font-size: 15px; height: 42px; }
 textarea.inp { height: auto; padding: 10px 12px; }
 .small { font-size: 13px; }
@@ -308,4 +325,7 @@ textarea.inp { height: auto; padding: 10px 12px; }
 .codes li.off { opacity: .55; }
 .codes code { font-size: 15px; font-weight: 700; }
 @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } .codes li { grid-template-columns: minmax(0, 1fr); } .row3 { grid-template-columns: minmax(0, 1fr); } }
+.t-tools { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+.t-sel { background: var(--white); border: 1.5px solid var(--line); border-radius: var(--radius); font: inherit; font-size: 14px; height: 36px; padding: 0 8px; }
+.t-q { font-size: 14px; height: 36px; width: 200px; }
 </style>

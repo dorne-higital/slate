@@ -23,6 +23,16 @@ const missing = (p: SeoPage) => ({
 })
 const needsWork = computed(() => (data.value?.pages ?? []).filter(p => !p.noIndex && (missing(p).description || missing(p).image)))
 
+// Table: sort, search, "needs work only", pages of 25. Home always first.
+const onlyMissing = ref(false)
+const label = (p: SeoPage, k: 'description' | 'image') => (k === 'description' ? p.seoDescription : p.shareImage) ? 'Added' : missing(p)[k] ? 'Missing' : 'Site default'
+const table = useDataTable(() => data.value?.pages ?? [], {
+    sorters: { title: p => p.title, seoTitle: p => !!p.seoTitle, description: p => label(p, 'description'), image: p => label(p, 'image') },
+    search: p => `${p.title} ${p.path}`,
+    filter: () => onlyMissing.value ? (p => needsWork.value.includes(p)) : null,
+    pin: p => p.path === '/'
+})
+
 const selectedId = ref<string | null>(needsWork.value[0]?.id ?? data.value?.pages[0]?.id ?? null)
 const selected = computed(() => data.value?.pages.find(p => p.id === selectedId.value) ?? null)
 const draft = reactive({ seoTitle: '', seoDescription: '', shareImage: '', noIndex: false })
@@ -90,17 +100,26 @@ const breadcrumb = computed(() => selected.value && data.value ? `${data.value.a
         <div class="two">
             <div class="left">
                 <section class="panel scroll" aria-label="Pages">
+                    <div class="t-tools">
+                        <label class="t-search">
+                            <span class="visually-hidden">Search pages</span>
+                            <input v-model="table.q" class="inp" type="search" placeholder="Search pages">
+                        </label>
+                        <label class="t-check"><input v-model="onlyMissing" type="checkbox"> Only pages missing something</label>
+                    </div>
                     <table class="tbl">
-                        <thead><tr><th scope="col">Page</th><th scope="col">Title</th><th scope="col">Description</th><th scope="col">Share image</th></tr></thead>
+                        <thead><tr><SortTh :table="table" col="title" label="Page" /><SortTh :table="table" col="seoTitle" label="Title" /><SortTh :table="table" col="description" label="Description" /><SortTh :table="table" col="image" label="Share image" /></tr></thead>
                         <tbody>
-                            <tr v-for="p in data?.pages" :key="p.id" :class="{ sel: p.id === selectedId }">
+                            <tr v-for="p in table.rows" :key="p.id" :class="{ sel: p.id === selectedId }">
                                 <td><button type="button" class="pick" :aria-pressed="p.id === selectedId" @click="selectedId = p.id">{{ p.title }}</button><span v-if="p.noIndex" class="muted"> · hidden</span></td>
                                 <td><StatusDot :ok="true" :label="p.seoTitle ? 'Custom' : 'Page title'" /></td>
                                 <td><StatusDot :ok="!missing(p).description" :label="p.seoDescription ? 'Added' : missing(p).description ? 'Missing' : 'Site default'" /></td>
                                 <td><StatusDot :ok="!missing(p).image" :label="p.shareImage ? 'Added' : missing(p).image ? 'Missing' : 'Site default'" /></td>
                             </tr>
+                            <tr v-if="!table.total"><td colspan="4" class="muted">No pages match.</td></tr>
                         </tbody>
                     </table>
+                    <TablePager :table="table" noun="pages" />
                 </section>
 
                 <section class="panel box" aria-labelledby="d-h">
@@ -200,4 +219,8 @@ textarea.inp { height: auto; line-height: 1.5; padding: 10px 12px; resize: verti
 @media (max-width: 1100px) { .two { grid-template-columns: minmax(0, 1fr); } }
 .img-row { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; }
 .img-thumb { border-radius: var(--radius); box-shadow: 0 0 0 1px var(--line); height: 63px; object-fit: cover; width: 120px; }
+.t-tools { align-items: center; border-bottom: 1px solid var(--line-soft); display: flex; flex-wrap: wrap; gap: 10px 16px; padding: 12px 16px; }
+.t-search { flex: 1 1 200px; max-width: 320px; }
+.t-search .inp { font-size: 14px; height: 38px; }
+.t-check { align-items: center; display: inline-flex; font-size: 14px; gap: 8px; }
 </style>

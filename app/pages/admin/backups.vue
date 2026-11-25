@@ -7,6 +7,10 @@ useHead({ title: 'Backups · Slate admin' })
 
 interface BackupInfo { key: string, size: number, rows: number, createdAt: string }
 const { data: backups, refresh } = await useAsyncData('admin-backups', () => useRequestFetch()<BackupInfo[]>('/api/admin/backups'))
+const table = useDataTable(() => backups.value ?? [], {
+    sorters: { when: b => b.createdAt, rows: b => b.rows, size: b => b.size },
+    initialSort: { key: 'when', dir: 'desc' }
+})
 const busy = ref(false)
 const error = ref('')
 async function backUpNow() {
@@ -39,9 +43,9 @@ const size = (b: number) => b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${
             <p v-if="error" class="error-box" role="alert">{{ error }}</p>
             <section class="panel">
                 <table class="tbl">
-                    <thead><tr><th scope="col">When</th><th scope="col">Rows</th><th scope="col">Size</th><th scope="col"><span class="visually-hidden">Download</span></th></tr></thead>
+                    <thead><tr><SortTh :table="table" col="when" label="When" /><SortTh :table="table" col="rows" label="Rows" /><SortTh :table="table" col="size" label="Size" /><th scope="col"><span class="visually-hidden">Download</span></th></tr></thead>
                     <tbody>
-                        <tr v-for="b in backups" :key="b.key">
+                        <tr v-for="b in table.rows" :key="b.key">
                             <td>{{ when(b.createdAt) }}</td>
                             <td>{{ b.rows.toLocaleString('en-GB') }}</td>
                             <td>{{ size(b.size) }}</td>
@@ -50,6 +54,7 @@ const size = (b: number) => b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${
                         <tr v-if="!backups?.length"><td colspan="4" class="muted">No backups yet. The first runs on Monday or Thursday at 2am, or press Back up now.</td></tr>
                     </tbody>
                 </table>
+                <TablePager :table="table" noun="backups" />
             </section>
             <p class="muted small">Backups hold everyone’s account details, so keep downloaded copies somewhere private.</p>
         </main>

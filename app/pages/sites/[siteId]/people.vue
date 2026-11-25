@@ -21,6 +21,16 @@ const { data: people } = await useAsyncData(`people-${siteId}`, () => isAdmin.va
 const { data: site } = await useAsyncData(`site-${siteId}`, () => fetcher(`/api/sites/${siteId}`))
 useHead({ title: 'People · Slate' })
 
+// ── Table: people and unused invitations together; sort, search, pages ──
+type PersonRow = { kind: 'member', key: string, name: string, role: SiteRole, m: People['members'][number] } | { kind: 'invite', key: string, name: string, role: SiteRole, i: People['invites'][number] }
+const table = useDataTable<PersonRow>(() => [
+    ...(people.value?.members ?? []).map(m => ({ kind: 'member' as const, key: m.userId, name: m.name, role: m.role, m })),
+    ...(people.value?.invites ?? []).map(i => ({ kind: 'invite' as const, key: i.id, name: i.label || 'Invitation link', role: i.role, i }))
+], {
+    sorters: { name: r => r.name, role: r => -ROLE_RANK[r.role], status: r => r.kind },
+    search: r => r.kind === 'member' ? `${r.name} ${r.m.email}` : r.name
+})
+
 // ── People ──
 const peopleError = ref('')
 const inviteRole = ref<SiteRole>('editor')
@@ -78,36 +88,47 @@ async function leave() {
                 <section v-if="people" class="panel" aria-labelledby="p-h">
                     <div class="ph"><h2 id="p-h">People</h2></div>
                     <p v-if="peopleError" class="error-box inset" role="alert">{{ peopleError }}</p>
+                    <div v-if="(people.members.length + people.invites.length) > 5" class="t-tools">
+                        <label class="t-search">
+                            <span class="visually-hidden">Search people</span>
+                            <input v-model="table.q" class="inp" type="search" placeholder="Search people">
+                        </label>
+                    </div>
                     <div class="scroll">
                         <table class="tbl">
+                            <thead><tr><SortTh :table="table" col="name" label="Person" /><SortTh :table="table" col="role" label="Role" /><th scope="col">What they can do</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
                             <tbody>
-                                <tr v-for="m in people.members" :key="m.userId">
-                                    <td>
-                                        <span class="person">
-                                            <span class="avatar" aria-hidden="true">{{ initials(m.name) }}</span>
-                                            <span class="person-text"><b>{{ m.name }}<template v-if="m.userId === me?.id"> (you)</template></b><span class="muted">{{ m.email }}</span></span>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <select v-if="m.canManage && m.userId !== me?.id" class="role-select" :value="m.role" :aria-label="`Role for ${m.name}`" @change="changeRole(m.userId, ($event.target as HTMLSelectElement).value as SiteRole)">
-                                            <option v-for="r in people.canInvite" :key="r" :value="r">{{ ROLE_INFO[r].name }}</option>
-                                        </select>
-                                        <b v-else class="role">{{ ROLE_INFO[m.role].name }}</b>
-                                    </td>
-                                    <td class="muted small">{{ ROLE_INFO[m.role].can }}</td>
-                                    <td class="end">
-                                        <button v-if="m.canManage && m.userId !== me?.id" class="btn btn-plain btn-sm danger" type="button" @click="removePerson(m.userId)">Remove</button>
-                                    </td>
-                                </tr>
-                                <tr v-for="i in people.invites" :key="i.id" class="pending">
-                                    <td><span class="person"><span class="avatar dashed" aria-hidden="true">?</span><span class="person-text"><b>{{ i.label || 'Invitation link' }}</b><span class="muted">Not used yet. Expires {{ new Date(i.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }}</span></span></span></td>
-                                    <td><b class="role">{{ ROLE_INFO[i.role].name }}</b></td>
-                                    <td class="muted small">{{ ROLE_INFO[i.role].can }}</td>
-                                    <td class="end"><button v-if="i.canManage" class="btn btn-plain btn-sm danger" type="button" @click="cancelInvite(i.id)">Cancel</button></td>
-                                </tr>
+                                <template v-for="r in table.rows" :key="r.key">
+                                    <tr v-if="r.kind === 'member'">
+                                        <td>
+                                            <span class="person">
+                                                <span class="avatar" aria-hidden="true">{{ initials(r.m.name) }}</span>
+                                                <span class="person-text"><b>{{ r.m.name }}<template v-if="r.m.userId === me?.id"> (you)</template></b><span class="muted">{{ r.m.email }}</span></span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <select v-if="r.m.canManage && r.m.userId !== me?.id" class="role-select" :value="r.m.role" :aria-label="`Role for ${r.m.name}`" @change="changeRole(r.m.userId, ($event.target as HTMLSelectElement).value as SiteRole)">
+                                                <option v-for="ro in people.canInvite" :key="ro" :value="ro">{{ ROLE_INFO[ro].name }}</option>
+                                            </select>
+                                            <b v-else class="role">{{ ROLE_INFO[r.m.role].name }}</b>
+                                        </td>
+                                        <td class="muted small">{{ ROLE_INFO[r.m.role].can }}</td>
+                                        <td class="end">
+                                            <button v-if="r.m.canManage && r.m.userId !== me?.id" class="btn btn-plain btn-sm danger" type="button" @click="removePerson(r.m.userId)">Remove</button>
+                                        </td>
+                                    </tr>
+                                    <tr v-else class="pending">
+                                        <td><span class="person"><span class="avatar dashed" aria-hidden="true">?</span><span class="person-text"><b>{{ r.i.label || 'Invitation link' }}</b><span class="muted">Not used yet. Expires {{ new Date(r.i.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }}</span></span></span></td>
+                                        <td><b class="role">{{ ROLE_INFO[r.i.role].name }}</b></td>
+                                        <td class="muted small">{{ ROLE_INFO[r.i.role].can }}</td>
+                                        <td class="end"><button v-if="r.i.canManage" class="btn btn-plain btn-sm danger" type="button" @click="cancelInvite(r.i.id)">Cancel</button></td>
+                                    </tr>
+                                </template>
+                                <tr v-if="!table.total"><td colspan="4" class="muted">No one matches.</td></tr>
                             </tbody>
                         </table>
                     </div>
+                    <TablePager :table="table" noun="people" />
                     <form v-if="people.canInvite.length" class="invite" @submit.prevent="invite">
                         <b>Invite someone</b>
                         <div class="invite-row">
@@ -190,4 +211,7 @@ h2 { font-size: 18px; margin: 0; }
 .lead { color: var(--text-body); font-size: 15px; margin: -12px 0 0; }
 .roles { display: flex; flex-direction: column; gap: 10px; list-style: none; margin: 0; padding: 0; }
 .roles li { display: flex; flex-direction: column; gap: 2px; }
+.t-tools { border-bottom: 1px solid var(--line-soft); padding: 0 20px 12px; }
+.t-search { display: block; max-width: 320px; }
+.t-search .inp { font-size: 14px; height: 38px; }
 </style>

@@ -43,6 +43,11 @@ const sample = computed<BillingPage | null>(() => {
     }
 })
 const data = computed(() => sample.value ?? fetched.value)
+const invTable = useDataTable(() => data.value?.invoices ?? [], {
+    sorters: { date: i => i.date, description: i => i.description, amount: i => i.amount, status: i => i.status },
+    initialSort: { key: 'date', dir: 'desc' },
+    pageSize: 10
+})
 useHead({ title: 'Billing · Slate' })
 
 // Back from Stripe Checkout: pull the new subscription straight away
@@ -202,9 +207,9 @@ const hasSubscription = computed(() => b.value?.status === 'active' || b.value?.
                     <div class="ph"><h2 id="inv-h">Invoices</h2></div>
                     <div class="scroll">
                         <table class="tbl">
-                            <thead><tr><th scope="col">Date</th><th scope="col">Description</th><th scope="col">Amount</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Download</span></th></tr></thead>
+                            <thead><tr><SortTh :table="invTable" col="date" label="Date" /><SortTh :table="invTable" col="description" label="Description" /><SortTh :table="invTable" col="amount" label="Amount" /><SortTh :table="invTable" col="status" label="Status" /><th scope="col"><span class="visually-hidden">Download</span></th></tr></thead>
                             <tbody>
-                                <tr v-for="i in data.invoices" :key="i.id">
+                                <tr v-for="i in invTable.rows" :key="i.id">
                                     <td>{{ new Date(i.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }}</td>
                                     <td>{{ i.description }}</td>
                                     <td>{{ formatPence(i.amount) }}</td>
@@ -213,6 +218,7 @@ const hasSubscription = computed(() => b.value?.status === 'active' || b.value?.
                                 </tr>
                             </tbody>
                         </table>
+                        <TablePager :table="invTable" noun="invoices" />
                     </div>
                 </section>
 

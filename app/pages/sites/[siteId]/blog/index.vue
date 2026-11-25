@@ -17,13 +17,17 @@ useHead({ title: 'Blog · Slate' })
 
 const canEdit = computed(() => ROLE_RANK[me.value?.sites.find(s => s.id === siteId)?.role ?? 'viewer'] >= ROLE_RANK.editor)
 const filter = ref<'all' | PostState>('all')
-const search = ref('')
+const category = ref('')
 const counts = computed(() => {
     const list = posts.value ?? []
     return { all: list.length, published: list.filter(p => p.state === 'published').length, scheduled: list.filter(p => p.state === 'scheduled').length, draft: list.filter(p => p.state === 'draft').length }
 })
-const shown = computed(() => (posts.value ?? []).filter(p =>
-    (filter.value === 'all' || p.state === filter.value) && (!search.value.trim() || p.title.toLowerCase().includes(search.value.trim().toLowerCase()))))
+const table = useDataTable(() => posts.value ?? [], {
+    sorters: { title: p => p.title, category: p => p.categoryName, state: p => p.state, date: p => p.publishedAt, author: p => p.authorName },
+    search: p => `${p.title} ${p.categoryName ?? ''} ${p.authorName ?? ''}`,
+    filter: () => (filter.value === 'all' && !category.value) ? null : p => (filter.value === 'all' || p.state === filter.value) && (!category.value || p.categoryName === category.value),
+    initialSort: { key: 'date', dir: 'desc' }
+})
 
 const stateLook = {
     published: { label: 'Published', dot: '#5B5773', fg: '#2E3445' },
@@ -77,18 +81,25 @@ async function removeCategory(id: string) {
                     {{ f[1] }} {{ counts[f[0]] }}
                 </button>
             </div>
+            <label v-if="categories?.length" class="cat-filter">
+                <span class="visually-hidden">Category</span>
+                <select v-model="category" class="inp">
+                    <option value="">All categories</option>
+                    <option v-for="c in categories" :key="c.id" :value="c.name">{{ c.name }}</option>
+                </select>
+            </label>
             <label class="search">
                 <span class="visually-hidden">Search posts</span>
-                <input v-model="search" class="inp" type="search" placeholder="Search posts">
+                <input v-model="table.q" class="inp" type="search" placeholder="Search posts">
             </label>
         </div>
 
         <div class="two">
             <section class="panel scroll" aria-label="Posts">
                 <table class="tbl">
-                    <thead><tr><th scope="col">Post</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col">Date</th><th scope="col">Author</th></tr></thead>
+                    <thead><tr><SortTh :table="table" col="title" label="Post" /><SortTh :table="table" col="category" label="Category" /><SortTh :table="table" col="state" label="Status" /><SortTh :table="table" col="date" label="Date" /><SortTh :table="table" col="author" label="Author" /></tr></thead>
                     <tbody>
-                        <tr v-for="p in shown" :key="p.id">
+                        <tr v-for="p in table.rows" :key="p.id">
                             <td>
                                 <span class="post">
                                     <img v-if="p.coverImage" :src="p.coverImage" alt="" class="thumb">
@@ -101,9 +112,10 @@ async function removeCategory(id: string) {
                             <td class="muted">{{ when(p) }}</td>
                             <td class="muted">{{ p.authorName?.split(' ')[0] }}</td>
                         </tr>
-                        <tr v-if="!shown.length"><td colspan="5" class="muted">{{ posts?.length ? 'No posts match.' : 'No posts yet. Press New post to write your first one.' }}</td></tr>
+                        <tr v-if="!table.total"><td colspan="5" class="muted">{{ posts?.length ? 'No posts match.' : 'No posts yet. Press New post to write your first one.' }}</td></tr>
                     </tbody>
                 </table>
+                <TablePager :table="table" noun="posts" />
             </section>
 
             <section class="panel" aria-labelledby="cat-h">
@@ -146,6 +158,7 @@ h2 { font-size: 18px; margin: 0; }
 .seg button { background: transparent; border: 0; border-radius: var(--radius); color: var(--text-body); cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600; height: 34px; padding: 0 12px; }
 .seg button.on { background: var(--white); box-shadow: 0 1px 2px rgb(46 52 69 / 15%); color: var(--quarry); }
 .search { flex: 1 1 240px; max-width: 360px; }
+.cat-filter .inp { font-size: 14px; height: 40px; min-width: 170px; }
 .two { align-items: start; display: grid; gap: 24px; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
 .scroll { overflow-x: auto; }
 .post { align-items: center; display: flex; gap: 14px; }
