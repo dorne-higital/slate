@@ -10,13 +10,13 @@ const error = ref('')
 const busy = ref(false)
 
 const turnstileToken = ref('')
-const turnstile = ref<{ reset: () => void } | null>(null)
+const turnstile = ref<{ reset: () => void, token: () => Promise<string> } | null>(null)
 
 async function submit() {
     busy.value = true
     error.value = ''
     try {
-        await $fetch('/api/auth/sign-in/email', { method: 'POST', body: { email: email.value, password: password.value }, headers: { 'x-turnstile-token': turnstileToken.value } })
+        await $fetch('/api/auth/sign-in/email', { method: 'POST', body: { email: email.value, password: password.value }, headers: { 'x-turnstile-token': await turnstile.value?.token() ?? turnstileToken.value } })
         const me = await refresh()
         const next = typeof route.query.next === 'string' && route.query.next.startsWith('/') ? route.query.next : null
         const home = me?.isPlatformAdmin ? '/admin' : me?.sites[0] ? `/sites/${me.sites[0].id}` : '/'

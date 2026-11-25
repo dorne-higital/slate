@@ -6,14 +6,14 @@ useHead({
 const { me } = useMe()
 const form = reactive({ email: '', name: '', business: '', website: '' })
 const token = ref('')
-const turnstile = ref<{ reset: () => void } | null>(null)
+const turnstile = ref<{ reset: () => void, token: () => Promise<string> } | null>(null)
 const state = ref<'idle' | 'sending' | 'done'>('idle')
 const error = ref('')
 async function send() {
     state.value = 'sending'
     error.value = ''
     try {
-        await $fetch('/api/public/interest', { method: 'POST', body: { ...form, turnstile: token.value } })
+        await $fetch('/api/public/interest', { method: 'POST', body: { ...form, turnstile: await turnstile.value?.token() ?? token.value } })
         state.value = 'done'
     } catch (err) {
         error.value = (err as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'That didn’t send. Check your connection and try again.'

@@ -16,7 +16,7 @@ const { data: invite } = await useAsyncData('signup-invite', () => inviteToken
     : Promise.resolve(null))
 
 const turnstileToken = ref('')
-const turnstile = ref<{ reset: () => void } | null>(null)
+const turnstile = ref<{ reset: () => void, token: () => Promise<string> } | null>(null)
 const step = ref<1 | 2 | 3>(1)
 // After the site exists: optional domain step
 const createdSiteId = ref<string | null>(null)
@@ -46,7 +46,7 @@ async function create() {
     busy.value = true
     error.value = ''
     try {
-        const { siteId, slug } = await $fetch('/api/signup', { method: 'POST', body: { ...form, ...(inviteToken ? { invite: inviteToken } : {}), ...(signupKey ? { key: signupKey } : {}), turnstile: turnstileToken.value } })
+        const { siteId, slug } = await $fetch('/api/signup', { method: 'POST', body: { ...form, ...(inviteToken ? { invite: inviteToken } : {}), ...(signupKey ? { key: signupKey } : {}), turnstile: await turnstile.value?.token() ?? turnstileToken.value } })
         await refresh()
         if (inviteToken || !slug) return await navigateTo(`/sites/${siteId}`)
         createdSiteId.value = siteId

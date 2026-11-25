@@ -5,12 +5,12 @@ const busy = ref(false)
 const sent = ref(false)
 const error = ref('')
 const turnstileToken = ref('')
-const turnstile = ref<{ reset: () => void } | null>(null)
+const turnstile = ref<{ reset: () => void, token: () => Promise<string> } | null>(null)
 async function submit() {
     busy.value = true
     error.value = ''
     try {
-        await $fetch('/api/auth/request-password-reset', { method: 'POST', body: { email: email.value, redirectTo: '/reset-password' }, headers: { 'x-turnstile-token': turnstileToken.value } })
+        await $fetch('/api/auth/request-password-reset', { method: 'POST', body: { email: email.value, redirectTo: '/reset-password' }, headers: { 'x-turnstile-token': await turnstile.value?.token() ?? turnstileToken.value } })
         sent.value = true
     } catch (err) {
         const message = (err as { data?: { message?: string } }).data?.message
