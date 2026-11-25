@@ -34,15 +34,15 @@ const GB = 1024 ** 3
 
 export const PLANS: PlanInfo[] = [
     {
-        key: 'starter', name: 'Starter', tagline: 'For a simple site', monthly: 900, yearly: 9000,
+        key: 'starter', name: 'Starter', tagline: 'For a simple site', monthly: 1500, yearly: 15000,
         limits: { sites: 1, pagesPerSite: 10, formsPerSite: 1, peoplePerSite: 1, storageBytes: 1 * GB, blog: false, integrations: ['ga4', 'plausible'], slateBadge: true, extraSiteMonthly: null, support: 'Email' }
     },
     {
-        key: 'business', name: 'Business', tagline: 'Most small businesses pick this', monthly: 1900, yearly: 19000,
+        key: 'business', name: 'Business', tagline: 'Most small businesses pick this', monthly: 2900, yearly: 29000,
         limits: { sites: 1, pagesPerSite: 50, formsPerSite: 10, peoplePerSite: 3, storageBytes: 10 * GB, blog: true, integrations: 'all', slateBadge: false, extraSiteMonthly: null, support: 'Priority' }
     },
     {
-        key: 'studio', name: 'Studio', tagline: 'For designers and agencies', monthly: 3900, yearly: 39000,
+        key: 'studio', name: 'Studio', tagline: 'For designers and agencies', monthly: 4900, yearly: 49000,
         limits: { sites: 5, pagesPerSite: 50, formsPerSite: 10, peoplePerSite: 10, storageBytes: 25 * GB, blog: true, integrations: 'all', slateBadge: false, extraSiteMonthly: 600, support: 'Priority' }
     }
 ]
