@@ -33,7 +33,7 @@ const table = useDataTable(() => data.value?.pages ?? [], {
     pin: p => p.path === '/'
 })
 
-const selectedId = ref<string | null>(needsWork.value[0]?.id ?? data.value?.pages[0]?.id ?? null)
+const selectedId = ref<string | null>((typeof route.query.page === 'string' && data.value?.pages.some(p => p.id === route.query.page) ? route.query.page : null) ?? needsWork.value[0]?.id ?? data.value?.pages[0]?.id ?? null)
 const selected = computed(() => data.value?.pages.find(p => p.id === selectedId.value) ?? null)
 const draft = reactive({ seoTitle: '', seoDescription: '', shareImage: '', noIndex: false })
 watch(selected, (p) => {

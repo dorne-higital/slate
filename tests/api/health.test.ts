@@ -7,7 +7,7 @@ beforeAll(async () => {
 })
 afterAll(cleanUp)
 
-const find = (r: { json: { checks: { key: string, ok: boolean, items?: string[] }[] } }, key: string) => r.json.checks.find(c => c.key === key)!
+const find = (r: { json: { checks: { key: string, ok: boolean, items?: { label: string, to?: string }[] }[] } }, key: string) => r.json.checks.find(c => c.key === key)!
 
 describe('site health', () => {
     it('scores the site and spots a broken link', async () => {
@@ -26,7 +26,8 @@ describe('site health', () => {
         const after = await ana.client.get(`/api/sites/${ana.siteId}/health`)
         const links = find(after, 'links')
         expect(links.ok).toBe(false)
-        expect(links.items![0]).toContain('/nowhere-at-all')
+        expect(links.items![0].label).toBe('/nowhere-at-all')
+        expect(links.items![0].to).toMatch(/^\/pages\/.+\?block=/)
         expect(after.json.checks[0].ok).toBe(false)
 
         // A redirect from that address fixes it

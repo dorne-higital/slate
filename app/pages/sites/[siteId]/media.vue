@@ -9,7 +9,7 @@ useHead({ title: 'Media · Slate' })
 
 const canEdit = computed(() => ROLE_RANK[me.value?.sites.find(s => s.id === siteId)?.role ?? 'viewer'] >= ROLE_RANK.editor)
 const { upload, uploading, error } = useMediaUpload(siteId)
-const search = ref('')
+const search = ref(typeof useRoute().query.q === 'string' ? String(useRoute().query.q) : '')
 const selectedId = ref<string | null>(null)
 const selected = computed(() => items.value.find(m => m.id === selectedId.value) ?? null)
 const shown = computed(() => items.value.filter(m => !search.value.trim() || m.filename.toLowerCase().includes(search.value.trim().toLowerCase())))

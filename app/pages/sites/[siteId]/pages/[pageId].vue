@@ -52,7 +52,8 @@ const page = reactive({
 const blocks = ref<Block[]>(structuredClone(toRaw(loaded.value!.blocks)))
 const status = ref<PageStatus>(loaded.value!.status)
 const unpublished = ref(loaded.value!.hasUnpublishedChanges)
-const selectedId = ref<string | null>(null)
+// ?block=<id> (from Site health) opens with that block selected
+const selectedId = ref<string | null>(typeof route.query.block === 'string' && loaded.value?.blocks.some(b => b.id === route.query.block) ? route.query.block : null)
 const leftTab = ref<'pages' | 'add'>('add')
 const device = ref<'desktop' | 'tablet' | 'phone'>('desktop')
 
@@ -300,7 +301,11 @@ function onKey(e: KeyboardEvent) {
     }
 }
 
-onMounted(() => window.addEventListener('keydown', onKey))
+onMounted(() => {
+    window.addEventListener('keydown', onKey)
+    // Opened on a particular block (from Site health): bring it into view
+    if (selectedId.value) nextTick(() => document.querySelector(`[data-block-id="${selectedId.value}"]`)?.scrollIntoView({ block: 'center' }))
+})
 onBeforeUnmount(() => {
     window.removeEventListener('keydown', onKey)
     if (saveState.value === 'pending') save()
@@ -415,6 +420,7 @@ async function deletePage() {
                         v-for="(b, i) in blocks"
                         :key="b.id"
                         class="blk-frame"
+                        :data-block-id="b.id"
                         :class="{ 'sel': b.id === selectedId, 'drop-before': dropAt === i, 'drop-after': dropAt === blocks.length && i === blocks.length - 1, 'is-dragging': drag && 'from' in drag && drag.from === i }"
                         @dragover="overBlock($event, i)"
                         @drop.prevent="dropBlock"

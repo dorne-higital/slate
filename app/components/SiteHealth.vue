@@ -1,13 +1,20 @@
 <script setup lang="ts">
 // Site health on Overview: a score, then the things to fix (most important first), each with a link to fix it.
 const props = defineProps<{ siteId: string }>()
-interface Check { key: string, ok: boolean, level: 'high' | 'medium' | 'low', title: string, okTitle: string, detail: string, to: string, fixLabel: string, items?: string[] }
+interface Item { label: string, sub?: string, to?: string, image?: string }
+interface Check { key: string, ok: boolean, level: 'high' | 'medium' | 'low', title: string, okTitle: string, detail: string, to: string, fixLabel: string, items?: Item[], count?: number }
 const { data } = useLazyAsyncData(`health-${props.siteId}`, () => $fetch<{ score: number, checks: Check[] }>(`/api/sites/${props.siteId}/health`), { server: false })
 
 const todo = computed(() => (data.value?.checks ?? []).filter(c => !c.ok))
 const passed = computed(() => (data.value?.checks ?? []).filter(c => c.ok))
 const showPassed = ref(false)
-const open = ref<string | null>(null)
+// Lists show the first few; "Show all" opens the rest
+const expanded = ref(new Set<string>())
+const SHOW = 4
+const shown = (c: Check) => expanded.value.has(c.key) ? c.items ?? [] : (c.items ?? []).slice(0, SHOW)
+function expand(key: string) {
+    expanded.value = new Set([...expanded.value, key])
+}
 const tone = computed(() => !data.value ? 'none' : data.value.score >= 85 ? 'good' : data.value.score >= 60 ? 'fair' : 'poor')
 const verdict = computed(() => ({ good: 'Looking good', fair: 'A few things to tidy', poor: 'Worth some attention', none: '' })[tone.value])
 const levelName = { high: 'Important', medium: 'Worth doing', low: 'Nice to have' }
@@ -33,14 +40,20 @@ const C = 2 * Math.PI * 26
             <li v-for="c in todo" :key="c.key" :class="c.level">
                 <span class="lvl" :title="levelName[c.level]" aria-hidden="true" />
                 <div class="c-text">
-                    <button type="button" class="c-title" :aria-expanded="open === c.key" @click="open = open === c.key ? null : c.key">
-                        {{ c.title }}
-                        <span class="visually-hidden">({{ levelName[c.level] }})</span>
-                    </button>
-                    <div v-if="open === c.key" class="c-more">
-                        <p>{{ c.detail }}</p>
-                        <ul v-if="c.items?.length" class="items"><li v-for="i in c.items" :key="i">{{ i }}</li></ul>
-                    </div>
+                    <b class="c-title">{{ c.title }}<span class="visually-hidden"> ({{ levelName[c.level] }})</span></b>
+                    <p class="c-detail">{{ c.detail }}</p>
+                    <ul v-if="c.items?.length" class="items">
+                        <li v-for="(i, n) in shown(c)" :key="n">
+                            <img v-if="i.image" :src="i.image" alt="" class="thumb" loading="lazy" @error="($event.target as HTMLImageElement).style.visibility = 'hidden'">
+                            <component :is="i.to ? resolveComponent('NuxtLink') : 'span'" class="item" :to="i.to ? `/sites/${siteId}${i.to}` : undefined">
+                                <span class="i-label">{{ i.label }}</span>
+                                <span v-if="i.sub" class="i-sub">{{ i.sub }}</span>
+                            </component>
+                            <NuxtLink v-if="i.to" class="i-go" :to="`/sites/${siteId}${i.to}`" :aria-label="`Fix: ${i.label}`">Fix →</NuxtLink>
+                        </li>
+                    </ul>
+                    <button v-if="(c.items?.length ?? 0) > SHOW && !expanded.has(c.key)" type="button" class="btn btn-plain btn-sm more" @click="expand(c.key)">Show all {{ c.count ?? c.items!.length }}</button>
+                    <p v-else-if="(c.count ?? 0) > (c.items?.length ?? 0)" class="muted small">And {{ c.count! - c.items!.length }} more.</p>
                 </div>
                 <NuxtLink class="btn btn-ghost btn-sm" :to="`/sites/${siteId}${c.to}`">{{ c.fixLabel }}</NuxtLink>
             </li>
@@ -72,12 +85,19 @@ const C = 2 * Math.PI * 26
 .medium .lvl { background: var(--lichen); }
 .low .lvl { background: var(--split); }
 .c-text { flex: 1; min-width: 0; }
-.c-title { background: none; border: 0; color: var(--text); cursor: pointer; font: inherit; font-size: 15px; font-weight: 600; padding: 0; text-align: left; }
-.c-title:hover { text-decoration: underline; text-underline-offset: 3px; }
-.c-more { color: var(--text-body); font-size: 14px; line-height: 1.55; padding-top: 6px; }
-.c-more p { margin: 0 0 6px; }
-.items { display: flex; flex-direction: column; gap: 2px; }
-.items li { color: var(--text-muted); font-family: ui-monospace, monospace; font-size: 13px; overflow-wrap: anywhere; }
+.c-title { display: block; font-size: 15px; font-weight: 700; }
+.c-detail { color: var(--text-body); font-size: 14px; line-height: 1.5; margin: 3px 0 0; max-width: 62em; }
+.items { border: 1px solid var(--line-soft); border-radius: var(--radius-lg); display: flex; flex-direction: column; margin-top: 10px; overflow: hidden; }
+.items li { align-items: center; display: flex; gap: 12px; padding: 8px 12px; }
+.items li + li { border-top: 1px solid var(--line-soft); }
+.items li:hover { background: var(--paper); }
+.thumb { background: var(--mist); border-radius: 6px; flex: none; height: 40px; object-fit: cover; width: 56px; }
+.item { color: inherit; display: flex; flex: 1; flex-direction: column; gap: 1px; min-width: 0; text-decoration: none; }
+.i-label { font-size: 14px; font-weight: 600; overflow: hidden; overflow-wrap: anywhere; }
+.i-sub { color: var(--text-muted); font-size: 13px; }
+.i-go { flex: none; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.more { margin-top: 4px; }
+.small { font-size: 13px; margin: 6px 0 0; }
 .passed-toggle { align-self: flex-start; }
 .passed { display: flex; flex-direction: column; gap: 6px; }
 .passed li { align-items: center; color: var(--text-body); display: flex; font-size: 14px; gap: 8px; }
