@@ -1,0 +1,37 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "slate",
+    "main": "./.output/server/index.mjs",
+    "compatibility_date": "2026-11-01",
+    "compatibility_flags": ["nodejs_compat"],
+    "assets": {
+        "directory": "./.output/public",
+        "binding": "ASSETS"
+    },
+    "observability": { "enabled": true },
+    // Uploaded images and files (Media library). Locally, .data/media stands in for it.
+    "r2_buckets": [
+        { "binding": "MEDIA", "bucket_name": "slate-media", "preview_bucket_name": "slate-media-preview" }
+    ],
+    // slatecms.co.uk is the CMS and marketing site; every {slug}.slatecms.co.uk is a client site.
+    // The old workers.dev address is switched off so there's only one address for the CMS.
+    "workers_dev": false,
+    // 03:00 UTC daily: purge sites deleted over 30 days ago (server/tasks/purge/deleted-sites.ts)
+    "triggers": { "crons": ["0 3 * * *", "0 9 * * *", "0 2 * * 1,4"] },
+    "routes": [
+        { "pattern": "slatecms.co.uk/*", "zone_name": "slatecms.co.uk" },
+        { "pattern": "*.slatecms.co.uk/*", "zone_name": "slatecms.co.uk" },
+        // Catch-all: clients' own domains (Cloudflare for SaaS custom hostnames) arrive through this
+        { "pattern": "*/*", "zone_name": "slatecms.co.uk" }
+    ],
+    "vars": {
+        "NUXT_STRIPE_PORTAL_CONFIG": "bpc_1UfRq3K2Yd7McZpYC0XCds56",
+        "NUXT_PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAGQ8GbDzVHZM4y21",
+        "NUXT_PUBLIC_APP_HOST": "slatecms.co.uk",
+        "NUXT_PUBLIC_COMING_SOON": "true",
+        "NUXT_PUBLIC_SITES_DOMAIN": "slatecms.co.uk",
+        "NUXT_PUBLIC_CNAME_TARGET": "sites.slatecms.co.uk",
+        "NUXT_CLOUDFLARE_ZONE_ID": "04820b9bf2258b595f63d96ac643e6a5"
+    }
+    // Secrets (set with `wrangler secret put`): NUXT_DATABASE_URL, NUXT_BETTER_AUTH_SECRET, NUXT_CLOUDFLARE_API_TOKEN
+}

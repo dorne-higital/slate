@@ -1,0 +1,69 @@
+/* Shared layout for client-site blocks. Colours come from the site's theme variables. */
+.blk {
+    color: var(--site-text);
+    font-family: var(--site-body-font);
+    padding: var(--blk-pad, 72px) 0;
+}
+
+.blk-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 0 auto;
+    max-width: 1120px;
+    padding: 0 24px;
+}
+
+.blk h2 {
+    color: var(--site-heading);
+    font-family: var(--site-heading-font);
+    font-size: var(--site-h2-size, clamp(28px, 4vw, 40px));
+    font-weight: 800;
+    text-transform: var(--site-heading-case, none);
+    letter-spacing: -.03em;
+    line-height: 1.1;
+    margin: 0;
+}
+
+.blk p { font-size: 17px; line-height: 1.65; margin: 0; max-width: 40em; }
+.blk .blk-muted { color: var(--site-muted); }
+.blk b, .blk summary { color: var(--site-heading); }
+
+.blk-btn {
+    align-self: flex-start;
+    background: var(--site-primary);
+    border-radius: var(--site-radius);
+    color: var(--site-primary-text);
+    display: inline-block;
+    font-weight: 700;
+    padding: 14px 24px;
+    text-decoration: none;
+    text-transform: var(--site-button-case, none);
+}
+
+.blk-btn:hover { filter: brightness(1.12); }
+.blk-alt { background: var(--site-surface); }
+
+/* Label above a heading ("Recent work") */
+.blk-eyebrow { color: var(--site-primary); font-size: 14px; font-weight: 700; letter-spacing: .08em; margin: 0 0 -8px; text-transform: uppercase; }
+.blk-head { display: flex; flex-direction: column; gap: 18px; }
+.blk-head.centre { align-items: center; text-align: center; }
+.blk-head.centre p { margin-left: auto; margin-right: auto; }
+.blk-btn.outline { background: transparent; box-shadow: inset 0 0 0 2px currentcolor; color: var(--site-heading); }
+.blk-btns { display: flex; flex-wrap: wrap; gap: 12px; }
+.blk-card { background: var(--site-bg); border-radius: var(--site-card-radius); box-shadow: 0 1px 2px rgb(0 0 0 / 6%), 0 8px 24px rgb(0 0 0 / 6%); }
+
+/* Section wrapper (every block): background, spacing, fade-in */
+.sec { --blk-pad: 72px; position: relative; }
+.sec.space-compact { --blk-pad: 40px; }
+.sec.space-roomy { --blk-pad: 112px; }
+.sec.space-none { --blk-pad: 0px; }
+.sec[data-bg] > .blk, .sec[data-bg] > section { background: transparent !important; }
+.sec.bg-soft { background: var(--site-surface); }
+.sec.bg-dark, .sec.bg-primary, .sec.bg-accent { --site-surface: rgb(255 255 255 / 8%); --site-bg: rgb(255 255 255 / 6%); }
+.sec.bg-dark { background: var(--site-dark); --site-heading: var(--site-on-dark); --site-text: var(--site-on-dark); --site-muted: var(--site-on-dark); --site-primary: var(--site-on-dark); --site-primary-text: var(--site-dark); color: var(--site-on-dark); }
+.sec.bg-primary { background: var(--theme-primary); --site-heading: var(--theme-primary-text); --site-text: var(--theme-primary-text); --site-muted: var(--theme-primary-text); --site-primary: var(--theme-primary-text); --site-primary-text: var(--theme-primary); color: var(--theme-primary-text); }
+.sec.bg-accent { background: var(--site-accent); --site-heading: var(--site-accent-text); --site-text: var(--site-accent-text); --site-muted: var(--site-accent-text); color: var(--site-accent-text); }
+.sec.reveal-wait { opacity: 0; transform: translateY(24px); }
+.sec.reveal-in { opacity: 1; transform: none; transition: opacity .7s ease, transform .7s ease; }
+@media (prefers-reduced-motion: reduce) { .sec.reveal-wait { opacity: 1; transform: none; } }

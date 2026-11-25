@@ -1,159 +1,149 @@
 # Slate
 
-A multi-tenant, self-hosted CMS for running multiple client sites from one deployment. Built as a Yarn workspace with two packages:
+Slate is a website builder and CMS for small businesses. One deployment serves three things:
 
-- **`layers/cms-core`** — a Nuxt Layer with the entire reusable CMS engine: components, composables, server API routes, types, layouts, pages, DB migration. This is what a brand-new client/instance project would `extends: ['@slate/cms-core']` to get the whole dashboard for free.
-- **`app`** — the consuming Nuxt 4 application. Thin by design: it just extends `cms-core` and holds instance-specific config (env vars, branding overrides).
+- **slatecms.co.uk** — Slate's marketing site, sign-up and the CMS (`/sites/...`) and platform admin (`/admin`)
+- **{slug}.slatecms.co.uk** — every client site's free address
+- **client domains** (e.g. brambleandoak.co.uk) — connected or bought through Slate
 
-## Setup
+Rebuilt from scratch in November 2026 on the `rebuild` branch. The old Supabase/Vercel version is in git history on `main`. More detail for developers is in `CLAUDE.md`; the feature plan and its status is in `docs/plan.md`.
 
-**Requires Node 22+** (pinned in `.nvmrc` / `engines`). The ESLint/Stylelint toolchain needs `Object.groupBy`, added in Node 21 — Node 20 will crash `eslint` with `TypeError: Object.groupBy is not a function`.
+> **No secrets in this file.** Keys live in `.env` (local, never committed) and in Cloudflare Worker secrets (live). This README says what each one is and where to get a new one.
+
+---
+
+## Services and accounts
+
+| Service | Used for | Where to manage it | Cost |
+|---|---|---|---|
+| **Cloudflare** (account `814d73a9843cc80a1c1c1918ba90ad38`) | Hosting (Workers), DNS for slatecms.co.uk, client custom domains (Cloudflare for SaaS), file storage (R2) | https://dash.cloudflare.com | Workers paid plan ~$5/mo recommended; Cloudflare for SaaS: 100 domains free then $0.10 each/mo; R2: 10 GB free |
+| **Neon** (project `purple-truth-16268921`, London eu-west-2) | Postgres database | https://console.neon.tech | Free tier |
+| **Stripe** | Plan subscriptions, domain payments, customer portal, invoices | https://dashboard.stripe.com | 1.5% + 20p per UK card payment |
+| **name.com** | Registering domains customers buy | https://www.name.com/account | Wholesale price per domain, paid from the name.com account balance |
+| **Resend** | Sending email from hello@slatecms.co.uk | https://resend.com | Free up to 3,000 emails/month |
+| **GitHub** | Code (`rebuild` branch) | — | Free |
+| **Domain registrar for slatecms.co.uk** | Hostinger (nameservers point at Cloudflare) | https://hpanel.hostinger.com | Yearly renewal |
+
+### Cloudflare in detail
+
+- **Worker** `slate` — the whole app. Config in `wrangler.jsonc`. Deploy with `yarn deploy`.
+- **Routes**: `slatecms.co.uk/*`, `*.slatecms.co.uk/*`, and `*/*` (catches client custom domains).
+- **DNS** (zone `04820b9bf2258b595f63d96ac643e6a5`):
+  - `slatecms.co.uk`, `www`, `*` — `AAAA 100::`, proxied (placeholders; the Worker answers)
+  - `sites.slatecms.co.uk` — `AAAA 100::`, proxied. **Fallback origin for client domains**: clients point their domain at this
+  - `resend._domainkey`, `send` (MX + TXT), `rsend` (CNAME) — Resend email sending, DNS only
+  - `_dmarc` — `v=DMARC1; p=none;`
+  - CAA records for sectigo, pki.goog, letsencrypt
+- **Cloudflare for SaaS** (SSL/TLS → Custom Hostnames): each client domain (and its `www`) is added through the API when connected. HTTP validation.
+- **R2 buckets**: `slate-media` (live), `slate-media-preview` (unused locally). Bound to the Worker as `MEDIA`.
+- **Turnstile** (Cloudflare dashboard → Turnstile): one widget for `slatecms.co.uk`, mode Managed. Site key is public (wrangler var), secret is a Worker secret. Local testing uses Cloudflare's test keys (`1x00000000000000000000AA` / `1x0000000000000000000000000000000AA`).
+- **Cron triggers**: `0 3 * * *` purge deleted sites (30 days) and old error logs, `0 9 * * *` trial-ending reminder emails, `0 2 * * 1,4` database backup.
+- **API token** (`NUXT_CLOUDFLARE_API_TOKEN`): needs Zone → SSL and Certificates: Edit, and DNS: Edit on slatecms.co.uk. Create a new one at My Profile → API Tokens.
+
+### Neon in detail
+
+- Branch **`production`** — live data. The Worker's `NUXT_DATABASE_URL` points here.
+- Branch **`dev`** — a copy for local development. Local `.env` points here so testing never touches live data.
+- Migrations: `yarn db:migrate` (dev) and `yarn db:migrate:prod` (live, uses `PROD_DATABASE_URL_UNPOOLED`). **Run the live one before deploying code that needs it.**
+- To refresh dev from live: in the Neon console, reset the `dev` branch from its parent.
+
+### Stripe in detail
+
+- **Live since 24 Nov 2026** with a restricted key (`rk_live_…`, Worker secret `NUXT_STRIPE_SECRET_KEY`; a copy is `STRIPE_LIVE_SECRET_KEY` in `.env`). Local development still uses the test key (`STRIPE_SECRET_KEY`). Test card for test mode: 4242 4242 4242 4242, any future date, any CVC.
+- The restricted key needs write access to: customers, checkout sessions, billing portal sessions and configurations, products, prices, subscriptions and subscription items, invoices and invoice items, coupons, promotion codes, webhook endpoints.
+- Products/prices: `slate_starter`, `slate_business`, `slate_studio`, each with `_monthly` and `_yearly` lookup keys. Created by `yarn stripe:setup` from `shared/utils/plans.ts`.
+- `slate_extra_site` (£6/mo, £60/yr): added to a Studio subscription automatically for each site beyond the 5 included, and removed when sites are deleted.
+- Customer portal configuration: id in `wrangler.jsonc` (`NUXT_STRIPE_PORTAL_CONFIG`).
+- Webhook: `https://slatecms.co.uk/api/stripe/webhook` (checkout completed, subscription created/updated/deleted). Its signing secret is the Worker secret `NUXT_STRIPE_WEBHOOK_SECRET`.
+- Domain purchases are yearly subscriptions tagged `kind=domain`.
+
+### name.com in detail
+
+- API user + token from Account → Settings → API (https://www.name.com/account/settings/api).
+- Availability checks always use the real API (read only).
+- **Real registrations only happen when Stripe uses a live key.** In test mode, domain orders are simulated end to end.
+- Before going live, put funds or a card on the name.com account: each registration is paid from it.
+
+### Resend in detail
+
+- Domain `slatecms.co.uk` verified (eu-west-1). Sends from `hello@slatecms.co.uk`.
+- Emails: form replies, invites, password resets, trial reminders, support tickets, failed domain orders (to platform admins).
+- Locally emails are **logged, not sent** (the key is stored as `RESEND_API_KEY`, which the app doesn't read). Rename it to `NUXT_RESEND_API_KEY` only if you really want local emails to go out — the dev database is a copy of live, with real customers' addresses.
+
+---
+
+## Keys and settings
+
+### Live (Cloudflare Worker secrets)
+
+Set with `npx wrangler secret put NAME` (it asks for the value). List with `npx wrangler secret list`.
+
+| Secret | What it is |
+|---|---|
+| `NUXT_DATABASE_URL` | Neon **production** pooled connection string |
+| `NUXT_BETTER_AUTH_SECRET` | Random string that signs login sessions. Changing it logs everyone out |
+| `NUXT_CLOUDFLARE_API_TOKEN` | Cloudflare API token (custom hostnames, DNS) |
+| `NUXT_STRIPE_SECRET_KEY` | Stripe secret key (`sk_test_…` now, `sk_live_…` when live) |
+| `NUXT_STRIPE_WEBHOOK_SECRET` | Signing secret of the Stripe webhook endpoint (`whsec_…`) |
+| `NUXT_NAMECOM_USERNAME`, `NUXT_NAMECOM_TOKEN` | name.com API login |
+| `NUXT_RESEND_API_KEY` | Resend API key |
+| `NUXT_TURNSTILE_SECRET` | Cloudflare Turnstile secret key (bot check on sign-up, login, password reset). Not set = check switched off |
+
+Non-secret settings are `vars` in `wrangler.jsonc` (including `NUXT_PUBLIC_TURNSTILE_SITE_KEY` once Turnstile is set up): app host, sites domain, CNAME target (`sites.slatecms.co.uk`), Cloudflare zone id, Stripe portal config id.
+
+### Local (`.env` at the repo root, never committed)
+
+| Variable | What it is |
+|---|---|
+| `NUXT_DATABASE_URL`, `DATABASE_URL`, `DATABASE_URL_UNPOOLED` | Neon **dev** branch |
+| `PROD_DATABASE_URL_UNPOOLED` | Neon production, direct — only for `yarn db:migrate:prod` |
+| `NUXT_BETTER_AUTH_SECRET` | Any long random string |
+| `NUXT_PUBLIC_APP_HOST` | `localhost:3001` |
+| `NUXT_PUBLIC_SITES_DOMAIN` | `localhost:3001` (client sites at `{slug}.localhost:3001`) |
+| `NUXT_CLOUDFLARE_API_TOKEN`, `NUXT_CLOUDFLARE_ZONE_ID` | As live (connecting domains locally really creates Cloudflare hostnames) |
+| `NUXT_STRIPE_SECRET_KEY`, `NUXT_STRIPE_PORTAL_CONFIG` | Stripe **test** key and portal config, for billing locally |
+| `NUXT_STRIPE_WEBHOOK_SECRET` | Any `whsec_local_…` string (only for signing test events yourself) |
+| `NUXT_NAMECOM_USERNAME`, `NUXT_NAMECOM_TOKEN` | For domain search locally |
+| `STRIPE_SECRET_KEY` | Read by `yarn stripe:setup` |
+| `RESEND_API_KEY` | Kept here for reference; not read by the app (see Resend above) |
+| `NEON_*` | Written by the Neon CLI |
+
+---
+
+## Running it
 
 ```bash
-corepack enable
-nvm use            # or: nvm install 22
-yarn install        # also runs `nuxt prepare` for app/ via postinstall
-```
-
-### Environment variables
-
-Copy `app/.env.example` to **`app/.env`** — not the workspace root. Nuxt/Nitro only reads `.env` from the app's own root directory (where `nuxt.config.ts` lives and where `yarn workspace @slate/app dev` runs), so a `.env` at the repo root is silently ignored.
-
-```
-SUPABASE_URL=...                  # not secret — ships in the client bundle either way
-SUPABASE_KEY=...                  # anon/public key — also not secret, safety comes from RLS, not from hiding this
-SUPABASE_SERVICE_ROLE_KEY=...     # SECRET. Bypasses RLS entirely. Only for migration tooling / one-off admin scripts —
-                                   # never referenced by request-serving routes, so don't set this on your deploy target at all.
-NUXT_PUBLIC_BASE_DOMAIN=          # optional, see "Going live: domains" below
-```
-
-### Database
-
-Run the migration against your Supabase project:
-
-```bash
-yarn dlx supabase login
-yarn dlx supabase link --project-ref <your-project-ref>
-yarn dlx supabase db push
-```
-
-(or paste `layers/cms-core/supabase/migrations/0001_init.sql` into the Supabase SQL Editor). This creates all tables, RLS policies, and seeds three starter block types (Hero, Rich Text, CTA).
-
-**Promoting the first platform admin** is deliberately not exposed anywhere in the app — there's no UI or API path to self-escalate to `is_platform_admin`. Do it once, directly, after your first user signs up:
-
-```sql
-update public.profiles set is_platform_admin = true where email = 'you@yourcompany.com';
-```
-
-### Running it
-
-```bash
-yarn dev             # app/ on localhost:3000
-yarn lint             # eslint + stylelint
+yarn install
+yarn dev --port 3001   # http://localhost:3001 (port 3000 is another project)
 yarn typecheck
-yarn build
+yarn db:generate       # after editing db/schema.ts
+yarn db:migrate        # dev database
+yarn db:migrate:prod   # live database (before deploying code that needs it)
+yarn stripe:setup      # sync Stripe with shared/utils/plans.ts (safe to re-run)
+yarn deploy            # build and deploy to Cloudflare
 ```
 
-## Going live: domains
+Local dev runs on plain Node: Cloudflare's local runtime (workerd) needs macOS 13.5+. `yarn preview` uses it if your Mac supports it. Media uploads are stored in `.data/media` locally and in R2 live.
 
-Every site can be reached three ways, in increasing order of "real":
+---
 
-1. **`/preview/{site-slug}/{page-path}`** — works everywhere, no setup. Nested pages just extend the path (`/preview/portfolio/about`). Same-origin with the admin app, so a logged-in site member's session carries over and they see unpublished drafts too (there's an RLS policy for site members that ignores `published` status), unlike the other two options below, which only ever show published content. The site sidebar's own link falls back to this only while a site has neither a custom domain nor a wildcard subdomain configured yet — see below.
-2. **`{site-slug}.localhost:3000`** — local dev only. Browsers resolve any `*.localhost` address to your own machine automatically (RFC 6761), no `/etc/hosts` editing needed. Same rendering path as `/preview/...`, just reached via subdomain instead of a URL prefix — useful for testing how subdomain-style URLs will actually behave.
-3. **A real domain** — either a fully custom domain per site (below), or a free `{slug}.` subdomain of a domain *you* own (further below). Both go through `server/middleware/resolve-tenant-domain.ts`, which checks the incoming request's `Host` header on every request and transparently serves that site's content — the visitor's address bar never changes, they just silently get the site instead of the admin dashboard.
+## How do I…
 
-The domain-routing middleware resolves the tenant and renders its response entirely **in-process**, via Nitro's `event.fetch` (see `resolve-tenant-domain.ts`) — not by the server dialing itself over a network port. An earlier version used a real HTTP self-proxy, which worked locally but would have quietly broken on any serverless host (Netlify Functions, Vercel) where a single invocation has no listening port to call back into. `event.fetch` never opens a socket at all, so this holds regardless of hosting platform — confirmed by running it with the server's actual listening port deliberately mismatched from what the code was told, which still worked.
-
-That inner request genuinely renders the `/preview/{slug}/{page-path}` page — that's the only way to make Nuxt route a custom-domain request to different content than `/`, `/login`, etc. would normally resolve to. Left alone, that page's own route identity (`/preview/{slug}/...`) leaks into two places: the SEO `<link rel="canonical">`/`og:url` tags, and the browser's address bar.
-
-The SEO tags are fixed in the page itself (`pages/preview/[siteSlug]/[...path].vue`), by rebuilding them from the `x-slate-tenant-domain` header instead of `route.path`. The address bar is fixed there too, but more carefully: Vue Router's hydration (`nuxt/dist/pages/runtime/plugins/router.js`) deliberately re-syncs its client-side route to match whatever the server actually rendered — on mount it does `router.replace(resolvedInitialRoute)`, where `resolvedInitialRoute` comes from the hydration payload's `path` field (genuinely `/preview/{slug}/...`). That sync exists to keep hydration consistent, and matters: an earlier version of this fix blanked that payload field out to stop the address-bar leak, which broke hydration instead — Vue Router then resolved the *real* browser path (`/`) against the route table, which matches `pages/index.vue` (the admin app's own root), not this page, so real visitors got a flash of site content immediately replaced by a redirect to `/login`. So the payload/router-state is left alone, and the address bar is corrected purely cosmetically instead, client-side only, via `history.replaceState()` in `onMounted` — that changes what's *displayed* without going through `router.replace()`/`navigateTo()`, so it never re-triggers route resolution. (There's a brief, sub-frame history-entry correction from Vue Router's own sync before this runs — not a real navigation or content flash, just an internal history-stack entry — verified via Playwright: correct final URL, correct content, no hydration-mismatch warnings, no login redirect.)
-
-Direct mutation of `event._path`/`event.node.req.url` (to avoid the inner render and this whole class of leak) was tried first and reverted — it broke the auth guard's routing (redirected to `/login`) even though `event.path` itself read back correctly, since Nitro's own request dispatch resolves which handler to run before this middleware gets a chance to change it.
-
-### Custom domain per site
-
-Site dashboard → **Settings** → Custom domain. Once set, any request arriving with that hostname gets served that site's content automatically — no further app-side config, on any host. The site sidebar's "View live site ↗" link automatically switches from `/preview/{slug}` to this domain (or, if unset, the `{slug}.{base domain}` wildcard subdomain once that's configured) as soon as one exists.
-
-### Deploying to Vercel
-
-**Repo side — already done, documented here so it isn't re-discovered the hard way:**
-
-- `app/package.json` explicitly depends on `"@slate/cms-core": "workspace:*"` and declares `"engines": {"node": ">=22"}`. Both matter specifically for Vercel: its monorepo dependency-graph detection requires workspace dependencies to be *stated*, not just implied by `extends: [...]` in `nuxt.config.ts`; the `engines` field is a fallback path to the right Node version alongside picking it explicitly in Project Settings (below).
-- No `vercel.json` needed — Nitro auto-detects the Vercel build environment and produces Vercel's expected serverless output format on its own.
-
-**Vercel project setup:**
-
-1. Import the repo as a new Vercel project.
-2. **Root Directory**: `app` (Project Settings → Build and Deployment → Root Directory → Edit → select `app`). Framework Preset should auto-detect as **Nuxt.js** once this is set.
-3. **Node.js Version**: Build and Deployment → Node.js Version → **22.x**.
-4. **Environment variables** (Project Settings → Environment Variables):
-   - `ENABLE_EXPERIMENTAL_COREPACK=1` — **required**, not optional. Without it, Vercel ignores the `packageManager` field entirely and installs with plain Yarn 1 just because it sees a `yarn.lock`, which silently breaks — `.yarnrc.yml` and `nodeLinker: node-modules` only mean anything to Yarn Berry.
-   - `SUPABASE_URL`
-   - `SUPABASE_KEY`
-   - `NUXT_PUBLIC_BASE_DOMAIN` — once you've done the wildcard DNS/cert setup below.
-5. Deploy, then confirm `/login` loads before touching DNS.
-
-**If the build fails trying to resolve `@slate/cms-core` or reach anything under `layers/`:** Vercel restricts a project to files inside its Root Directory by default; genuine workspace monorepos (which this is, per the dependency declared above) are meant to be exempted from that automatically, but if it still trips, look for a monorepo/"include files outside the Root Directory" option in the project's settings and enable it.
-
-**Wildcard subdomains per site, on Vercel:** gives every site a free `{slug}.{your-domain}` URL automatically, the same way `{slug}.localhost` already works in dev. Wildcard domains are supported on **every Vercel plan including the free Hobby tier** (this was the whole reason for choosing Vercel over paying for Netlify Pro) — you just need Vercel managing DNS for the certificate challenge:
-
-1. Own a real domain — e.g. `slatecms.co.uk`.
-2. In Vercel, add the domain to your project, then follow its prompt to delegate the domain's **nameservers to Vercel** (find the exact nameservers under the domain's DNS settings once added).
-3. At your registrar (Hostinger, in this case) — change `slatecms.co.uk`'s nameservers to Vercel's. No need to move registration, just the nameservers. Allow up to 24 hours to propagate.
-4. Add `*.slatecms.co.uk` as a wildcard domain on the same project.
-5. Once its certificate shows active, set `NUXT_PUBLIC_BASE_DOMAIN=slatecms.co.uk` and redeploy.
-
-## Access control model, in plain terms
-
-Two tiers, enforced twice — once at the database and once in the app:
-
-1. **Platform admin** (`profiles.is_platform_admin = true`) — sees every site. Lands on `/admin`, a list of all sites platform-wide.
-2. **Site member** — a row in `site_members(user_id, site_id, role)` is the *only* thing that grants visibility into a site. No membership row, no access — not hidden in the UI, actually unqueryable. Roles are `owner > admin > editor > viewer`, ranked in that order for permission checks.
-
-**Row Level Security is the real boundary.** Every table has RLS enabled, and every policy branches on the same two SQL helper functions the app uses too:
-
-- `is_platform_admin()` — bypasses site-scoping entirely.
-- `has_site_role(site_id, min_role)` — true if the caller is a platform admin, or holds at least `min_role` on that site via `site_members`.
-
-**`requireSiteAccess(event, siteId, minRole)`** (`layers/cms-core/server/utils/requireSiteAccess.ts`) is the second line of defense, called at the top of every Nitro API route that touches a specific site. It calls those *same* SQL functions through the request's own RLS-scoped Supabase client (not a service-role client), so the app-layer check and the database-layer policy can never drift apart — there's exactly one definition of "who can access this site," not two that need to be kept in sync by hand.
-
-Nothing in the app ever uses the service-role key to serve a user request. It's documented in `app/.env.example` as migration-tooling-only.
-
-## Where the RLS policies most need a second look
-
-These are deliberate calls, flagged inline in `layers/cms-core/supabase/migrations/0001_init.sql` as `SECOND LOOK` comments — revisit them against your actual product requirements:
-
-- **Only platform admins can create sites** (`sites_insert`). Site owners can't self-serve a new site in this pass.
-- **Only platform admins can delete a site** (`sites_delete`) — even a site's own `owner` role can't, since deletion cascades to pages and memberships.
-- **Membership writes require `owner`, not `admin`** (`site_members_insert`/`update`) — an `admin` member can't promote themselves (or anyone) to `owner`, or remove the owner. Platform admins always bypass.
-- **`profiles.is_platform_admin` has no update path at all**, not even a `WITH CHECK` guard — the column is excluded from the `authenticated` role's column-level `UPDATE` grant entirely, so there's no query shape that can touch it. Promotion is a manual, service-role SQL statement (see above).
-- **Pages: `editor` and above can write, `viewer` is read-only.**
-- **`component_registry` is global** (not site-scoped) — any authenticated user can read it (needed to render the page builder), only platform admins can write new block types.
-
-## What's real vs. scaffolded-but-unverified
-
-**Verified working**, against this repo's actual toolchain (not just "should work"):
-
-- `yarn install`, `yarn lint` (ESLint + Stylelint), `yarn typecheck`, and `yarn build` all pass clean.
-- The dev server boots against a real Supabase project and server-renders `/login` correctly.
-- The auth redirect middleware works end-to-end: unauthenticated requests to `/` and `/admin` correctly redirect to `/login?redirect=...`.
-- A real bug was caught and fixed this way: Nuxt prefixes auto-imported component names with their subfolder by default (`components/admin/StatTile.vue` → `<AdminStatTile>`, not `<StatTile>`). Every template here uses bare names, so `layers/cms-core/nuxt.config.ts` explicitly sets `pathPrefix: false` for the layer's component scan.
-
-**Not yet verified** — the database migration has not been run against a live project as part of this build, so nothing that depends on real rows has been exercised end-to-end:
-
-- No authenticated session was tested, so `/admin`, `/sites/[siteId]`, the Pages tree, and the page-builder canvas have not been click-tested against real data — only confirmed to compile, typecheck, and (for the parts reachable while logged out) render.
-- The RLS policies have been reasoned through carefully (see above) but not run against adversarial test cases (e.g., a logged-in `viewer` attempting a write, a member of site A requesting site B's data). Write a couple of policy tests before trusting this in production.
-- `vuedraggable` reordering, the schema-driven side panel, and the draft/published toggle are implemented but only reviewed, not interacted with in a browser.
-- Rich Text is a plain sanitized `<textarea>`, not a real WYSIWYG editor — sanitization (via `isomorphic-dompurify`) is real and tested logically, but there's no editor UI beyond raw HTML entry yet.
-- ~~Image fields are a raw URL input~~ — superseded: there's now a real media library (Supabase Storage bucket + `media` table, RLS-scoped per site) with an image picker modal in the block settings panel.
-- ~~"New site" creation asks for the owner's raw Supabase user ID~~ — superseded: it's a dropdown of existing users now (`GET /api/admin/users`, platform-admin only — see `layers/cms-core/server/api/admin/users.get.ts`). Still can't invite someone who hasn't signed up yet.
-
-This list reflects the very first pass and hasn't been kept current since — treat it as historical, not authoritative, for anything not cross-checked against the actual code.
-
-## Tooling notes
-
-- **Yarn Berry** (`node-modules` linker, no PnP) — `packageManager` is pinned in root `package.json`.
-- **Stylelint 17 / `@stylistic/stylelint-plugin`** — Stylelint removed formatting rules like `indentation` as core rules in v16; the 4-space rule now lives in `@stylistic/stylelint-plugin`'s `@stylistic/indentation`.
-- **ESLint 10** — required by the currently-resolved `@nuxt/eslint`; ESLint 9 will fail peer resolution.
-- **SCSS variables/mixins** (`layers/cms-core/assets/styles/_variables.scss`, `_mixins.scss`) are auto-injected into every `<style lang="scss">` block via Vite's `additionalData` — no manual `@use` needed in components. Note that `_mixins.scss` still needs its own `@use 'variables'` internally: Sass's `@use` scope is per-file, so a mixin's *body* resolves variables from where it's defined, not from the caller's injected scope.
-- `@nuxtjs/seo`'s OG-image submodule is disabled (`ogImage: false`) — it pulls in a native rendering dependency (`@takumi-rs/core` or similar) that's pointless for an authenticated, noindexed dashboard.
+- **Make someone a platform admin** — only by SQL on the live database: `update "user" set is_platform_admin = true where email = '…';`
+- **Change prices or plan limits** — edit `shared/utils/plans.ts`, run `yarn stripe:setup`, deploy. The home page table and Billing page read from the same file, so they update too. New sign-ups get the new price; existing customers keep theirs until moved in Stripe.
+- **Change domain prices or add an ending** — edit `shared/utils/domainPrices.ts` and deploy.
+- **Go live with payments**
+  1. Activate the Stripe account (business and bank details).
+  2. Create a live secret key (shown once — copy it straight away).
+  3. Run `STRIPE_SECRET_KEY=sk_live_… yarn stripe:setup --webhook https://slatecms.co.uk/api/stripe/webhook` — it creates live products, prices, portal and webhook, and prints the new portal id and webhook secret.
+  4. Update the Worker secrets `NUXT_STRIPE_SECRET_KEY` and `NUXT_STRIPE_WEBHOOK_SECRET`, and `NUXT_STRIPE_PORTAL_CONFIG` in `wrangler.jsonc`. Deploy.
+  5. Fund the name.com account — real domain registrations start now.
+- **Rotate a leaked key** — create a new one at the service, `npx wrangler secret put NAME`, update `.env`, then delete the old key at the service.
+- **Give a client a special price** — Admin → Billing (or Billing on a site in the dashboard list) → Special price. It's a Stripe price on the plan's product (metadata `slate_plan`), used at checkout and swapped onto a live subscription from the next payment. If Slate covered the site, its owner becomes the payer with a trial and starts the plan at that price from Billing.
+- **Invoice a client for extra work** — Admin → Billing → New invoice. Stripe hosts the invoice and pay page; Slate emails the link. It also appears on the client's Billing page. Cancel unpaid ones from the Invoices list.
+- **Make a discount code** — Admin → Billing → Discount codes (Stripe coupon + promotion code). People enter it at checkout.
+- **Restore a deleted site** — within 30 days, from the admin dashboard's site list (Restore).
+- **See errors on the live site** — Admin → Errors (grouped, with the stack). Platform admins are emailed the first time each kind of error appears in an hour. Raw logs: Cloudflare dashboard → Workers → slate → Logs.
+- **Backups** — every Monday and Thursday at 02:00 UTC the whole database is saved as one gzipped JSON file in R2 (`slate-media` bucket, `_backups/` folder); the newest 8 are kept. Admin → Backups lists them, downloads them and can back up now. Media files aren't copied (they're already in R2).
+- **Restore a backup** — make an empty database with Slate's tables (a new Neon branch, then `yarn db:migrate` against it, or a schema-only branch), then `RESTORE_DATABASE_URL=… node --experimental-strip-types scripts/restore-backup.ts slate-….json.gz` (add `--check` to just list what's inside). It refuses to write into tables that already have rows. Then point `NUXT_DATABASE_URL` at it.
+- **Run the tests** — `yarn test` (quick, no server). For the end-to-end ones: `yarn dev:test` in one terminal, `yarn test:api` in another (uses the dev database and deletes its test accounts).
