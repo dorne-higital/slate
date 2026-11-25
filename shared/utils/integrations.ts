@@ -63,7 +63,8 @@ export const CATALOGUE: CatalogueItem[] = [
 
     // Search
     { id: 'googleVerify', key: 'googleVerify', name: 'Google Search Console', category: 'search', kind: 'id', desc: 'Prove you own the site and see how it does in Google', mark: 'G', tile: '#4285f4', everyPlan: true,
-        fields: [{ label: 'Verification code', placeholder: 'Paste the HTML tag or just the code', help: 'In Search Console: add a URL prefix property, choose “HTML tag”, copy it, paste it here, then press Verify there.' }] },
+        fields: [{ label: 'Verification code', placeholder: 'Paste the HTML tag or just the code', help: 'In Search Console: add a URL prefix property, choose “HTML tag”, copy it, paste it here, then press Verify there.' }],
+        about: 'Prove to Google that the site is yours, then see which searches find you. Already verified your whole domain in Search Console (a “Domain” property, checked through DNS)? Then you’re set and don’t need this; Site health on Overview spots it.' },
     { id: 'bingVerify', key: 'bingVerify', name: 'Bing Webmaster Tools', category: 'search', kind: 'id', desc: 'Prove you own the site to Bing (and DuckDuckGo)', mark: 'B', tile: '#00809d', everyPlan: true,
         fields: [{ label: 'Verification code', placeholder: 'Paste the meta tag or just the code', help: 'In Bing Webmaster Tools: Add site › HTML Meta Tag. Paste it here, then press Verify there.' }] },
     { id: 'indexnow', name: 'IndexNow', category: 'search', kind: 'builtin', desc: 'Built in: tells Bing the moment you publish', mark: 'IN', tile: '#0e7490', everyPlan: true,

@@ -58,6 +58,24 @@ function picturesWithoutAlt(blocks: Block[]) {
     return n
 }
 
+/**
+ * Whether a domain already has Google's verification record in its DNS (a Search Console "Domain"
+ * property). Asked over DNS-over-HTTPS; any failure just counts as "not found".
+ */
+async function googleVerifiedByDns(host: string) {
+    const apex = host.replace(/^www\./, '')
+    try {
+        const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(apex)}&type=TXT`, {
+            headers: { accept: 'application/dns-json' },
+            signal: AbortSignal.timeout(3000)
+        })
+        const body = await res.json() as { Answer?: { data: string }[] }
+        return (body.Answer ?? []).some(a => a.data.includes('google-site-verification='))
+    } catch {
+        return false
+    }
+}
+
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
 
 export async function siteHealth(site: Site) {
@@ -116,7 +134,9 @@ export async function siteHealth(site: Site) {
     add({ key: 'descriptions', ok: !noDescription.length, level: 'medium', title: `${plural(noDescription.length, 'page has', 'pages have')} no description for Google`, okTitle: 'Every page has a description for Google', detail: 'Google shows a description under your page in search results. Without one, it picks some text itself.', to: '/seo', fixLabel: 'Add descriptions', items: noDescription.map(p => p.title).slice(0, 6) })
     const noImage = seo.defaultShareImage ? [] : visible.filter(p => !p.shareImage)
     add({ key: 'shareImages', ok: !noImage.length, level: 'low', title: `${plural(noImage.length, 'page has', 'pages have')} no share image`, okTitle: 'Every page has a share image', detail: 'This is the picture shown when someone shares a link on WhatsApp, Facebook or LinkedIn.', to: '/seo', fixLabel: 'Add images', items: noImage.map(p => p.title).slice(0, 6) })
-    add({ key: 'searchConsole', ok: !!integrations.googleVerify, level: 'low', title: 'Connect Google Search Console', okTitle: 'Google Search Console is connected', detail: 'Free from Google: see which searches find you and spot problems early.', to: '/integrations?tab=search', fixLabel: 'Connect' })
+    // Search Console: the HTML tag in Integrations, or Google's record in the domain's DNS
+    const viaDns = !integrations.googleVerify && ownDomain ? await googleVerifiedByDns(live) : false
+    add({ key: 'searchConsole', ok: !!integrations.googleVerify || viaDns, level: 'low', title: 'Connect Google Search Console', okTitle: viaDns ? 'Verified with Google Search Console (through your domain)' : 'Google Search Console is connected', detail: 'Free from Google: see which searches find you and spot problems early.', to: '/integrations?tab=search', fixLabel: 'Connect' })
 
     // Privacy policy (UK GDPR) when the site collects anything
     const collects = (forms[0]?.n ?? 0) > 0 || !!integrations.ga4 || !!integrations.metaPixel
