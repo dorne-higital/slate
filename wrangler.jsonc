@@ -28,6 +28,9 @@
         "NUXT_STRIPE_PORTAL_CONFIG": "bpc_1UfRq3K2Yd7McZpYC0XCds56",
         "NUXT_PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAGQ8GbDzVHZM4y21",
         "NUXT_PUBLIC_APP_HOST": "slatecms.co.uk",
+        // Built-in visitor stats for client sites (Cloudflare Web Analytics site "sites.slatecms.co.uk"). Both are public values
+        "NUXT_PUBLIC_CF_BEACON_TOKEN": "41acff31d11841698d9318abc222bad0",
+        "NUXT_CF_ANALYTICS_SITE_TAG": "c08aac4dbc0a46bcb6e17a7f0bd3962b",
         "NUXT_PUBLIC_COMING_SOON": "true",
         "NUXT_PUBLIC_SITES_DOMAIN": "slatecms.co.uk",
         "NUXT_PUBLIC_CNAME_TARGET": "sites.slatecms.co.uk",
