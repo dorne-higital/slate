@@ -128,10 +128,11 @@ Dan chose: refresh the design, projects as their own content type.
 Designs: https://claude.ai/artifact/2Azs3ZCJCw33uLwPwrd5CD. Every picture can sit in a phone, browser or photo frame;
 every button row can be regular buttons or app store badges (links set once in Settings), optional QR on computers.
 
-1. [ ] Showcase hero: split, centred or coloured band; label, heading, text, buttons, optional rating
-2. [ ] Button row styles shared by every block (regular, store badges, QR, on a coloured background)
-3. [ ] Picture carousel: framed pictures with captions, arrows, swipe on phones
-4. [ ] Feature rows (picture and text, alternating) and feature grid (icons)
+1. [x] Showcase hero: split, centred or coloured band; label, heading, text, buttons, optional rating
+2. [x] Button row styles shared by every block (regular, store badges, QR, on a coloured background)
+3. [x] Picture carousel: framed pictures with captions, arrows, swipe on phones
+4. [x] Feature rows (picture and text, alternating) and feature grid (icons)
 5. [ ] Proof: big numbers plus review quotes
-6. [ ] Closing call to action band
-7. [ ] Settings: app store links (iOS, Android) entered once
+6. [x] Closing call to action band
+7. [x] Settings: app store links (iOS, Android) entered once; /get-app on each site sends phones to the right store (the QR code's target)
+8. [ ] Official Apple/Google badge artwork (needs the files from Apple and Google; drawn badges for now)

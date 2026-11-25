@@ -9,6 +9,7 @@ useHead(() => ({ link: props.site.theme?.favicon ? [{ rel: 'icon', href: props.s
 const themeVars = computed(() => siteThemeVars(props.site.theme))
 const integrations = computed(() => props.site.integrations ?? {})
 provide('siteIntegrations', integrations)
+provide('siteSocials', computed(() => props.site.socials ?? {}))
 const tracking = ref<{ reopen: () => void } | null>(null)
 const hasCookies = computed(() => !!(integrations.value.ga4 || integrations.value.metaPixel))
 </script>

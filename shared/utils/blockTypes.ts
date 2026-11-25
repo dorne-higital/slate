@@ -1,3 +1,5 @@
+import { SHOWCASE_ICONS } from './showcaseIcons'
+
 /**
  * The block catalogue: every block type, its editable fields and starting content.
  * The editor builds its forms from this, and the server cleans every save against it,
@@ -18,8 +20,8 @@ export interface BlockField {
     options?: { value: string, label: string }[]
 }
 
-export type BlockGroup = 'Headers and banners' | 'Text and images' | 'Portfolio' | 'Show what you do' | 'Proof and people' | 'Media' | 'Get in touch' | 'Blog'
-export const BLOCK_GROUPS: BlockGroup[] = ['Headers and banners', 'Text and images', 'Portfolio', 'Show what you do', 'Proof and people', 'Media', 'Get in touch', 'Blog']
+export type BlockGroup = 'Headers and banners' | 'Showcase' | 'Text and images' | 'Portfolio' | 'Show what you do' | 'Proof and people' | 'Media' | 'Get in touch' | 'Blog'
+export const BLOCK_GROUPS: BlockGroup[] = ['Headers and banners', 'Showcase', 'Text and images', 'Portfolio', 'Show what you do', 'Proof and people', 'Media', 'Get in touch', 'Blog']
 
 export interface BlockType {
     type: string
@@ -44,6 +46,11 @@ const button2Label: BlockField = { key: 'button2Label', label: 'Second button te
 const button2Url: BlockField = { key: 'button2Url', label: 'Second button goes to', kind: 'url', max: 500 }
 const image = (key = 'imageUrl', label = 'Image'): BlockField => ({ key, label, kind: 'image', help: 'Choose from your media library, or paste an image address.', max: 1000 })
 const alt = (key = 'imageAlt'): BlockField => ({ key, label: 'Describe the image', kind: 'text', help: 'For people using screen readers. Leave empty for decoration.', max: 200 })
+// Showcase blocks: a picture frame, and buttons that can be app store badges
+const frame: BlockField = { key: 'frame', label: 'Show pictures in', kind: 'select', options: opts(['phone', 'A phone'], ['browser', 'A browser window'], ['photo', 'A photo frame'], ['plain', 'No frame']) }
+const buttonStyle: BlockField = { key: 'buttonStyle', label: 'Buttons', kind: 'select', options: opts(['buttons', 'Buttons'], ['stores', 'App Store and Google Play']), help: 'Store buttons use the links in Settings › App store links.' }
+const qr: BlockField = { key: 'qr', label: 'QR code', kind: 'select', options: opts(['no', 'No'], ['yes', 'Show one on computers']), help: 'For store buttons it opens the right store on each phone; otherwise it opens the main button’s link.' }
+const showcaseButtons = [buttonStyle, buttonLabel, buttonUrl, button2Label, button2Url, qr]
 const columns: BlockField = { key: 'columns', label: 'Columns', kind: 'select', options: opts(['3', '3'], ['2', '2'], ['4', '4']) }
 
 /** On every block: how its section sits on the page */
@@ -84,6 +91,67 @@ export const BLOCK_TYPES: BlockType[] = [
         fields: [{ key: 'size', label: 'Size', kind: 'select', options: opts(['large', 'Large'], ['small', 'Small']) }, { key: 'speed', label: 'Speed', kind: 'select', options: opts(['normal', 'Normal'], ['slow', 'Slow'], ['fast', 'Fast']) }],
         items: { label: 'Word', max: 16, fields: [{ key: 'text', label: 'Words', kind: 'text', max: 60 }] },
         defaults: { size: 'large', speed: 'normal', items: [{ text: 'Web design' }, { text: 'Development' }, { text: 'Hosting' }, { text: 'Support' }] }
+    },
+
+    // ── Showcase: show off an app, product, service or place ──
+    {
+        type: 'showcase',
+        group: 'Showcase',
+        name: 'Showcase hero',
+        desc: 'Big heading with your pictures in a phone, browser or photo frame, buttons or store badges',
+        fields: [
+            { key: 'layout', label: 'Layout', kind: 'select', options: opts(['split', 'Words and picture side by side'], ['centred', 'Centred, pictures below'], ['band', 'Coloured band, tilted pictures']) },
+            frame, image('logoUrl', 'Small logo or app icon (optional)'), eyebrow, heading, { key: 'text', label: 'Text', kind: 'textarea', max: 600 },
+            ...showcaseButtons,
+            { key: 'rating', label: 'Star rating (optional)', kind: 'text', help: 'e.g. 4.8. Only use a real figure.', max: 4 },
+            { key: 'ratingText', label: 'Next to the stars', kind: 'text', help: 'e.g. from 1,200 App Store reviews', max: 80 },
+            image('imageUrl', 'Main picture'), alt(),
+            image('image2Url', 'Second picture (centred and band layouts)'), image('image3Url', 'Third picture (centred layout)')
+        ],
+        defaults: { layout: 'split', frame: 'phone', logoUrl: '', eyebrow: '', heading: 'Your big promise in a few words', text: 'One or two lines on what it is and who it’s for.', buttonStyle: 'buttons', buttonLabel: 'Get started', buttonUrl: '', button2Label: '', button2Url: '', qr: 'no', rating: '', ratingText: '', imageUrl: '', imageAlt: '', image2Url: '', image3Url: '' }
+    },
+    {
+        type: 'buttonRow',
+        group: 'Showcase',
+        name: 'Buttons',
+        desc: 'A short heading with buttons or store badges, and an optional QR code',
+        fields: [{ key: 'align', label: 'Align', kind: 'select', options: opts(['centre', 'Centre'], ['left', 'Left']) }, eyebrow, heading, { key: 'text', label: 'Text', kind: 'textarea', max: 400 }, ...showcaseButtons],
+        defaults: { align: 'centre', eyebrow: '', heading: 'Get the app', text: '', buttonStyle: 'stores', buttonLabel: '', buttonUrl: '', button2Label: '', button2Url: '', qr: 'yes' }
+    },
+    {
+        type: 'carousel',
+        group: 'Showcase',
+        name: 'Picture carousel',
+        desc: 'Screens or photos to swipe through, each with a caption',
+        fields: [eyebrow, heading, intro, frame],
+        items: { label: 'Picture', max: 12, fields: [image('imageUrl', 'Picture'), alt(), { key: 'title', label: 'Caption', kind: 'text', max: 80 }, { key: 'text', label: 'More about it (optional)', kind: 'text', max: 160 }] },
+        defaults: { eyebrow: '', heading: 'Take a look', intro: '', frame: 'phone', items: [{ imageUrl: '', imageAlt: '', title: 'First screen', text: '' }, { imageUrl: '', imageAlt: '', title: 'Second screen', text: '' }, { imageUrl: '', imageAlt: '', title: 'Third screen', text: '' }] }
+    },
+    {
+        type: 'featureRows',
+        group: 'Showcase',
+        name: 'Feature rows',
+        desc: 'A picture and words for each feature, swapping sides as you scroll',
+        fields: [frame, { key: 'firstSide', label: 'First picture on the', kind: 'select', options: opts(['left', 'Left'], ['right', 'Right']) }],
+        items: { label: 'Feature', max: 8, fields: [{ key: 'label', label: 'Label above the heading', kind: 'text', max: 60 }, { key: 'title', label: 'Heading', kind: 'text', max: 120 }, { key: 'text', label: 'Text', kind: 'textarea', max: 800 }, { key: 'ticks', label: 'Tick list', kind: 'textarea', help: 'Optional. One point per line.', max: 1000 }, image('imageUrl', 'Picture'), alt(), { key: 'buttonLabel', label: 'Button text (optional)', kind: 'text', max: 60 }, { key: 'buttonUrl', label: 'Button goes to', kind: 'url', max: 500 }] },
+        defaults: { frame: 'phone', firstSide: 'left', items: [{ label: '', title: 'What the first feature does', text: 'A couple of lines on why it matters.', ticks: '', imageUrl: '', imageAlt: '', buttonLabel: '', buttonUrl: '' }, { label: '', title: 'What the second feature does', text: 'A couple of lines on why it matters.', ticks: '', imageUrl: '', imageAlt: '', buttonLabel: '', buttonUrl: '' }] }
+    },
+    {
+        type: 'featureGrid',
+        group: 'Showcase',
+        name: 'Feature grid',
+        desc: 'Features as cards with an icon each',
+        fields: [eyebrow, heading, intro, { key: 'columns', label: 'Columns', kind: 'select', options: opts(['3', '3'], ['2', '2'], ['4', '4']) }, { key: 'style', label: 'Style', kind: 'select', options: opts(['cards', 'Cards'], ['plain', 'Plain, no cards']) }],
+        items: { label: 'Feature', max: 12, fields: [{ key: 'icon', label: 'Icon', kind: 'select', options: SHOWCASE_ICONS.map(i => ({ value: i.key, label: i.label })) }, { key: 'title', label: 'Name', kind: 'text', max: 80 }, { key: 'text', label: 'Description', kind: 'textarea', max: 300 }] },
+        defaults: { eyebrow: '', heading: 'Everything you need', intro: '', columns: '3', style: 'cards', items: [{ icon: 'bolt', title: 'Fast', text: 'A line about it.' }, { icon: 'heart', title: 'Friendly', text: 'A line about it.' }, { icon: 'shield', title: 'Safe', text: 'A line about it.' }] }
+    },
+    {
+        type: 'showcaseCta',
+        group: 'Showcase',
+        name: 'Call to action with picture',
+        desc: 'A coloured panel with buttons or store badges and a picture peeking up',
+        fields: [eyebrow, heading, { key: 'text', label: 'Text', kind: 'textarea', max: 400 }, ...showcaseButtons, frame, image('imageUrl', 'Picture'), alt()],
+        defaults: { eyebrow: '', heading: 'Ready to get started?', text: 'One line that gives one last reason to act now.', buttonStyle: 'buttons', buttonLabel: 'Get started', buttonUrl: '', button2Label: '', button2Url: '', qr: 'no', frame: 'phone', imageUrl: '', imageAlt: '' }
     },
 
     // ── Text and images ──

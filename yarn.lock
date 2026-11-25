@@ -7415,6 +7415,7 @@ __metadata:
     nuxt: "npm:4.6.4"
     sanitize-html: "npm:2.18.2"
     typescript: "npm:5.9.3"
+    uqr: "npm:0.1.3"
     vitest: "npm:3.2.4"
     vue-tsc: "npm:^3.3.14"
     wrangler: "npm:4.167.0"
@@ -8199,7 +8200,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uqr@npm:^0.1.3":
+"uqr@npm:0.1.3, uqr@npm:^0.1.3":
   version: 0.1.3
   resolution: "uqr@npm:0.1.3"
   checksum: 10c0/7e0ef173b736fb5c93179659b4fe0720c803d45fa8628aaf2715a399b33a15a3d26d9001e05e026421d544a814e971cf0fa66b481edb649d256e7a17d79777c0

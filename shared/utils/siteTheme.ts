@@ -113,6 +113,13 @@ export function cleanSocials(input: unknown): SiteSocials {
         const url = /^https?:\/\//i.test(v) ? v : `https://${v.replace(/^\/+/, '')}`
         if (/^https:\/\/[^\s/]+\.[^\s]+$/i.test(url.replace(/^http:/i, 'https:'))) out[key] = url.replace(/^http:/i, 'https:').slice(0, 300)
     }
+    // App store links must point at the store itself
+    const stores: Record<AppStore, RegExp> = { appStore: /^https:\/\/(apps|itunes)\.apple\.com\/\S+$/i, googlePlay: /^https:\/\/play\.google\.com\/\S+$/i }
+    for (const key of APP_STORES) {
+        const v = typeof t[key] === 'string' ? (t[key] as string).trim().replace(/^http:/i, 'https:') : ''
+        const url = v && !/^https:\/\//i.test(v) ? `https://${v.replace(/^\/+/, '')}` : v
+        if (url && stores[key].test(url)) out[key] = url.slice(0, 500)
+    }
     return out
 }
 

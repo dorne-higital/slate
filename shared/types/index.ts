@@ -68,7 +68,10 @@ export type ThemeColourChoice = 'page' | 'soft' | 'dark' | 'primary' | 'accent'
 
 export const SOCIAL_NETWORKS = ['facebook', 'instagram', 'x', 'linkedin', 'tiktok', 'youtube', 'pinterest', 'threads'] as const
 export type SocialNetwork = typeof SOCIAL_NETWORKS[number]
-export type SiteSocials = Partial<Record<SocialNetwork, string>>
+/** App store links, kept with the social links but never shown as footer icons. Used by the showcase blocks. */
+export const APP_STORES = ['appStore', 'googlePlay'] as const
+export type AppStore = typeof APP_STORES[number]
+export type SiteSocials = Partial<Record<SocialNetwork | AppStore, string>>
 
 /** Site-wide search and sharing defaults. */
 export interface SiteSeo {

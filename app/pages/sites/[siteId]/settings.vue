@@ -45,7 +45,7 @@ async function saveSocials() {
     socialState.value = 'saving'
     try {
         const res = await $fetch<{ socials: SiteSocials }>(`/api/sites/${siteId}`, { method: 'PATCH', body: { socials } })
-        for (const k of SOCIAL_NETWORKS) socials[k] = res.socials[k] ?? ''
+        for (const k of [...SOCIAL_NETWORKS, ...APP_STORES]) socials[k] = res.socials[k] ?? ''
         await refreshSite()
         socialState.value = 'saved'
     } catch {
@@ -114,6 +114,25 @@ async function deleteSite() {
                         <button class="btn btn-ghost" type="button" :disabled="socialState === 'saving'" @click="saveSocials">{{ socialState === 'saving' ? 'Saving…' : 'Save social links' }}</button>
                         <span v-if="socialState === 'saved'" class="muted" role="status">Saved.</span>
                         <span v-if="socialState === 'error'" class="err" role="alert">Couldn’t save. Check the addresses and try again.</span>
+                    </div>
+                </section>
+
+                <section class="panel box" aria-labelledby="as-h">
+                    <h2 id="as-h">App store links</h2>
+                    <p class="muted">Got an app? Add its store pages and the showcase blocks can show App Store and Google Play buttons, plus a QR code that sends each phone to the right store.</p>
+                    <div class="soc-grid">
+                        <div class="field">
+                            <label for="as-ios">App Store (iPhone)</label>
+                            <input id="as-ios" v-model="socials.appStore" class="inp" type="url" inputmode="url" placeholder="apps.apple.com/gb/app/…" :disabled="!isAdmin" autocomplete="off">
+                        </div>
+                        <div class="field">
+                            <label for="as-play">Google Play (Android)</label>
+                            <input id="as-play" v-model="socials.googlePlay" class="inp" type="url" inputmode="url" placeholder="play.google.com/store/apps/details?id=…" :disabled="!isAdmin" autocomplete="off">
+                        </div>
+                    </div>
+                    <div v-if="isAdmin" class="row">
+                        <button class="btn btn-ghost" type="button" :disabled="socialState === 'saving'" @click="saveSocials">{{ socialState === 'saving' ? 'Saving…' : 'Save store links' }}</button>
+                        <span v-if="socialState === 'saved'" class="muted" role="status">Saved. Links that aren’t App Store or Google Play pages are left out.</span>
                     </div>
                 </section>
 

@@ -37,3 +37,12 @@ describe('fonts', () => {
         expect(themeFontStack(theme, 'headingFont')).toBe("'Pacifico', cursive")
     })
 })
+
+describe('app store links', () => {
+    it('keeps real App Store and Google Play pages only', async () => {
+        const { cleanSocials } = await import('../../shared/utils/siteTheme')
+        expect(cleanSocials({ appStore: 'apps.apple.com/gb/app/dobie-dash/id123', googlePlay: 'https://play.google.com/store/apps/details?id=co.dobie' }))
+            .toEqual({ appStore: 'https://apps.apple.com/gb/app/dobie-dash/id123', googlePlay: 'https://play.google.com/store/apps/details?id=co.dobie' })
+        expect(cleanSocials({ appStore: 'https://evil.example/apps.apple.com', googlePlay: 'javascript:alert(1)' })).toEqual({})
+    })
+})

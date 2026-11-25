@@ -10,5 +10,7 @@ import * as projects from '../shared/utils/projects'
 import * as siteTheme from '../shared/utils/siteTheme'
 import * as slugify from '../shared/utils/slugify'
 import * as roles from '../shared/utils/roles'
+import * as showcaseIcons from '../shared/utils/showcaseIcons'
+import * as sharedTypes from '../shared/types'
 
-Object.assign(globalThis, blockTypes, domainPrices, fontCatalogue, forms, googleFonts, menus, plans, projects, siteTheme, slugify, roles)
+Object.assign(globalThis, blockTypes, domainPrices, fontCatalogue, forms, googleFonts, menus, plans, projects, siteTheme, slugify, roles, showcaseIcons, sharedTypes)

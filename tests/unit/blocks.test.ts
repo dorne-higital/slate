@@ -64,3 +64,18 @@ describe('cleanBlocks', () => {
         }
     })
 })
+
+describe('showcase blocks', () => {
+    it('start with valid content and keep only known choices', () => {
+        for (const type of ['showcase', 'buttonRow', 'carousel', 'featureRows', 'featureGrid', 'showcaseCta']) {
+            const block = newBlock(type)
+            expect(cleanBlocks([block])[0]!.props).toMatchObject(block.props)
+        }
+        const [b] = cleanBlocks([{ id: 'a', type: 'showcase', props: { layout: 'sideways', frame: 'tablet', buttonStyle: 'stores', qr: 'yes', imageUrl: 'javascript:alert(1)' } }])
+        expect(b!.props).toMatchObject({ layout: 'split', frame: 'phone', buttonStyle: 'stores', qr: 'yes', imageUrl: '' })
+    })
+    it('only keeps icons from the icon set', () => {
+        const [b] = cleanBlocks([{ id: 'a', type: 'featureGrid', props: { items: [{ icon: 'bolt', title: 'A' }, { icon: '<svg>', title: 'B' }] } }])
+        expect((b!.props.items as { icon: string }[]).map(i => i.icon)).toEqual(['bolt', 'star'])
+    })
+})

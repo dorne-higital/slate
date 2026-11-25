@@ -31,6 +31,7 @@ const [{ data: site }, { data: loaded, error }, { data: allPages, refresh: refre
 const { data: forms } = await useAsyncData(`forms-${siteId}`, () => fetcher<FormDefinition[]>(`/api/sites/${siteId}/forms`))
 provide('siteForms', computed(() => Object.fromEntries((forms.value ?? []).map(f => [f.id, f]))))
 provide('blockPreview', true)
+provide('siteSocials', computed(() => ((site.value as { socials?: SiteSocials } | null)?.socials ?? {}) as SiteSocials))
 const { data: projectCards } = await useAsyncData(`projects-${siteId}`, () => fetcher<{ title: string, path: string, status: string, project: ProjectMeta }[]>(`/api/sites/${siteId}/projects`))
 provide('siteProjects', computed(() => (projectCards.value ?? []).filter(p => p.status === 'published').map(p => ({ title: p.title, path: p.path, category: p.project.category ?? '', summary: p.project.summary ?? '', cover: p.project.cover ?? '', coverAlt: p.project.coverAlt ?? '', year: p.project.year ?? '', featured: !!p.project.featured }))))
 provide('siteIntegrations', computed(() => (site.value?.integrations ?? {}) as SiteIntegrations))

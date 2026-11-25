@@ -2,6 +2,12 @@
 import type { Component } from 'vue'
 import BlockBeforeAfter from './blocks/BlockBeforeAfter.vue'
 import BlockBooking from './blocks/BlockBooking.vue'
+import BlockButtonRow from './blocks/BlockButtonRow.vue'
+import BlockCarousel from './blocks/BlockCarousel.vue'
+import BlockFeatureGrid from './blocks/BlockFeatureGrid.vue'
+import BlockFeatureRows from './blocks/BlockFeatureRows.vue'
+import BlockShowcase from './blocks/BlockShowcase.vue'
+import BlockShowcaseCta from './blocks/BlockShowcaseCta.vue'
 import BlockContact from './blocks/BlockContact.vue'
 import BlockCta from './blocks/BlockCta.vue'
 import BlockDetails from './blocks/BlockDetails.vue'
@@ -33,6 +39,12 @@ const registry: Record<string, Component> = {
     hero: BlockHero,
     cta: BlockCta,
     marquee: BlockMarquee,
+    showcase: BlockShowcase,
+    buttonRow: BlockButtonRow,
+    carousel: BlockCarousel,
+    featureRows: BlockFeatureRows,
+    featureGrid: BlockFeatureGrid,
+    showcaseCta: BlockShowcaseCta,
     text: BlockText,
     imageText: BlockImageText,
     quote: BlockQuote,
