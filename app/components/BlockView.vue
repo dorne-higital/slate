@@ -2,6 +2,7 @@
 import type { Component } from 'vue'
 import BlockBeforeAfter from './blocks/BlockBeforeAfter.vue'
 import BlockBooking from './blocks/BlockBooking.vue'
+import BlockMap from './blocks/BlockMap.vue'
 import BlockButtonRow from './blocks/BlockButtonRow.vue'
 import BlockCarousel from './blocks/BlockCarousel.vue'
 import BlockFeatureGrid from './blocks/BlockFeatureGrid.vue'
@@ -65,6 +66,7 @@ const registry: Record<string, Component> = {
     form: BlockForm,
     contact: BlockContact,
     booking: BlockBooking,
+    map: BlockMap,
     latestPosts: BlockLatestPosts
 }
 

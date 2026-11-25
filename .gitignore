@@ -34,3 +34,5 @@ dist/
 
 # cloudflare
 .wrangler/
+.nuxt-test
+.env.backup-*

@@ -1,6 +1,8 @@
 // Slate: one Nuxt app, deployed as a single Cloudflare Worker.
 // Runtime config is filled from NUXT_* env vars (.env locally, Worker secrets in production).
 export default defineNuxtConfig({
+    // A second dev server (the API tests' one) needs its own build folder, or the two overwrite each other
+    ...(process.env.SLATE_BUILD_DIR ? { buildDir: process.env.SLATE_BUILD_DIR } : {}),
     compatibilityDate: '2026-11-01',
     devtools: { enabled: false },
 
@@ -37,6 +39,8 @@ export default defineNuxtConfig({
         turnstileSecret: '',
         emailFrom: 'hello@slatecms.co.uk',
         cloudflareZoneId: '',
+        // Cloudflare Web Analytics site tag, for reading visitor numbers back (needs Account Analytics: Read on the domains token)
+        cfAnalyticsSiteTag: '',
         public: {
             // Cloudflare Turnstile site key (public). Empty = the check is switched off
             turnstileSiteKey: '',
@@ -47,7 +51,9 @@ export default defineNuxtConfig({
             // What clients point their domain's CNAME record at
             cnameTarget: 'sites.slatecms.co.uk',
             // Show the coming-soon page (with register-interest form) instead of the full home page
-            comingSoon: false
+            comingSoon: false,
+            // Cloudflare Web Analytics beacon token (public) for client sites' built-in visitor stats. Empty = off
+            cfBeaconToken: ''
         }
     },
 

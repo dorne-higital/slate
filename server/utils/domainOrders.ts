@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm'
 
 export function toOrderItem(o: typeof schema.domainOrders.$inferSelect) {
-    return { id: o.id, domain: o.domainName, price: o.price, status: o.status, simulated: o.simulated, expiresAt: o.expiresAt?.toISOString() ?? null, createdAt: o.createdAt.toISOString() }
+    return { id: o.id, domain: o.domainName, price: o.price, status: o.status, simulated: o.simulated, expiresAt: o.expiresAt?.toISOString() ?? null, createdAt: o.createdAt.toISOString(), canForward: o.status === 'active' && !o.simulated && !!o.cloudflareZoneId }
 }
 
 /**

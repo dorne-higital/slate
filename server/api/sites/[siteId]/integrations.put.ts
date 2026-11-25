@@ -13,7 +13,12 @@ export default defineEventHandler(async (event) => {
     } else {
         await requireWithinPlan(site, l => integrationAllowed(l, info.key), `${info.name} comes with the Business and Studio plans.`)
         const clean = cleanIntegrationValue(info.key, value)
-        if (!clean) throw createError({ statusCode: 400, statusMessage: `That doesn’t look like a ${info.name} ${info.label.toLowerCase()}. It should look like ${info.placeholder}` })
+        if (!clean) {
+            const f = info.fields ?? []
+            throw createError({ statusCode: 400, statusMessage: f.length
+                ? `That doesn’t look like a ${info.name} ${f.map(x => x.label.toLowerCase()).join(' and ')}. It should look like ${f.map(x => x.placeholder).join(' and ')}`
+                : 'That setting isn’t available.' })
+        }
         next[info.key] = clean
     }
     await useDb().update(schema.sites).set({ integrations: next, updatedAt: new Date() }).where(eq(schema.sites.id, site.id))

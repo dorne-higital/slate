@@ -15,6 +15,17 @@ provide('siteIntegrations', integrations)
 provide('siteSocials', computed(() => props.site.socials ?? {}))
 const tracking = ref<{ reopen: () => void } | null>(null)
 const hasCookies = computed(() => !!(integrations.value.ga4 || integrations.value.metaPixel))
+// Search engine ownership checks and Safari's Smart App Banner. Every value was format-checked on save.
+useHead(() => {
+    const i = integrations.value
+    return {
+        meta: [
+            ...(i.googleVerify ? [{ key: 'google-verify', name: 'google-site-verification', content: i.googleVerify }] : []),
+            ...(i.bingVerify ? [{ key: 'bing-verify', name: 'msvalidate.01', content: i.bingVerify }] : []),
+            ...(i.iosAppBanner ? [{ key: 'apple-itunes-app', name: 'apple-itunes-app', content: `app-id=${i.iosAppBanner}` }] : [])
+        ]
+    }
+})
 </script>
 
 <template>
@@ -25,6 +36,7 @@ const hasCookies = computed(() => !!(integrations.value.ga4 || integrations.valu
         </main>
         <SiteFooter :name="site.name" :items="menus.footer" :legal="menus.legal" :theme="site.theme" :socials="site.socials" :badge="site.badge" :cookie-settings="hasCookies" @cookie-settings="tracking?.reopen()" />
         <SiteTracking ref="tracking" :integrations="integrations" />
+        <SiteWhatsApp v-if="integrations.whatsapp" :number="integrations.whatsapp" :name="site.name" />
     </div>
 </template>
 

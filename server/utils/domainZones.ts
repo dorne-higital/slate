@@ -31,6 +31,9 @@ async function account() {
     return accountId
 }
 
+/** Slate's Cloudflare account ID (looked up once from the slatecms.co.uk zone). */
+export const cloudflareAccountId = () => account()
+
 interface Zone { id: string, name: string, status: string, name_servers: string[] }
 
 async function ensureZone(apex: string): Promise<Zone> {
@@ -91,5 +94,56 @@ export async function moveDomainToZone(order: typeof schema.domainOrders.$inferS
     }
     if (!site.customDomain || site.customDomain === apex) {
         await db.update(schema.sites).set({ customDomain: www, updatedAt: new Date() }).where(eq(schema.sites.id, site.id))
+    }
+}
+
+// ── Email forwarding (Cloudflare Email Routing on the domain's zone) ──
+// Token also needs: Account › Email Routing Addresses: Edit, Zone › Email Routing Rules: Edit, Zone › Zone Settings: Edit.
+
+export interface EmailForward { id: string, from: string, to: string, confirmed: boolean }
+interface RoutingRule { id?: string, tag?: string, enabled: boolean, matchers: { type: string, field?: string, value?: string }[], actions: { type: string, value?: string[] }[] }
+
+/** Every forward on the domain, with whether its inbox has confirmed yet. '*' is the catch-all. */
+export async function listEmailForwards(zoneId: string, apex: string): Promise<EmailForward[]> {
+    const [rules, catchAll, addresses] = await Promise.all([
+        cf<RoutingRule[]>('GET', `/zones/${zoneId}/email/routing/rules?per_page=50`).catch(() => []),
+        cf<RoutingRule>('GET', `/zones/${zoneId}/email/routing/rules/catch_all`).catch(() => null),
+        cf<{ email: string, verified: string | null }[]>('GET', `/accounts/${await account()}/email/routing/addresses?per_page=50`).catch(() => [])
+    ])
+    const confirmed = (to: string) => !!addresses.find(a => a.email.toLowerCase() === to.toLowerCase())?.verified
+    const out: EmailForward[] = []
+    for (const r of rules) {
+        const m = r.matchers.find(x => x.type === 'literal' && x.field === 'to')
+        const to = r.actions.find(a => a.type === 'forward')?.value?.[0]
+        if (r.enabled && m?.value?.endsWith(`@${apex}`) && to) out.push({ id: r.tag ?? r.id!, from: m.value, to, confirmed: confirmed(to) })
+    }
+    const allTo = catchAll?.enabled ? catchAll.actions.find(a => a.type === 'forward')?.value?.[0] : undefined
+    if (allTo) out.push({ id: 'catch_all', from: '*', to: allTo, confirmed: confirmed(allTo) })
+    return out
+}
+
+/** Forwards local@apex (or '*' for anything) to an inbox. Cloudflare emails that inbox once to confirm it. */
+export async function addEmailForward(zoneId: string, apex: string, local: string, to: string) {
+    const settings = await cf<{ enabled: boolean }>('GET', `/zones/${zoneId}/email/routing`)
+    if (!settings.enabled) await cf('POST', `/zones/${zoneId}/email/routing/dns`, {})
+    await cf('POST', `/accounts/${await account()}/email/routing/addresses`, { email: to }).catch((err: Error) => {
+        if (!/exist|duplicate/i.test(err.message)) throw err
+    })
+    const actions = [{ type: 'forward', value: [to] }]
+    if (local === '*') {
+        await cf('PUT', `/zones/${zoneId}/email/routing/rules/catch_all`, { enabled: true, matchers: [{ type: 'all' }], actions })
+    } else {
+        await cf('POST', `/zones/${zoneId}/email/routing/rules`, {
+            name: `Slate: ${local}@${apex}`, enabled: true, actions,
+            matchers: [{ type: 'literal', field: 'to', value: `${local}@${apex}` }]
+        })
+    }
+}
+
+export async function removeEmailForward(zoneId: string, id: string) {
+    if (id === 'catch_all') {
+        await cf('PUT', `/zones/${zoneId}/email/routing/rules/catch_all`, { enabled: false, matchers: [{ type: 'all' }], actions: [{ type: 'drop' }] })
+    } else {
+        await cf('DELETE', `/zones/${zoneId}/email/routing/rules/${encodeURIComponent(id)}`)
     }
 }

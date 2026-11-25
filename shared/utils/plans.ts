@@ -35,7 +35,7 @@ const GB = 1024 ** 3
 export const PLANS: PlanInfo[] = [
     {
         key: 'starter', name: 'Starter', tagline: 'For a simple site', monthly: 1500, yearly: 15000,
-        limits: { sites: 1, pagesPerSite: 10, formsPerSite: 1, peoplePerSite: 1, storageBytes: 1 * GB, blog: false, integrations: ['ga4', 'plausible'], slateBadge: true, extraSiteMonthly: null, support: 'Email' }
+        limits: { sites: 1, pagesPerSite: 10, formsPerSite: 1, peoplePerSite: 1, storageBytes: 1 * GB, blog: false, integrations: ['ga4', 'plausible', 'whatsapp', 'googleVerify', 'bingVerify', 'stats'], slateBadge: true, extraSiteMonthly: null, support: 'Email' }
     },
     {
         key: 'business', name: 'Business', tagline: 'Most small businesses pick this', monthly: 2900, yearly: 29000,
@@ -94,6 +94,8 @@ export function limitsFor(status: BillingStatus, plan: PlanKey | null): PlanLimi
 
 export const formatGB = (bytes: number) => `${Math.round(bytes / GB)} GB`
 export const integrationAllowed = (limits: PlanLimits, key: keyof SiteIntegrations) => limits.integrations === 'all' || limits.integrations.includes(key)
+/** Webhooks, chat alerts and email lists come with the plans that include every integration. */
+export const connectionsAllowed = (limits: PlanLimits) => limits.integrations === 'all'
 
 /** The comparison rows shown on the home page and in Billing, all from the limits above. */
 export function planRowsFor(): { label: string, values: string[] }[] {
@@ -106,7 +108,7 @@ export function planRowsFor(): { label: string, values: string[] }[] {
         { label: 'People who can edit', values: PLANS.map(p => p.limits.peoplePerSite === 1 ? 'Just you' : `Up to ${p.limits.peoplePerSite} per site`) },
         { label: 'Images and files', values: PLANS.map(p => `${formatGB(p.limits.storageBytes)}${p.limits.sites > 1 ? ' shared' : ''}`) },
         { label: 'Your own domain', values: PLANS.map(p => p.limits.sites > 1 ? 'Yes, on every site' : 'Yes') },
-        { label: 'Integrations', values: PLANS.map(p => p.limits.integrations === 'all' ? 'All' : 'Analytics only') },
+        { label: 'Integrations', values: PLANS.map(p => p.limits.integrations === 'all' ? 'All' : 'Analytics, search and WhatsApp') },
         { label: 'Slate branding', values: PLANS.map(p => p.limits.slateBadge ? 'Small link in your footer' : 'None') },
         { label: 'Support', values: PLANS.map(p => p.limits.support) }
     ]
@@ -122,7 +124,7 @@ export function planFeatures(p: PlanInfo): string[] {
         l.blog ? 'Blog' : 'No blog',
         l.peoplePerSite === 1 ? 'Just you editing' : `Up to ${l.peoplePerSite} editors per site`,
         `${formatGB(l.storageBytes)} for images and files`,
-        l.integrations === 'all' ? 'All integrations' : 'Analytics integrations',
+        l.integrations === 'all' ? 'All integrations' : 'Analytics, search and WhatsApp integrations',
         l.slateBadge ? 'Small “Made with Slate” link' : 'No Slate branding',
         `${l.support} support`
     ]

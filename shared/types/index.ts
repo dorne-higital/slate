@@ -97,7 +97,50 @@ export interface SiteIntegrations {
     metaPixel?: string
     /** Calendly scheduling link, e.g. https://calendly.com/bramble/visit */
     calendly?: string
+    /** WhatsApp number in international form, digits only, e.g. 447700900123 */
+    whatsapp?: string
+    /** Google Search Console verification code (the content of its meta tag) */
+    googleVerify?: string
+    /** Bing Webmaster Tools verification code (msvalidate.01) */
+    bingVerify?: string
+    /** App Store app ID (digits) for Safari's Smart App Banner */
+    iosAppBanner?: string
+    /** Apple app ID for universal links: Team ID + bundle ID, e.g. A1B2C3D4E5.com.example.app */
+    appleAppLinks?: string
+    /** Android app links: package name, a space, then SHA-256 certificate fingerprints separated by spaces */
+    androidAppLinks?: string
+    /** 'off' when the owner has switched off Slate's built-in visitor stats */
+    stats?: string
 }
+
+/**
+ * Tools that need a secret (webhook addresses, API keys). Server-only: never sent to visitors,
+ * and the CMS only ever sees the masked view (SiteConnectionsView).
+ */
+export interface SiteConnections {
+    webhook?: ConnectionBase & { url: string }
+    slack?: ConnectionBase & { url: string }
+    discord?: ConnectionBase & { url: string }
+    mailchimp?: ConnectionBase & { apiKey: string, listId: string, listName: string, formId: string }
+    brevo?: ConnectionBase & { apiKey: string, listId: string, listName: string, formId: string }
+}
+export type ConnectionKey = keyof SiteConnections
+export interface ConnectionBase {
+    /** Last failed send, so the owner can see something's wrong */
+    lastError?: string
+    lastErrorAt?: string
+    lastOkAt?: string
+}
+/** What the CMS sees of one connection: enough to recognise it, never the secret. */
+export interface ConnectionView {
+    hint: string
+    listName?: string
+    formId?: string
+    lastError?: string
+    lastErrorAt?: string
+    lastOkAt?: string
+}
+export type SiteConnectionsView = Partial<Record<ConnectionKey, ConnectionView>>
 
 export type MenuSlot = 'header' | 'footer' | 'legal'
 

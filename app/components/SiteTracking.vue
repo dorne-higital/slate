@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Analytics and ads tools for a client site. Plausible sets no cookies so it always runs;
+ * Analytics and ads tools for a client site. Plausible and Slate's visitor stats set no cookies so they always run;
  * Google Analytics and Meta Pixel only run after the visitor accepts cookies (UK GDPR / PECR).
  * Every ID here was checked against the tool's format on save, so it's safe to put in a script.
  */
@@ -35,11 +35,13 @@ function choose(answer: 'yes' | 'no') {
 const reopen = () => (showBanner.value = true)
 defineExpose({ reopen })
 
-// Plausible: no cookies, always on
+// Plausible and Slate's own visitor stats (Cloudflare Web Analytics): no cookies, always on
+const beacon = useRuntimeConfig().public.cfBeaconToken
 useHead(() => ({
-    script: props.integrations.plausible
-        ? [{ key: 'plausible', src: 'https://plausible.io/js/script.js', defer: true, 'data-domain': props.integrations.plausible }]
-        : []
+    script: [
+        ...(props.integrations.plausible ? [{ key: 'plausible', src: 'https://plausible.io/js/script.js', defer: true, 'data-domain': props.integrations.plausible }] : []),
+        ...(beacon && props.integrations.stats !== 'off' ? [{ key: 'cf-beacon', src: 'https://static.cloudflareinsights.com/beacon.min.js', defer: true, 'data-cf-beacon': JSON.stringify({ token: beacon, spa: true }) }] : [])
+    ]
 }))
 // Google Analytics and Meta Pixel: only after "Accept"
 useHead(() => {

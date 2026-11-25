@@ -162,6 +162,13 @@
       "when": 1795614312574,
       "tag": "0022_fearless_famine",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1795633732764,
+      "tag": "0023_first_dreadnoughts",
+      "breakpoints": true
     }
   ]
 }

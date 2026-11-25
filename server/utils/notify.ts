@@ -13,6 +13,13 @@ async function siteContact(site: Site) {
 }
 
 export function notifyFormReply(event: H3Event, site: Site, form: { id: string, name: string, fields: FormField[] }, data: Record<string, string>, page: string | null, replyId: string) {
+    // Webhooks, Slack, Discord and email lists, if the site has any and its plan includes them
+    if (site.connections && Object.keys(site.connections).length) {
+        event.waitUntil?.((async () => {
+            if (!connectionsAllowed((await payerLimits(site)).limits)) return
+            await sendReplyToConnections({ site, form, data, page, replyId, address: await liveAddress(site), sentAt: new Date() })
+        })().catch(() => {}))
+    }
     const work = (async () => {
         const to = await siteContact(site)
         if (!to) return

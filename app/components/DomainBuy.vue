@@ -3,7 +3,7 @@
 const props = defineProps<{ siteId: string, canBuy: boolean, suggestion?: string, autoSearch?: boolean }>()
 const route = useRoute()
 
-interface Order { id: string, domain: string, price: number, status: DomainOrderStatus, simulated: boolean, expiresAt: string | null, createdAt: string }
+interface Order { id: string, domain: string, price: number, status: DomainOrderStatus, simulated: boolean, expiresAt: string | null, createdAt: string, canForward?: boolean }
 
 const query = ref(props.suggestion ?? '')
 const results = ref<DomainOption[] | null>(null)
@@ -50,6 +50,41 @@ onMounted(async () => {
     emit('bought')
     navigateTo({ query: {} }, { replace: true })
 })
+
+// Email forwarding (domains with their own Cloudflare zone): hello@theirdomain → their own inbox
+interface Forward { id: string, from: string, to: string, confirmed: boolean }
+const fwd = reactive<Record<string, { open: boolean, list: Forward[], local: string, to: string, busy: boolean, error: string, loaded: boolean }>>({})
+async function toggleForwarding(id: string) {
+    if (fwd[id]?.open) {
+        fwd[id]!.open = false
+        return
+    }
+    fwd[id] = { open: true, list: fwd[id]?.list ?? [], local: 'hello', to: '', busy: !fwd[id]?.loaded, error: '', loaded: !!fwd[id]?.loaded }
+    if (fwd[id]!.loaded) return
+    try {
+        fwd[id]!.list = await $fetch<Forward[]>(`/api/sites/${props.siteId}/domains/orders/${id}/forwarding`)
+        fwd[id]!.loaded = true
+    } catch (err) {
+        fwd[id]!.error = (err as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'Couldn’t load your forwards. Please try again.'
+    } finally {
+        fwd[id]!.busy = false
+    }
+}
+async function changeForwarding(id: string, method: 'POST' | 'DELETE', forwardId?: string) {
+    const f = fwd[id]!
+    f.busy = true
+    f.error = ''
+    try {
+        f.list = await $fetch<Forward[]>(`/api/sites/${props.siteId}/domains/orders/${id}/forwarding`, method === 'POST'
+            ? { method, body: { local: f.local, to: f.to } }
+            : { method, query: { id: forwardId } })
+        if (method === 'POST') f.local = ''
+    } catch (err) {
+        f.error = (err as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'Couldn’t save that. Please try again.'
+    } finally {
+        f.busy = false
+    }
+}
 
 // Moving a domain to another registrar: the transfer code, or for .uk names the IPS tag route
 const transfer = reactive<Record<string, { busy?: boolean, kind?: 'code' | 'uk' | 'test', code?: string, error?: string }>>({})
@@ -110,7 +145,30 @@ const statusText: Record<DomainOrderStatus, string> = {
                     <span class="tag" :class="o.status">{{ statusText[o.status] }}<template v-if="o.simulated"> (test)</template></span>
                     <span v-if="o.status === 'active' && o.expiresAt" class="muted small">Renews {{ new Date(o.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }} · {{ formatPence(o.price) }}</span>
                     <span v-else-if="o.status === 'failed'" class="muted small">You’ve paid and we’re on it. We’ll finish setting it up and let you know.</span>
+                    <button v-if="canBuy && o.canForward" class="btn btn-ghost btn-sm" type="button" :aria-expanded="!!fwd[o.id]?.open" @click="toggleForwarding(o.id)">Email forwarding</button>
                     <button v-if="canBuy && (o.status === 'active' || o.status === 'cancelled') && !transfer[o.id]" class="btn btn-plain btn-sm" type="button" @click="getTransfer(o.id)">Move to another provider</button>
+                    <div v-if="fwd[o.id]?.open" class="move fwd">
+                        <p><b>Email forwarding</b> sends mail for {{ o.domain }} to an inbox you already have, free. To send as that address too, use your email provider’s “send mail as” setting.</p>
+                        <p v-if="fwd[o.id]!.busy && !fwd[o.id]!.loaded" class="muted small">Loading…</p>
+                        <ul v-if="fwd[o.id]!.list.length" class="fwd-list">
+                            <li v-for="f in fwd[o.id]!.list" :key="f.id">
+                                <span><b>{{ f.from === '*' ? `Anything @${o.domain}` : f.from }}</b> → {{ f.to }}</span>
+                                <span v-if="f.confirmed" class="tag active">Working</span>
+                                <span v-else class="tag">Check {{ f.to }} and press the link from Cloudflare</span>
+                                <button class="btn btn-plain btn-sm danger" type="button" :disabled="fwd[o.id]!.busy" @click="changeForwarding(o.id, 'DELETE', f.id)">Remove</button>
+                            </li>
+                        </ul>
+                        <form class="fwd-add" @submit.prevent="changeForwarding(o.id, 'POST')">
+                            <label class="sr" :for="`fl-${o.id}`">Address</label>
+                            <span class="addr"><input :id="`fl-${o.id}`" v-model="fwd[o.id]!.local" class="inp" type="text" placeholder="hello" autocomplete="off" spellcheck="false"><span>@{{ o.domain }}</span></span>
+                            <span aria-hidden="true">→</span>
+                            <label class="sr" :for="`ft-${o.id}`">Send to</label>
+                            <input :id="`ft-${o.id}`" v-model="fwd[o.id]!.to" class="inp" type="email" placeholder="you@gmail.com" autocomplete="email">
+                            <button class="btn btn-dark btn-sm" type="submit" :disabled="fwd[o.id]!.busy || !fwd[o.id]!.local || !fwd[o.id]!.to">{{ fwd[o.id]!.busy && fwd[o.id]!.loaded ? 'Saving…' : 'Add' }}</button>
+                        </form>
+                        <p class="muted small">Type * as the address to catch anything sent to the domain. The first time you use an inbox, Cloudflare emails it a link to confirm.</p>
+                        <p v-if="fwd[o.id]!.error" class="error-box">{{ fwd[o.id]!.error }}</p>
+                    </div>
                     <div v-if="transfer[o.id]" class="move" role="status">
                         <template v-if="transfer[o.id]!.busy">Getting your transfer code…</template>
                         <p v-else-if="transfer[o.id]!.error" class="error-box">{{ transfer[o.id]!.error }}</p>
@@ -151,5 +209,16 @@ h2 { font-size: 18px; margin: 0; }
 .move { background: var(--paper); border-radius: var(--radius); display: flex; flex: 1 1 100%; flex-direction: column; font-size: 14px; gap: 8px; padding: 12px 14px; }
 .move p { margin: 0; }
 .code-row { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+.fwd-list { display: flex; flex-direction: column; list-style: none; margin: 0; padding: 0; }
+.fwd-list li { border-top: 0; display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 4px 0; }
+.fwd-list li > span:first-child { flex: 1 1 260px; overflow-wrap: anywhere; }
+.fwd-add { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+.fwd-add .inp { font-size: 14px; height: 36px; }
+.fwd-add > .inp { flex: 1 1 200px; }
+.addr { align-items: center; display: flex; flex: 1 1 220px; gap: 4px; }
+.addr .inp { flex: 1; min-width: 70px; }
+.addr span { color: var(--text-muted); font-size: 14px; white-space: nowrap; }
+.danger { color: var(--danger); }
+.sr { clip: rect(0 0 0 0); height: 1px; overflow: hidden; position: absolute; width: 1px; }
 .code-row code { background: var(--white); border-radius: var(--radius); box-shadow: 0 0 0 1px var(--line); font-size: 15px; overflow-wrap: anywhere; padding: 6px 10px; user-select: all; }
 </style>

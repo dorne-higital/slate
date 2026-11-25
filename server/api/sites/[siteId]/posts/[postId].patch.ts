@@ -40,5 +40,9 @@ export default defineEventHandler(async (event) => {
     }
 
     const [updated] = await useDb().update(schema.posts).set(set).where(eq(schema.posts.id, post.id)).returning()
+    // Newly live (not scheduled for later): tell search engines
+    if (b.status === 'published' && post.status !== 'published' && updated!.publishedAt && updated!.publishedAt <= new Date()) {
+        event.waitUntil?.(pingIndexNow(site, [`/blog/${updated!.slug}`]))
+    }
     return toEditorPost(updated!)
 })

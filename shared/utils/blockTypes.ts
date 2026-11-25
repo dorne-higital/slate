@@ -353,6 +353,19 @@ export const BLOCK_TYPES: BlockType[] = [
         defaults: { eyebrow: '', heading: 'Find us', email: '', phone: '', address: '', hours: '', map: 'show' }
     },
     {
+        type: 'map',
+        group: 'Get in touch',
+        name: 'Map',
+        desc: 'Google Maps showing where to find you',
+        fields: [
+            eyebrow, heading,
+            { key: 'address', label: 'Address or place', kind: 'textarea', help: 'As you’d type it into Google Maps. A business name and town works too.', max: 300 },
+            { key: 'zoom', label: 'Zoom', kind: 'select', options: opts(['street', 'Streets around it'], ['area', 'The local area'], ['town', 'The whole town']) },
+            { key: 'height', label: 'Height', kind: 'select', options: opts(['medium', 'Medium'], ['short', 'Short'], ['tall', 'Tall']) }
+        ],
+        defaults: { eyebrow: '', heading: 'Find us', address: '', zoom: 'street', height: 'medium' }
+    },
+    {
         type: 'booking',
         group: 'Get in touch',
         name: 'Booking',
