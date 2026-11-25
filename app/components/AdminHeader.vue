@@ -33,5 +33,11 @@ const { data: errors } = useAsyncData('admin-error-count', () => $fetch<{ n: num
 .nav-link.on { background: var(--mist); color: var(--quarry); }
 .badge { background: var(--danger); border-radius: 999px; color: var(--white); font-size: 11px; font-weight: 800; min-width: 18px; padding: 1px 6px; text-align: center; }
 .spacer { flex: 1; }
+@media (max-width: 640px) {
+    .top { padding: 10px 16px; }
+    .nav { margin-left: 0; order: 3; overflow-x: auto; scrollbar-width: none; width: 100%; }
+    .nav-link { flex: none; }
+    .who { display: none; }
+}
 .who { color: var(--text-muted); font-size: 14px; }
 </style>
