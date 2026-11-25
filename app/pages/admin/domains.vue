@@ -5,7 +5,7 @@ const { me } = useMe()
 if (me.value && !me.value.isPlatformAdmin) throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
 useHead({ title: 'Domains · Slate admin' })
 
-interface AdminOrder { id: string, domain: string, price: number, status: DomainOrderStatus, simulated: boolean, error: string | null, expiresAt: string | null, createdAt: string, updatedAt: string, siteId: string | null, site: string | null, owner: string | null, email: string | null }
+interface AdminOrder { id: string, domain: string, price: number, status: DomainOrderStatus, simulated: boolean, error: string | null, expiresAt: string | null, createdAt: string, updatedAt: string, siteId: string | null, site: string | null, owner: string | null, email: string | null, onCloudflare: boolean }
 const { data: orders, refresh } = await useAsyncData('admin-domains', () => useRequestFetch()<AdminOrder[]>('/api/admin/domains'), { default: () => [] })
 const failed = computed(() => orders.value.filter(o => o.status === 'failed'))
 const others = computed(() => orders.value.filter(o => o.status !== 'failed'))
@@ -14,12 +14,14 @@ const statusText: Record<DomainOrderStatus, string> = { pending_payment: 'Waitin
 
 const busy = ref<string | null>(null)
 const result = ref<{ id: string, ok: boolean, text: string } | null>(null)
-async function act(o: AdminOrder, action: 'retry' | 'done') {
+async function act(o: AdminOrder, action: 'retry' | 'done' | 'move-dns') {
     busy.value = o.id
     result.value = null
     try {
         const res = await $fetch<{ status?: DomainOrderStatus, error?: string | null }>(`/api/admin/domains/${o.id}/${action}`, { method: 'POST' })
-        result.value = action === 'done'
+        result.value = action === 'move-dns'
+            ? { id: o.id, ok: true, text: `${o.domain} is moving to Cloudflare. The bare address will redirect to www once Cloudflare sees the new nameservers, usually within an hour.` }
+            : action === 'done'
             ? { id: o.id, ok: true, text: `${o.domain} is marked as done.` }
             : res.status === 'active'
                 ? { id: o.id, ok: true, text: `${o.domain} is set up and connected.` }
@@ -74,7 +76,11 @@ async function act(o: AdminOrder, action: 'retry' | 'done') {
                             <b>{{ o.domain }}</b>
                             <span class="muted small">{{ o.site ?? 'No site' }} · {{ o.owner ?? 'Unknown' }} · bought {{ day(o.createdAt) }}<template v-if="o.expiresAt"> · renews {{ day(o.expiresAt) }}</template> · {{ formatPence(o.price) }} a year</span>
                         </div>
-                        <span class="tag" :class="o.status">{{ statusText[o.status] }}<template v-if="o.simulated"> (test)</template></span>
+                        <span class="tag-row">
+                            <button v-if="!o.simulated && !o.onCloudflare && (o.status === 'active' || o.status === 'cancelled')" class="btn btn-ghost btn-sm" type="button" :disabled="!!busy" title="So the bare domain redirects to www with HTTPS" @click="act(o, 'move-dns')">{{ busy === o.id ? 'Moving…' : 'Move DNS to Cloudflare' }}</button>
+                            <span v-if="o.onCloudflare" class="muted small">DNS on Cloudflare</span>
+                            <span class="tag" :class="o.status">{{ statusText[o.status] }}<template v-if="o.simulated"> (test)</template></span>
+                        </span>
                     </li>
                     <li v-if="!others.length" class="empty muted">No domains bought yet.</li>
                 </ul>
@@ -97,6 +103,7 @@ h2 { align-items: center; display: flex; font-size: 17px; gap: 8px; margin: 0; p
 .what { display: flex; flex: 1 1 320px; flex-direction: column; gap: 3px; min-width: 0; }
 .what b { overflow-wrap: anywhere; }
 .err { background: #fbeceb; border-radius: var(--radius); color: var(--danger); font-size: 13px; margin-top: 4px; overflow-wrap: anywhere; padding: 6px 10px; }
+.tag-row { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; }
 .acts { display: flex; flex-wrap: wrap; gap: 8px; }
 .small { font-size: 13px; }
 .tag { background: var(--mist); border-radius: 999px; font-size: 12px; font-weight: 700; padding: 3px 9px; }

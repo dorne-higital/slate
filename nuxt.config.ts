@@ -25,6 +25,9 @@ export default defineNuxtConfig({
         betterAuthSecret: '',
         // Cloudflare for SaaS (client custom domains). Token needs SSL and Certificates: Edit on the zone.
         cloudflareApiToken: '',
+        // Domains Slate sells get their own Cloudflare zone (bare domain → www redirect). Token: Zone, DNS and
+        // Single Redirect: Edit on all zones in the account. Empty = the older name.com DNS setup.
+        cloudflareDomainsToken: '',
         stripeSecretKey: '',
         stripeWebhookSecret: '',
         stripePortalConfig: '',

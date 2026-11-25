@@ -1,0 +1,1 @@
+ALTER TABLE "domain_orders" ADD COLUMN "cloudflare_zone_id" text;

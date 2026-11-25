@@ -68,6 +68,12 @@ async function setUpDomainOrder(order: typeof schema.domainOrders.$inferSelect, 
         return fail(`Registration: ${(err as Error).message}`)
     }
     try {
+        if (domainZonesEnabled()) {
+            // Its own Cloudflare zone: www → Slate, bare domain → https redirect to www (see domainZones.ts)
+            await moveDomainToZone(order)
+            await db.update(schema.domainOrders).set({ status: 'active', error: null, updatedAt: new Date() }).where(eq(schema.domainOrders.id, order.id))
+            return
+        }
         await pointDomainAtSlate(order.domainName)
         const site = order.siteId ? await db.query.sites.findFirst({ where: eq(schema.sites.id, order.siteId) }) : null
         if (site && !site.deletedAt) {

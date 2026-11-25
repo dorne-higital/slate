@@ -113,6 +113,11 @@ export async function ensureTxtRecord(domainName: string, host: string, answer: 
     return true
 }
 
+/** Hands the domain's DNS to other nameservers (its Cloudflare zone). */
+export async function setNameservers(domainName: string, nameservers: string[]) {
+    await namecom('POST', `domains/${domainName}:setNameservers`, { nameservers })
+}
+
 export async function setAutorenew(domainName: string, on: boolean) {
     await namecom('POST', `domains/${domainName}:${on ? 'enableAutorenew' : 'disableAutorenew'}`)
 }

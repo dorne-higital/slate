@@ -293,6 +293,8 @@ export const domainOrders = pgTable('domain_orders', {
     status: text('status').$type<DomainOrderStatus>().notNull().default('pending_payment'),
     // True when Stripe was in test mode: nothing was bought from name.com
     simulated: boolean('simulated').notNull().default(true),
+    // The domain's own Cloudflare zone, once its DNS has moved there from name.com
+    cloudflareZoneId: text('cloudflare_zone_id'),
     stripeSessionId: text('stripe_session_id'),
     stripeSubscriptionId: text('stripe_subscription_id'),
     expiresAt: timestamp('expires_at', { withTimezone: true }),

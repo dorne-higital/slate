@@ -35,7 +35,7 @@ export async function refreshDomain(row: typeof schema.domains.$inferSelect) {
 async function addVerifyRecordIfOurs(hostname: string, verify: { name: string, value: string }) {
     const apex = hostname.replace(/^www\./, '')
     const order = await useDb().query.domainOrders.findFirst({ where: and(eq(schema.domainOrders.domainName, apex), eq(schema.domainOrders.simulated, false), inArray(schema.domainOrders.status, ['active', 'cancelled'])) })
-    if (!order || !verify.name.endsWith(apex)) return
+    if (!order || order.cloudflareZoneId || !verify.name.endsWith(apex)) return
     const host = verify.name.slice(0, -apex.length).replace(/\.$/, '')
     await ensureTxtRecord(apex, host, verify.value)
 }
