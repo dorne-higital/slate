@@ -67,3 +67,12 @@
 .sec.reveal-wait { opacity: 0; transform: translateY(24px); }
 .sec.reveal-in { opacity: 1; transform: none; transition: opacity .7s ease, transform .7s ease; }
 @media (prefers-reduced-motion: reduce) { .sec.reveal-wait { opacity: 1; transform: none; } }
+
+/* Header see-through over the first section (Layout › Header): that section starts at the very top,
+   so give its content room for the header. Pages that don't start with a block just move down. */
+.site.header-overlay main > .sec:first-child > .blk { padding-top: calc(var(--blk-pad, 72px) + var(--site-header-h, 72px)); }
+.site.header-overlay main > :first-child:not(.sec) { margin-top: var(--site-header-h, 72px); }
+
+/* Blocks set to fill the screen: the first one leaves room for a normal header above it */
+.blk.h-screen { box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; min-height: 100vh; min-height: 100svh; }
+.site.header-normal main > .sec:first-child > .blk.h-screen { min-height: calc(100vh - var(--site-header-h, 72px)); min-height: calc(100svh - var(--site-header-h, 72px)); }

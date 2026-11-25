@@ -47,6 +47,8 @@ export const DEFAULT_THEME: Required<SiteTheme> = {
     headerSticky: false,
     headerGlass: false,
     headerSocials: false,
+    headerMode: 'normal',
+    headerOverlayText: 'light',
     footerStyle: 'simple',
     footerColour: 'dark'
 }
@@ -85,6 +87,8 @@ export function cleanTheme(input: unknown): SiteTheme {
     pick('navSize', ['small', 'medium', 'large'])
     for (const key of ['headingCase', 'navCase', 'buttonCase'] as const) pick(key, ['none', 'uppercase', 'capitalize'])
     pick('headerStyle', ['standard', 'centred', 'mega'])
+    pick('headerMode', ['normal', 'overlay', 'hidden'])
+    pick('headerOverlayText', ['light', 'dark'])
     pick('footerStyle', ['simple', 'columns'])
     pick('headerColour', COLOUR_CHOICES)
     pick('footerColour', COLOUR_CHOICES)

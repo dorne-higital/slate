@@ -101,6 +101,7 @@ export const BLOCK_TYPES: BlockType[] = [
         desc: 'Big heading with your pictures in a phone, browser or photo frame, buttons or store badges',
         fields: [
             { key: 'layout', label: 'Layout', kind: 'select', options: opts(['split', 'Words and picture side by side'], ['centred', 'Centred, pictures below'], ['band', 'Coloured band, tilted pictures']) },
+            { key: 'height', label: 'Height', kind: 'select', options: opts(['auto', 'Fit the content'], ['screen', 'Fill the screen']), help: 'Fill the screen makes it at least as tall as the visitor’s screen.' },
             frame, image('logoUrl', 'Small logo or app icon (optional)'), eyebrow, heading, { key: 'text', label: 'Text', kind: 'textarea', max: 600 },
             ...showcaseButtons,
             { key: 'rating', label: 'Star rating (optional)', kind: 'text', help: 'e.g. 4.8. Only use a real figure.', max: 4 },
@@ -108,7 +109,7 @@ export const BLOCK_TYPES: BlockType[] = [
             image('imageUrl', 'Main picture'), alt(),
             image('image2Url', 'Second picture (centred and band layouts)'), image('image3Url', 'Third picture (centred layout)')
         ],
-        defaults: { layout: 'split', frame: 'phone', logoUrl: '', eyebrow: '', heading: 'Your big promise in a few words', text: 'One or two lines on what it is and who it’s for.', buttonStyle: 'buttons', buttonLabel: 'Get started', buttonUrl: '', button2Label: '', button2Url: '', qr: 'no', rating: '', ratingText: '', imageUrl: '', imageAlt: '', image2Url: '', image3Url: '' }
+        defaults: { layout: 'split', height: 'auto', frame: 'phone', logoUrl: '', eyebrow: '', heading: 'Your big promise in a few words', text: 'One or two lines on what it is and who it’s for.', buttonStyle: 'buttons', buttonLabel: 'Get started', buttonUrl: '', button2Label: '', button2Url: '', qr: 'no', rating: '', ratingText: '', imageUrl: '', imageAlt: '', image2Url: '', image3Url: '' }
     },
     {
         type: 'buttonRow',

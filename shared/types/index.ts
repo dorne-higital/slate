@@ -57,6 +57,10 @@ export interface SiteTheme {
     /** Frosted glass: the header colour turns see-through and blurs the page behind it */
     headerGlass?: boolean
     headerSocials?: boolean
+    /** normal: above the page · overlay: see-through on top of the first section · hidden: no header at all */
+    headerMode?: 'normal' | 'overlay' | 'hidden'
+    /** Overlay only: light text for dark or coloured top sections, dark text for light ones */
+    headerOverlayText?: 'light' | 'dark'
     footerStyle?: 'simple' | 'columns'
     footerColour?: ThemeColourChoice
 }

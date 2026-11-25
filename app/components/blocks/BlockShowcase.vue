@@ -1,11 +1,12 @@
 <script setup lang="ts">
 const props = defineProps<{
-    layout?: string, frame?: string, logoUrl?: string, eyebrow?: string, heading?: string, text?: string,
+    layout?: string, height?: string, frame?: string, logoUrl?: string, eyebrow?: string, heading?: string, text?: string,
     buttonStyle?: string, buttonLabel?: string, buttonUrl?: string, button2Label?: string, button2Url?: string, qr?: string,
     rating?: string, ratingText?: string, imageUrl?: string, imageAlt?: string, image2Url?: string, image3Url?: string
 }>()
 const layout = computed(() => choice('showcase', 'layout', props.layout))
 const frame = computed(() => choice('showcase', 'frame', props.frame))
+const fill = computed(() => choice('showcase', 'height', props.height) === 'screen')
 const phone = computed(() => frame.value === 'phone')
 const stars = computed(() => {
     const n = Number.parseFloat(props.rating ?? '')
@@ -14,7 +15,7 @@ const stars = computed(() => {
 </script>
 
 <template>
-    <section class="blk showcase" :class="[`l-${layout}`, phone ? 'is-phone' : 'is-wide']">
+    <section class="blk showcase" :class="[`l-${layout}`, phone ? 'is-phone' : 'is-wide', { 'h-screen': fill }]">
         <div class="blk-inner grid">
             <div class="words">
                 <div v-if="logoUrl || eyebrow" class="top">
@@ -54,6 +55,7 @@ const stars = computed(() => {
 
 <style scoped>
 .showcase { overflow: hidden; padding: calc(var(--blk-pad, 72px) + 24px) 0 calc(var(--blk-pad, 72px) + 16px); }
+.h-screen .grid { width: 100%; }
 .grid { align-items: center; display: grid; gap: 56px; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
 .words { display: flex; flex-direction: column; gap: 22px; }
 .top { align-items: center; display: flex; gap: 12px; }

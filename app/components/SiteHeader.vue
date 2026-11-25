@@ -6,12 +6,27 @@ const tree = computed(() => menuTree(props.items))
 const open = ref(false)
 const isInternal = (url: string) => url.startsWith('/')
 const t = computed(() => ({ ...DEFAULT_THEME, ...props.theme }))
-// On a dark or coloured header, use the light version of the logo if there is one
-const logo = computed(() => (t.value.headerColour !== 'page' && t.value.headerColour !== 'soft' && t.value.logoOnDark) || t.value.logo)
+// See-through over the first section until you scroll (then the normal header colour, if it stays at the top)
+const overlay = computed(() => t.value.headerMode === 'overlay')
+const scrolled = ref(false)
+function onScroll() {
+    scrolled.value = window.scrollY > 24
+}
+onMounted(() => {
+    if (!overlay.value || props.preview) return
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+})
+onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
+// Previews (editor, Layout) show the solid header: there's no real first section behind it there
+const clear = computed(() => overlay.value && !props.preview && !scrolled.value && !open.value)
+// On a dark or coloured header (or light text over the first section), use the light version of the logo if there is one
+const onDark = computed(() => clear.value ? t.value.headerOverlayText === 'light' : t.value.headerColour !== 'page' && t.value.headerColour !== 'soft')
+const logo = computed(() => (onDark.value && t.value.logoOnDark) || t.value.logo)
 </script>
 
 <template>
-    <header class="sh" :class="[`style-${t.headerStyle}`, { sticky: t.headerSticky && !preview, glass: t.headerGlass }]">
+    <header class="sh" :class="[`style-${t.headerStyle}`, { sticky: t.headerSticky && !preview, glass: t.headerGlass, overlay: overlay && !preview, clear, 'clear-light': clear && t.headerOverlayText === 'light', 'is-hidden': preview && t.headerMode === 'hidden' }]">
         <div class="sh-bar">
             <component :is="preview ? 'span' : resolveComponent('NuxtLink')" to="/" class="sh-name" :aria-label="logo ? name : undefined">
                 <img v-if="logo" :src="logo" :alt="name" class="sh-logo">
@@ -48,6 +63,15 @@ const logo = computed(() => (t.value.headerColour !== 'page' && t.value.headerCo
     .sh.glass { -webkit-backdrop-filter: saturate(170%) blur(16px); backdrop-filter: saturate(170%) blur(16px); background: color-mix(in srgb, var(--site-header-bg, var(--site-bg)) 70%, transparent); border-bottom-color: rgb(255 255 255 / 18%); box-shadow: 0 1px 0 rgb(0 0 0 / 6%); }
 }
 @media (prefers-reduced-transparency: reduce) { .sh.glass { background: var(--site-header-bg, var(--site-bg)); } }
+/* Over the first section: no background until scrolled. Not sticky: it scrolls away with the page. */
+.sh.overlay { left: 0; position: absolute; right: 0; top: 0; transition: background-color .2s, box-shadow .2s; }
+.sh.overlay.sticky { position: fixed; }
+.sh.clear { -webkit-backdrop-filter: none; backdrop-filter: none; background: transparent; border-bottom-color: transparent; box-shadow: none; color: var(--site-heading); }
+.sh.clear-light { color: #fff; }
+.sh.clear-light .sh-link:not(.btn) { text-shadow: 0 1px 12px rgb(0 0 0 / 25%); }
+.sh.clear .sh-sub .sh-sublink { color: var(--site-heading); }
+.sh.is-hidden { opacity: .45; }
+@media (prefers-reduced-motion: reduce) { .sh.overlay { transition: none; } }
 .sh-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; margin: 0 auto; max-width: 1120px; min-height: 72px; padding: 0 24px; }
 .sh-name { align-items: center; color: inherit; display: inline-flex; font-family: var(--site-heading-font); font-size: 20px; font-weight: 800; text-decoration: none; }
 .sh-logo { display: block; height: var(--site-logo-height, 36px); max-width: 240px; object-fit: contain; width: auto; }

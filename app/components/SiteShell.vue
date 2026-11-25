@@ -7,6 +7,9 @@ const props = defineProps<{
 useHead(() => ({ link: [{ rel: 'stylesheet', href: themeFontsHref(props.site.theme) }] }))
 useHead(() => ({ link: props.site.theme?.favicon ? [{ rel: 'icon', href: props.site.theme.favicon }] : [] }))
 const themeVars = computed(() => siteThemeVars(props.site.theme))
+// Header over the page, or none: the first section starts at the very top (see .header-overlay in blocks.css)
+const headerMode = computed(() => props.site.theme?.headerMode ?? 'normal')
+const shellStyle = computed(() => ({ ...themeVars.value, '--site-header-h': props.site.theme?.headerStyle === 'centred' ? '104px' : '72px' }))
 const integrations = computed(() => props.site.integrations ?? {})
 provide('siteIntegrations', integrations)
 provide('siteSocials', computed(() => props.site.socials ?? {}))
@@ -15,8 +18,8 @@ const hasCookies = computed(() => !!(integrations.value.ga4 || integrations.valu
 </script>
 
 <template>
-    <div class="site" :style="themeVars">
-        <SiteHeader :name="site.name" :items="menus.header" :theme="site.theme" :socials="site.socials" />
+    <div class="site" :class="`header-${headerMode}`" :style="shellStyle">
+        <SiteHeader v-if="headerMode !== 'hidden'" :name="site.name" :items="menus.header" :theme="site.theme" :socials="site.socials" />
         <main>
             <slot />
         </main>

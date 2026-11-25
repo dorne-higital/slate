@@ -11,7 +11,7 @@ const [{ data: site, refresh: refreshSite }, { data: menus }] = await Promise.al
 ])
 
 const canEdit = computed(() => ROLE_RANK[me.value?.sites.find(s => s.id === siteId)?.role ?? 'viewer'] >= ROLE_RANK.admin)
-const LAYOUT_KEYS = ['headerStyle', 'headerColour', 'headerSticky', 'headerGlass', 'headerSocials', 'footerStyle', 'footerColour', 'footerLogo'] as const
+const LAYOUT_KEYS = ['headerStyle', 'headerColour', 'headerSticky', 'headerGlass', 'headerSocials', 'headerMode', 'headerOverlayText', 'footerStyle', 'footerColour', 'footerLogo'] as const
 type LayoutSettings = Pick<Required<SiteTheme>, typeof LAYOUT_KEYS[number]>
 const full = computed<Required<SiteTheme>>(() => ({ ...DEFAULT_THEME, ...(site.value?.theme as SiteTheme) }))
 const pickLayout = (t: Required<SiteTheme>) => Object.fromEntries(LAYOUT_KEYS.map(k => [k, t[k]])) as LayoutSettings
@@ -88,6 +88,21 @@ const sample: Block[] = [{ id: 'l1', type: 'hero', props: { heading: 'Your page 
 
                 <section class="panel box" aria-labelledby="hc-h">
                     <h2 id="hc-h">Header</h2>
+                    <fieldset class="field modes">
+                        <legend class="lb">Where it sits</legend>
+                        <label class="check"><input v-model="layout.headerMode" type="radio" value="normal" :disabled="!canEdit"> Above the page</label>
+                        <label class="check"><input v-model="layout.headerMode" type="radio" value="overlay" :disabled="!canEdit"> See-through, on top of the first section</label>
+                        <label class="check"><input v-model="layout.headerMode" type="radio" value="hidden" :disabled="!canEdit"> Hidden: no header on any page</label>
+                    </fieldset>
+                    <p v-if="layout.headerMode === 'overlay'" class="help">Looks best when each page starts with a hero, a showcase hero or a picture. With “Keep the header at the top” on, it turns solid once visitors scroll.</p>
+                    <p v-if="layout.headerMode === 'hidden'" class="help">Visitors can only get around with links on your pages and in the footer.</p>
+                    <div v-if="layout.headerMode === 'overlay'" class="field">
+                        <span class="lb">Text over the first section</span>
+                        <div class="swatches" role="radiogroup" aria-label="Header text over the first section">
+                            <button type="button" role="radio" class="sw" :class="{ on: layout.headerOverlayText === 'light' }" :aria-checked="layout.headerOverlayText === 'light'" :disabled="!canEdit" @click="layout.headerOverlayText = 'light'"><i style="background: #fff; box-shadow: inset 0 0 0 1px #c9ccd3" />Light, for dark or coloured sections</button>
+                            <button type="button" role="radio" class="sw" :class="{ on: layout.headerOverlayText === 'dark' }" :aria-checked="layout.headerOverlayText === 'dark'" :disabled="!canEdit" @click="layout.headerOverlayText = 'dark'"><i style="background: #1a1d24" />Dark, for light sections</button>
+                        </div>
+                    </div>
                     <div class="field">
                         <span class="lb">Background</span>
                         <div class="swatches" role="radiogroup" aria-label="Header background">
@@ -180,4 +195,6 @@ h2 { font-size: 17px; margin: 0; }
 @media (max-width: 1100px) { .two { grid-template-columns: minmax(0, 1fr); } .preview-col { position: static; } .cards { grid-template-columns: minmax(0, 1fr); } }
 .img-row { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
 .logo-prev { border-radius: 4px; height: 40px; max-width: 200px; object-fit: contain; padding: 6px; }
+.modes { border: 0; display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; }
+.modes legend { margin-bottom: 6px; padding: 0; }
 </style>
