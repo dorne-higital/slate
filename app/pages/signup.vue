@@ -1,11 +1,11 @@
 <script setup lang="ts">
-useHead({ title: 'Start your site · Slate' })
 const { sitesDomain } = useRuntimeConfig().public
 const { refresh } = useMe()
 
 const route = useRoute()
 // Joining someone's site from an invitation link: account only, no layout step
 const inviteToken = typeof route.query.invite === 'string' ? route.query.invite : ''
+const { comingSoon } = useRuntimeConfig().public
 const { data: invite } = await useAsyncData('signup-invite', () => inviteToken
     ? useRequestFetch()<{ siteName: string, role: SiteRole }>(`/api/invites/${inviteToken}`).catch(() => null)
     : Promise.resolve(null))
@@ -16,6 +16,9 @@ const step = ref<1 | 2 | 3>(1)
 // After the site exists: optional domain step
 const createdSiteId = ref<string | null>(null)
 const freeAddress = ref('')
+// Before launch only people with a working invitation can make an account
+const closed = computed(() => comingSoon && !invite.value)
+useHead(() => ({ title: closed.value ? 'Coming soon · Slate' : 'Start your site · Slate' }))
 const form = reactive({ name: '', email: '', password: '', siteName: '', layout: 'trade', country: 'GB' })
 const outsideUk = computed(() => form.country === 'other')
 const error = ref('')
@@ -60,7 +63,16 @@ async function create() {
         <div class="left">
             <NuxtLink to="/" aria-label="Slate home" class="home-link"><BrandMark /></NuxtLink>
 
-            <ol v-if="!inviteToken" aria-label="Sign-up steps" class="steps">
+            <div v-if="closed" class="stack">
+                <div class="intro">
+                    <h1>We’re not open yet</h1>
+                    <p>{{ inviteToken ? 'This invitation has expired or has already been used. Ask whoever invited you for a new link.' : 'Slate opens for sign-ups soon. Leave your email and we’ll tell you as soon as it does.' }}</p>
+                </div>
+                <NuxtLink class="btn btn-lichen btn-lg" to="/">Register your interest</NuxtLink>
+                <p class="small">Already have an account? <NuxtLink to="/login">Log in</NuxtLink></p>
+            </div>
+
+            <ol v-if="!inviteToken && !closed" aria-label="Sign-up steps" class="steps">
                 <li :class="step === 1 ? 'on' : 'done'"><span>1</span>Your account</li>
                 <li class="bar" aria-hidden="true" />
                 <li :class="step === 2 ? 'on' : step === 3 ? 'done' : ''"><span>2</span>Starting layout</li>
@@ -68,7 +80,7 @@ async function create() {
                 <li :class="step === 3 ? 'on' : ''"><span>3</span>Your domain</li>
             </ol>
 
-            <form v-if="step === 1" class="stack" @submit.prevent="next">
+            <form v-if="step === 1 && !closed" class="stack" @submit.prevent="next">
                 <div class="intro">
                     <h1>{{ invite ? `Join ${invite.siteName}` : 'Start your site' }}</h1>
                     <p>{{ invite ? `Make your Slate account to start working on ${invite.siteName}.` : inviteToken ? 'This invitation has expired or has already been used. Ask for a new link, or start your own site below.' : 'Free to start. No card needed.' }}</p>
@@ -136,7 +148,7 @@ async function create() {
                     <button class="btn btn-plain" type="button" @click="step = 1">Back</button>
                 </div>
             </div>
-            <TurnstileWidget v-if="step !== 3" ref="turnstile" @token="turnstileToken = $event" />
+            <TurnstileWidget v-if="step !== 3 && !closed" ref="turnstile" @token="turnstileToken = $event" />
         </div>
 
         <div class="preview" aria-hidden="true">

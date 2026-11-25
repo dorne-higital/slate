@@ -1,6 +1,7 @@
 <script setup lang="ts">
 useHead({ title: 'Log in · Slate' })
 const route = useRoute()
+const { comingSoon } = useRuntimeConfig().public
 const { refresh } = useMe()
 
 const email = ref('')
@@ -41,7 +42,8 @@ async function submit() {
             <TurnstileWidget ref="turnstile" @token="turnstileToken = $event" />
             <button class="btn btn-dark btn-lg" type="submit" :disabled="busy">{{ busy ? 'Logging in…' : 'Log in' }}</button>
             <p class="small"><NuxtLink to="/forgot-password">Forgot your password?</NuxtLink></p>
-            <p class="small">New to Slate? <NuxtLink to="/signup">Start your site</NuxtLink></p>
+            <p v-if="comingSoon" class="small">New to Slate? We’re not open yet. <NuxtLink to="/">Register your interest</NuxtLink></p>
+            <p v-else class="small">New to Slate? <NuxtLink to="/signup">Start your site</NuxtLink></p>
         </form>
     </div>
 </template>

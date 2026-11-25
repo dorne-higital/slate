@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     const site = await resolveTenant(event)
     if (!site) {
         const host = useRuntimeConfig().public.appHost
-        return urlset([`/`, `/signup`].map(p => ({ loc: `https://${host}${p}` })))
+        return urlset((useRuntimeConfig().public.comingSoon ? [`/`] : [`/`, `/signup`]).map(p => ({ loc: `https://${host}${p}` })))
     }
 
     const address = await liveAddress(site)

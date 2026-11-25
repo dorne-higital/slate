@@ -21,6 +21,8 @@ export default defineEventHandler(async (event) => {
     const siteName = body.siteName?.trim() ?? ''
 
     const joining = typeof body.invite === 'string' && body.invite.length > 0
+    // Before launch only invited team members can make accounts
+    if (!joining && useRuntimeConfig().public.comingSoon) throw createError({ statusCode: 403, statusMessage: 'Slate isn’t open for sign-ups yet. Leave your email on slatecms.co.uk and we’ll tell you when it opens.' })
     if (!name || !email || (!siteName && !joining)) throw createError({ statusCode: 400, statusMessage: 'Fill in every field' })
     if (!joining && !sellsTo(body.country)) throw createError({ statusCode: 400, statusMessage: NOT_SELLING_MESSAGE })
     if (password.length < 10) throw createError({ statusCode: 400, statusMessage: 'Your password needs at least 10 characters' })
