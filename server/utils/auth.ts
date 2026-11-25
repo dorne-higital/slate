@@ -76,6 +76,6 @@ export async function requireUser(event: H3Event) {
 /** Some things (emailing invites, buying domains) wait until the account's email is confirmed. */
 export function requireVerifiedEmail(user: { emailVerified?: boolean | null, isPlatformAdmin?: boolean | null }) {
     if (!user.emailVerified && !user.isPlatformAdmin) {
-        throw createError({ statusCode: 403, statusMessage: 'Please confirm your email address first. We sent you a link when you signed up; you can send it again from the banner at the top.' })
+        throw createError({ statusCode: 403, statusMessage: 'Please confirm your email address first. Use the link we emailed you when you signed up, or press Send the link again.' })
     }
 }

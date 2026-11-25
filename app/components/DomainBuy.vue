@@ -80,6 +80,7 @@ const statusText: Record<DomainOrderStatus, string> = {
 <template>
     <section class="panel buy" aria-labelledby="buy-h">
         <h2 id="buy-h">Buy a domain</h2>
+        <ConfirmEmailNote v-if="canBuy" reason="You can search now, but you’ll need to confirm it before buying a domain." />
         <p class="muted big">We register it in your name, connect it to this site and set up HTTPS. Renews every year until you cancel.</p>
         <form class="row" @submit.prevent="search">
             <label class="visually-hidden" for="buy-q">Domain you’d like</label>
