@@ -18,24 +18,49 @@ function expand(key: string) {
 const tone = computed(() => !data.value ? 'none' : data.value.score >= 85 ? 'good' : data.value.score >= 60 ? 'fair' : 'poor')
 const verdict = computed(() => ({ good: 'Looking good', fair: 'A few things to tidy', poor: 'Worth some attention', none: '' })[tone.value])
 const levelName = { high: 'Important', medium: 'Worth doing', low: 'Nice to have' }
+// Collapsed by default to just the ring and score; the choice is remembered on this browser
+const STORE = 'slate-health-open'
+const isOpen = ref(false)
+onMounted(() => {
+    try {
+        isOpen.value = localStorage.getItem(STORE) === '1'
+    } catch {
+        // Storage blocked: stays collapsed
+    }
+})
+function toggle() {
+    isOpen.value = !isOpen.value
+    try {
+        localStorage.setItem(STORE, isOpen.value ? '1' : '0')
+    } catch {
+        // Only for this visit
+    }
+}
 // The ring: circumference of r=26
 const C = 2 * Math.PI * 26
 </script>
 
 <template>
     <section v-if="data" class="panel health" aria-labelledby="health-h">
-        <div class="h-top">
+        <h2 id="health-h" class="h-head">
+        <button type="button" class="h-top" :aria-expanded="isOpen" aria-controls="health-body" @click="toggle">
             <svg class="ring" :class="tone" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
                 <circle cx="32" cy="32" r="26" class="track" />
                 <circle cx="32" cy="32" r="26" class="bar" :stroke-dasharray="`${(data.score / 100) * C} ${C}`" transform="rotate(-90 32 32)" />
                 <text x="32" y="37" text-anchor="middle">{{ data.score }}</text>
             </svg>
-            <div class="h-title">
-                <h2 id="health-h">Site health</h2>
+            <span class="h-title">
+                <span class="h-name">Site health</span>
                 <span class="muted">{{ verdict }}. {{ todo.length ? `${todo.length} ${todo.length === 1 ? 'thing' : 'things'} to improve` : 'Nothing to fix right now' }}.</span>
-            </div>
-        </div>
+            </span>
+            <span class="chev" :class="{ open: isOpen }" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 20 20"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </span>
+            <span class="visually-hidden">{{ isOpen ? 'Hide details' : 'Show details' }}</span>
+        </button>
+        </h2>
 
+        <div v-show="isOpen" id="health-body" class="h-body">
         <ul v-if="todo.length" class="checks">
             <li v-for="c in todo" :key="c.key" :class="c.level">
                 <span class="lvl" :title="levelName[c.level]" aria-hidden="true" />
@@ -65,13 +90,22 @@ const C = 2 * Math.PI * 26
         <ul v-if="showPassed" class="passed">
             <li v-for="c in passed" :key="c.key"><span class="tick" aria-hidden="true">✓</span>{{ c.okTitle }}</li>
         </ul>
+        </div>
     </section>
 </template>
 
 <style scoped>
 .health { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; }
-.h-top { align-items: center; display: flex; gap: 16px; }
-.h-title h2 { font-size: 18px; margin: 0 0 2px; }
+.h-top { align-items: center; background: none; border: 0; border-radius: var(--radius-lg); color: inherit; cursor: pointer; display: flex; font: inherit; gap: 16px; margin: -6px; padding: 6px; text-align: left; width: calc(100% + 12px); }
+.h-top:hover .chev { background: var(--mist); color: var(--text); }
+.h-top:focus-visible { outline: 3px solid var(--lichen-focus); }
+.h-title { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.chev { align-items: center; border-radius: 50%; color: var(--text-muted); display: flex; flex: none; height: 34px; justify-content: center; transition: transform .2s ease, background .15s; width: 34px; }
+.chev.open { transform: rotate(180deg); }
+.h-body { display: flex; flex-direction: column; gap: 14px; }
+.h-head { font-size: inherit; font-weight: inherit; margin: 0; }
+.h-name { color: var(--text); font-size: 18px; font-weight: 700; margin: 0 0 2px; }
+.h-title .muted { font-size: 14px; font-weight: 400; }
 .ring .track { fill: none; stroke: var(--mist); stroke-width: 7; }
 .ring .bar { fill: none; stroke-linecap: round; stroke-width: 7; transition: stroke-dasharray .6s ease; }
 .ring.good .bar { stroke: var(--ok); }
@@ -102,5 +136,5 @@ const C = 2 * Math.PI * 26
 .passed { display: flex; flex-direction: column; gap: 6px; }
 .passed li { align-items: center; color: var(--text-body); display: flex; font-size: 14px; gap: 8px; }
 .tick { color: var(--ok); font-weight: 800; }
-@media (prefers-reduced-motion: reduce) { .ring .bar { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .ring .bar, .chev { transition: none; } }
 </style>

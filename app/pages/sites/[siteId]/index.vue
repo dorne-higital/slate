@@ -134,13 +134,6 @@ const liveUrl = computed(() => {
                 </NuxtLink>
                 <p v-if="!replies?.latest.length" class="muted none">No replies yet. They’ll show here when someone fills in a form.</p>
             </section>
-            <section class="panel next" aria-labelledby="next-h">
-                <h2 id="next-h">Help people find your site</h2>
-                <ul>
-                    <li><span class="ring" aria-hidden="true" /><span><NuxtLink :to="`/sites/${siteId}/seo`" class="rl">Add page descriptions</NuxtLink><span class="muted">Shown under your page in search results.</span></span></li>
-                    <li><span class="ring" aria-hidden="true" /><span><NuxtLink :to="`/sites/${siteId}/domains`" class="rl">Connect your own domain</NuxtLink><span class="muted">Your free address works until you do.</span></span></li>
-                </ul>
-            </section>
             </div>
         </div>
     </div>
