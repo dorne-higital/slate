@@ -122,3 +122,15 @@ Dan chose: refresh the design, projects as their own content type.
 1. [x] Home page shows "coming soon" with a register-interest form while `NUXT_PUBLIC_COMING_SOON` is "true" (wrangler.jsonc). Platform admins see the full page at /?full=1
 2. [x] Interest list in Admin → Dashboard (CSV, remove), email to admins for each new one, in the privacy policy
 3. [ ] To launch: set NUXT_PUBLIC_COMING_SOON to "false" in wrangler.jsonc and deploy; email the list (LAUNCH25 was promised as "a launch discount")
+
+## App showcase blocks (asked 25 Nov, for Dobie Dash; generic so any site can use them)
+
+Brochure-style blocks to show off an app and get people to download it. All work with the section options and any theme.
+
+1. [ ] App hero: name, one-liner, App Store / Google Play badges (links set per site), phone mock-up with a screenshot, optional rating
+2. [ ] Download buttons: official store badges, QR code on desktop, picks the right store on phones
+3. [ ] Screenshot carousel: phone frames, swipe on mobile, captions
+4. [ ] Feature showcase: alternating phone screenshot + text rows, or a grid of icon features
+5. [ ] App stats / social proof: rating stars, downloads, review quotes from the stores
+6. [ ] Download call to action band: closing "Get the app" with badges and QR
+7. [ ] Site settings: app store links (iOS, Android) entered once and reused by every block
