@@ -21,8 +21,8 @@ export default defineEventHandler(async (event) => {
         n(sql`select coalesce(sum(size), 0)::bigint n from media where site_id = ${id}`),
         n(sql`select count(*)::int n from site_members where site_id = ${id}`),
         n(sql`select count(*)::int n from invites where site_id = ${id} and accepted_at is null and expires_at > now()`),
-        n(sql`select count(*)::int n from domains where site_id = ${id} and hostname not like 'www.%'`),
-        n(sql`select count(*)::int n from domains where site_id = ${id} and hostname not like 'www.%' and status = 'active'`),
+        n(sql`select count(*)::int n from domains d where site_id = ${id} and not (hostname like 'www.%' and exists (select 1 from domains a where a.site_id = d.site_id and a.hostname = substr(d.hostname, 5)))`),
+        n(sql`select count(*)::int n from domains d where site_id = ${id} and status = 'active' and not (hostname like 'www.%' and exists (select 1 from domains a where a.site_id = d.site_id and a.hostname = substr(d.hostname, 5)))`),
         db.execute<{ kind: 'page' | 'post', id: string, title: string, sub: string, updated_at: string, by: string | null }>(sql`
             (select 'page' as kind, p.id, p.title, p.path as sub, p.updated_at, u.name as by from pages p left join "user" u on u.id = p.updated_by where p.site_id = ${id} order by p.updated_at desc limit 8)
             union all

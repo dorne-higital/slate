@@ -95,7 +95,7 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 
 export async function siteHealth(site: Site) {
     const db = useDb()
-    const [pages, posts, menus, media, oldReplies, forms, redirects, live] = await Promise.all([
+    const [pages, posts, menus, media, oldReplies, forms, redirects] = await Promise.all([
         db.select({ id: schema.pages.id, title: schema.pages.title, path: schema.pages.path, kind: schema.pages.kind, status: schema.pages.status, noIndex: schema.pages.noIndex, seoDescription: schema.pages.seoDescription, shareImage: schema.pages.shareImage, blocks: schema.pages.blocks, publishedBlocks: schema.pages.publishedBlocks })
             .from(schema.pages).where(eq(schema.pages.siteId, site.id)),
         db.select({ slug: schema.posts.slug }).from(schema.posts).where(and(eq(schema.posts.siteId, site.id), eq(schema.posts.status, 'published'))),
@@ -104,8 +104,7 @@ export async function siteHealth(site: Site) {
         db.select({ n: sql<number>`count(*)::int` }).from(schema.formReplies)
             .where(and(eq(schema.formReplies.siteId, site.id), isNull(schema.formReplies.doneAt), lt(schema.formReplies.createdAt, new Date(Date.now() - 7 * 86400000)))),
         db.select({ n: sql<number>`count(*)::int` }).from(schema.forms).where(eq(schema.forms.siteId, site.id)),
-        db.select({ fromPath: schema.redirects.fromPath }).from(schema.redirects).where(eq(schema.redirects.siteId, site.id)),
-        liveAddress(site)
+        db.select({ fromPath: schema.redirects.fromPath }).from(schema.redirects).where(eq(schema.redirects.siteId, site.id))
     ])
     const seo = site.seo ?? {}
     const theme = site.theme ?? {}
@@ -118,7 +117,9 @@ export async function siteHealth(site: Site) {
     add({ key: 'offline', ok: !site.offline, level: 'high', title: 'Your site is offline', okTitle: 'Your site is online', detail: 'Visitors see your Offline page instead of your site.', to: '/settings', fixLabel: 'Put it back online' })
 
     // Own domain
-    const ownDomain = !!site.customDomain && live === site.customDomain
+    // Checked against the connected domain itself (not the address shown, which is local when developing)
+    const mainDomain = site.customDomain ? await db.query.domains.findFirst({ where: eq(schema.domains.hostname, site.customDomain), columns: { status: true } }) : undefined
+    const ownDomain = mainDomain?.status === 'active'
     add({ key: 'domain', ok: ownDomain, level: 'medium', title: 'Use your own domain', okTitle: 'Uses your own domain', detail: 'An address like yourbusiness.co.uk looks more trustworthy than a free Slate address, and is easier to remember.', to: '/domains', fixLabel: 'Get a domain' })
 
     // Broken internal links (blocks on published pages, plus menus)
@@ -153,7 +154,7 @@ export async function siteHealth(site: Site) {
     const noImage = seo.defaultShareImage ? [] : visible.filter(p => !p.shareImage)
     add({ key: 'shareImages', ok: !noImage.length, level: 'low', title: `${plural(noImage.length, 'page has', 'pages have')} no share image`, okTitle: 'Every page has a share image', detail: 'This is the picture shown when someone shares a link on WhatsApp, Facebook or LinkedIn.', to: '/seo', fixLabel: 'Add images', ...cap(noImage.map(p => ({ label: p.title, sub: p.path, to: `/seo?page=${p.id}` }))) })
     // Search Console: the HTML tag in Integrations, or Google's record in the domain's DNS
-    const viaDns = !integrations.googleVerify && ownDomain ? await googleVerifiedByDns(live) : false
+    const viaDns = !integrations.googleVerify && ownDomain ? await googleVerifiedByDns(site.customDomain!) : false
     add({ key: 'searchConsole', ok: !!integrations.googleVerify || viaDns, level: 'low', title: 'Connect Google Search Console', okTitle: viaDns ? 'Verified with Google Search Console (through your domain)' : 'Google Search Console is connected', detail: 'Free from Google: see which searches find you and spot problems early.', to: '/integrations?tab=search', fixLabel: 'Connect' })
 
     // Privacy policy (UK GDPR) when the site collects anything
