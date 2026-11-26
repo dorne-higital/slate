@@ -1,366 +1,159 @@
 <script setup lang="ts">
-useMarketingSeo('/')
-const { me, ensure } = useMe()
-await ensure()
-const dashboard = computed(() => me.value?.isPlatformAdmin ? '/admin' : me.value?.sites[0] ? `/sites/${me.value.sites[0].id}` : '/signup')
+// Slate's home page (shown at / once coming soon is off, and to platform admins before then).
 const { sitesDomain } = useRuntimeConfig().public
 const freeDomain = sitesDomain.includes('localhost') ? 'slatecms.co.uk' : sitesDomain
 
+const page = marketingPage('/')
 const steps = [
-    { title: 'Create your account', text: `Choose a name for your site. You get a free ${freeDomain} address straight away.` },
-    { title: 'Pick a starting layout', text: 'Start with pages already in place for a trade, a shop, a studio or a practice, or start blank.' },
-    { title: 'Make it yours', text: 'Add blocks, put them in order and type into them. Set your colours and fonts once.' },
-    { title: 'Connect your domain and publish', text: 'Point your own domain at Slate. We set up the secure certificate for you.' }
+    { title: 'Create your account', text: `Name your site and it’s live straight away on a free ${freeDomain} address.` },
+    { title: 'Pick a starting layout', text: 'Pages already in place for a trade, a salon, a shop, a club or a studio. Or start blank.' },
+    { title: 'Make it yours', text: 'Click any block to change the words and pictures. Set your colours and fonts once.' },
+    { title: 'Add your domain and publish', text: 'Buy a domain inside Slate or connect yours. HTTPS and email forwarding are set up for you.' }
 ]
-
 const included = [
-    { name: 'Pages', text: 'Build pages from blocks and nest them under each other.' },
-    { name: 'Menus', text: 'Choose what appears in your header and footer.' },
-    { name: 'Forms', text: 'Contact and quote forms, with every reply kept in an inbox.' },
-    { name: 'Blog', text: 'Write posts, schedule them and sort them into categories.' },
-    { name: 'Media', text: 'Upload images and files once, use them on any page.' },
-    { name: 'Theme', text: 'Set your logo, colours and fonts for the whole site.' },
-    { name: 'SEO', text: 'See which pages are missing titles, descriptions or share images.' },
-    { name: 'Domains', text: 'Connect your own domain with step-by-step instructions.' },
-    { name: 'Integrations', text: 'Add analytics, booking tools and email sign-ups.' },
-    { name: 'Hosting', text: 'Served from Cloudflare’s network, with HTTPS on every domain.' }
+    { icon: 'star', title: 'Page editor and blocks', text: 'Heroes, services, galleries, prices, reviews and forms, ready to fill in. Undo any publish.', to: '/features/editor' },
+    { icon: 'globe', title: 'Domains and email', text: 'Buy a .co.uk or .com, or connect one you own. Free forwarding from hello@yourbusiness.', to: '/features/domains-and-email' },
+    { icon: 'chat', title: 'Forms and inbox', text: 'Quote and contact forms with spam protection. Replies land in your inbox and email.', to: '/features/forms' },
+    { icon: 'chart', title: 'SEO and site health', text: 'A score and a fix-it list: missing descriptions, broken links, big pictures, all linked.', to: '/features/seo' },
+    { icon: 'bolt', title: 'Integrations', text: 'Google Analytics, Search Console, Calendly, WhatsApp, Mailchimp and Slack by pasting a code.', to: '/features/integrations' },
+    { icon: 'shield', title: 'Hosting that looks after itself', text: 'Fast pages from Cloudflare’s network, HTTPS on every address, and nothing to update.' }
+]
+const sectors = marketingSections('for')
+const faqs: FaqItem[] = [
+    { q: 'Do I need to know how to code?', a: 'No. You build pages by adding blocks and typing into them, and set your colours and fonts once for the whole site. If you can use email, you can use Slate.' },
+    { q: 'Can I use a domain I already own?', a: 'Yes. Keep it wherever you bought it: Slate shows you the records to add, checks them and sets up HTTPS for you. Or buy a new one inside Slate and it’s connected automatically.' },
+    { q: 'Do I get an email address with my domain?', a: 'Domains bought through Slate come with free email forwarding, so messages to hello@yourbusiness.co.uk arrive in the inbox you already use.' },
+    { q: 'What happens if I cancel?', a: 'Your site goes offline at the end of your billing period. You can download everything before then as one file: pages, blog posts, images and form replies.' },
+    { q: 'Where is my data kept?', a: 'Your pages, posts and form replies are stored in London. Pages are served to visitors from Cloudflare’s network, close to wherever they are, and every site’s content is kept separate.' },
+    { q: 'Is there a contract?', a: `No. Pay monthly or yearly and cancel whenever you like. The first ${TRIAL_DAYS} days are free and you don’t need a card to start.` }
 ]
 
-// Example sites for illustration on the "for studios" card
-const exampleSites = [
-    { name: 'Bramble & Oak Upholstery', domain: 'brambleandoak.co.uk', initial: 'B', color: '#2F5D50', live: true },
-    { name: 'Fenwick Physiotherapy', domain: 'fenwickphysio.co.uk', initial: 'F', color: '#3B5BA5', live: true },
-    { name: 'Tidewater Bikes', domain: `tidewater.${freeDomain}`, initial: 'T', color: '#9A4A2E', live: false },
-    { name: 'Marlow Street Bakery', domain: 'marlowstreet.co.uk', initial: 'M', color: '#6B4C8A', live: true }
-]
-
-// Prices and limits come from shared/utils/plans.ts
-const plans = PLANS.map(p => ({ name: p.name, tagline: p.tagline, price: formatPence(p.monthly).slice(1), yearly: formatPence(p.yearly), highlight: p.key === 'business' }))
-// Rows come from shared/utils/plans.ts so the table always matches what's enforced
-const planRows = computed(() => planRowsFor())
-
-const faqs = [
-    { q: 'Do I need to know how to code?', a: 'No. You build pages by adding blocks and typing into them. If you want something custom, a developer can build a new block that appears in your editor.' },
-    { q: 'Can I use a domain I already own?', a: 'Yes. Keep it wherever you bought it. Slate shows you the two records to add, then checks them and sets up HTTPS for you.' },
-    { q: 'What happens to my site if I cancel?', a: 'Your site goes offline at the end of your billing period. You can download your pages, posts, images and form replies before then.' },
-    { q: 'Where is my data stored?', a: 'Your pages, posts and form replies are stored in London. Pages are served to visitors from Cloudflare’s network, close to wherever they are. Every site’s content is kept separate, and every request is checked, so one account can never see another’s.' }
-]
-
-const sheets = [
-    { tag: 'Footer', kind: 'footer' },
-    { tag: 'Contact form', kind: 'form' },
-    { tag: 'Services', kind: 'services' },
-    { tag: 'Hero (editing)', kind: 'hero' },
-    { tag: 'Header', kind: 'header' }
-]
+useMarketingSeo('/', {
+    jsonLd: [
+        {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            'name': 'Slate',
+            'url': MARKETING_SITE,
+            'logo': `${MARKETING_SITE}/favicon.svg`,
+            'email': 'hello@slatecms.co.uk',
+            'address': { '@type': 'PostalAddress', 'addressLocality': 'Warrington', 'addressCountry': 'GB' }
+        },
+        { '@context': 'https://schema.org', '@type': 'WebSite', 'name': 'Slate', 'url': MARKETING_SITE, 'inLanguage': 'en-GB' },
+        faqJsonLd(faqs)
+    ]
+})
 </script>
 
 <template>
-    <div class="mk">
+    <div>
+        <MkHero
+            eyebrow="Website builder for UK small businesses"
+            :title="page.h1"
+            lead="Build your site from ready-made blocks, then run it all from one login: your domain, email forwarding, forms, blog and Google. No developer, no plugins, nothing to update."
+            video="tour"
+            video-caption="From sign-up to a live website (sped up)."
+            :secondary="{ label: 'See how it works', to: '#how' }"
+        />
 
-        <div id="top">
-            <section class="wrap hero">
-                <div class="copy">
-                    <h1>Build your website. Run it from one place.</h1>
-                    <p class="lead">Slate gives you a page editor, forms, a blog and hosting in one account. Start from a layout, change anything by moving blocks around, and publish to your own domain.</p>
-                    <div class="ctas">
-                        <NuxtLink class="btn btn-lichen btn-xl" to="/signup">Start your site</NuxtLink>
-                        <a class="btn btn-outline btn-xl" href="#how">See how it works</a>
-                    </div>
-                    <p class="small">Free to start. No card needed.</p>
+        <section id="how" class="mk-section tint">
+            <div class="mk-wrap">
+                <div class="mk-head">
+                    <h2>From sign-up to live site in an afternoon</h2>
+                    <p>Get a site you’re happy with on the first day, then keep changing it whenever you like.</p>
                 </div>
+                <ol class="steps">
+                    <li v-for="(s, i) in steps" :key="s.title">
+                        <span class="num">{{ i + 1 }}</span>
+                        <b>{{ s.title }}</b>
+                        <span>{{ s.text }}</span>
+                    </li>
+                </ol>
+            </div>
+        </section>
 
-                <div class="stack-wrap" role="img" aria-label="A website broken into its blocks: header, hero, services, contact form and footer">
-                    <div class="stack">
-                        <div v-for="(s, i) in sheets" :key="s.kind" class="sheet3" :class="[`s-${s.kind}`, { picked: s.kind === 'hero' }]" :style="{ '--i': i }">
-                            <span class="sheet-tag">{{ s.tag }}</span>
-                            <template v-if="s.kind === 'footer'">
-                                <div class="f-cols"><div><i class="w70" /><i class="w50 dim" /><i class="w58 dim" /></div><div><i class="w60" /><i class="w44 dim" /></div></div>
-                                <span class="f-copy">© Bramble &amp; Oak Upholstery</span>
-                            </template>
-                            <template v-else-if="s.kind === 'form'">
-                                <b>Get a quote</b><i class="inp1" /><i class="inp1" /><i class="inp2" /><i class="sub" />
-                            </template>
-                            <template v-else-if="s.kind === 'services'">
-                                <b>What we do</b><div class="tiles"><i /><i /><i /></div>
-                            </template>
-                            <template v-else-if="s.kind === 'hero'">
-                                <b class="big">Chairs and sofas, reupholstered by hand</b><i class="sub wide" />
-                            </template>
-                            <template v-else>
-                                <b>Bramble &amp; Oak</b><div class="dots"><i /><i /><i class="on" /></div>
-                            </template>
-                        </div>
-                    </div>
+        <section class="mk-section">
+            <div class="mk-wrap">
+                <div class="mk-head">
+                    <h2>Everything your site needs, already in the box</h2>
+                    <p>One monthly price covers the lot. No add-ons to buy, no plugins to keep updated, no separate hosting bill.</p>
                 </div>
-            </section>
+                <MkFeatureGrid :items="included" />
+                <p class="more"><NuxtLink to="/features">See every feature →</NuxtLink></p>
+            </div>
+        </section>
 
-            <section id="how" class="how">
-                <div class="wrap col">
-                    <div class="intro">
-                        <h2>From sign-up to live site in an afternoon</h2>
-                        <p>You don’t need to write code or hire anyone. If you can edit a document, you can build a page.</p>
-                    </div>
-                    <ol class="steps">
-                        <li v-for="(s, i) in steps" :key="s.title"><span class="num">{{ i + 1 }}</span><b>{{ s.title }}</b><span>{{ s.text }}</span></li>
-                    </ol>
+        <MkSplit
+            eyebrow="The editor"
+            title="Change anything by clicking it"
+            text="Every page is a stack of blocks. Click one to change its words and pictures, drag to reorder, and see it on a phone before you publish."
+            :points="['Over 30 blocks, styled to match your colours and fonts', 'Every publish is saved, so you can go back to any version', 'Several people can edit, each with their own login']"
+            video="editor"
+            video-caption="Adding, editing and reordering blocks."
+        />
+        <MkSplit
+            flip
+            eyebrow="Getting found"
+            title="A to-do list for Google, not a lecture"
+            text="Slate checks your site and tells you exactly what to fix: the page missing a description, the link to a page that no longer exists, the picture that’s too big. Each one links straight to the fix."
+            :points="['Sitemap and search engine pings handled for you', 'Redirects for old addresses when you move from another site', 'Share images for WhatsApp, Facebook and LinkedIn']"
+            video="seo"
+            video-caption="The site health check and the SEO page."
+        />
+
+        <section class="mk-section tint">
+            <div class="mk-wrap">
+                <div class="mk-head">
+                    <h2>Made with Slate</h2>
+                    <p>Real websites, built and run on Slate.</p>
                 </div>
-            </section>
+                <MkExamples />
+            </div>
+        </section>
 
-            <div class="strata" aria-hidden="true" />
-
-            <section id="included" class="included">
-                <div class="wrap split2">
-                    <div class="intro">
-                        <h2>Everything your site needs is already in the box</h2>
-                        <p>No plugins to install and nothing to keep updated. These are the sections you’ll find in your Slate dashboard.</p>
-                        <NuxtLink class="btn btn-lichen btn-xl self-start" to="/signup">Start your site</NuxtLink>
-                    </div>
-                    <dl class="incl">
-                        <div v-for="x in included" :key="x.name"><dt>{{ x.name }}</dt><dd>{{ x.text }}</dd></div>
-                    </dl>
+        <section class="mk-section">
+            <div class="mk-wrap">
+                <div class="mk-head">
+                    <h2>Built for businesses like yours</h2>
+                    <p>Start from a layout made for your kind of business, with the pages and wording people expect.</p>
                 </div>
-            </section>
+                <ul class="sectors">
+                    <li v-for="s in sectors" :key="s.path">
+                        <NuxtLink :to="s.path"><b>{{ s.navLabel }}</b><span>{{ s.h1 }}</span><i aria-hidden="true">→</i></NuxtLink>
+                    </li>
+                </ul>
+            </div>
+        </section>
 
-            <section id="studios" class="studios">
-                <div class="wrap split2">
-                    <div class="intro">
-                        <h2>Building sites for clients?</h2>
-                        <p>Run every client site from one login. Build the pages yourself, then invite your client to edit only what you allow, such as their blog and opening hours, without the risk of breaking the layout.</p>
-                        <ul class="ticks">
-                            <li>Owner, editor and client roles on each site</li>
-                            <li>Build a block once and use it on every site</li>
-                            <li>Billing and domains stay with you, not your client</li>
-                        </ul>
-                    </div>
-                    <div class="sites-card" aria-label="Example: a studio’s list of client sites">
-                        <div class="sites-head">Your sites</div>
-                        <div v-for="s in exampleSites" :key="s.name" class="site-row">
-                            <span class="badge" :style="{ background: s.color }" aria-hidden="true">{{ s.initial }}</span>
-                            <span class="site-text"><b>{{ s.name }}</b><span>{{ s.domain }}</span></span>
-                            <span class="state" :class="s.live ? 'live' : 'wip'">{{ s.live ? 'Live' : 'In progress' }}</span>
-                        </div>
-                    </div>
+        <section class="mk-section tint">
+            <div class="mk-wrap">
+                <div class="mk-head">
+                    <h2>Simple pricing</h2>
+                    <p>Every plan includes hosting, HTTPS, forms and the full editor. <NuxtLink to="/pricing">Compare plans in full</NuxtLink>.</p>
                 </div>
-            </section>
+                <MkPlans compact />
+            </div>
+        </section>
 
-            <section id="pricing" class="pricing">
-                <div class="wrap col">
-                    <div class="intro">
-                        <h2>Pricing</h2>
-                        <p>Every plan includes hosting, HTTPS and the full editor. Try it free for 14 days, no card needed. Cancel from your dashboard at any time.</p>
-                    </div>
-                    <div class="scroll">
-                        <table class="price">
-                            <caption class="visually-hidden">Plan comparison</caption>
-                            <thead>
-                                <tr>
-                                    <th scope="col"><span class="visually-hidden">Feature</span></th>
-                                    <th v-for="p in plans" :key="p.name" scope="col" :class="{ hl: p.highlight }">
-                                        <span class="plan">
-                                            <b>{{ p.name }}</b>
-                                            <span class="muted">{{ p.tagline }}</span>
-                                            <span class="amount">£{{ p.price }}<span> a month</span></span>
-                                            <span class="muted yearly">or {{ p.yearly }} a year, 2 months free</span>
-                                            <NuxtLink class="btn" :class="p.highlight ? 'btn-lichen' : 'btn-outline'" to="/signup">Choose {{ p.name }}</NuxtLink>
-                                        </span>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="r in planRows" :key="r.label">
-                                    <td>{{ r.label }}</td>
-                                    <td v-for="(v, i) in r.values" :key="i" :class="{ hl: plans[i]?.highlight }">{{ v }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <section class="faq">
-                <div class="wrap split2 top-align">
-                    <h2>Questions people ask before signing up</h2>
-                    <div>
-                        <details v-for="(f, i) in faqs" :key="f.q" :open="i === 0">
-                            <summary>{{ f.q }}<span class="pm" aria-hidden="true">+</span></summary>
-                            <p>{{ f.a }}</p>
-                        </details>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <div class="strata" aria-hidden="true" />
-
+        <MkFaq :items="faqs" />
+        <MkCta />
     </div>
 </template>
 
 <style scoped>
-.mk { background: var(--paper); }
-.wrap { margin: 0 auto; max-width: 1200px; padding: 0 40px; }
-.col { display: flex; flex-direction: column; gap: 56px; }
-h2 { font-size: 48px; font-weight: 800; letter-spacing: -.035em; line-height: 1.04; margin: 0; }
-.intro { display: flex; flex-direction: column; gap: 16px; max-width: 640px; }
-.intro p { color: var(--text-body); font-size: 18px; line-height: 1.6; margin: 0; }
-.self-start { align-self: flex-start; }
-.btn-xl { font-size: 17px; min-height: 56px; padding: 0 28px; }
-.btn-outline { background: transparent; box-shadow: inset 0 0 0 1.5px var(--quarry); color: var(--quarry); }
-.btn-outline:hover { background: var(--quarry); color: var(--paper); }
-
-.top { border-bottom: 1px solid var(--line-soft); }
-.bar { align-items: center; display: flex; gap: 24px; justify-content: space-between; min-height: 76px; }
-.home-link { text-decoration: none; }
-.nav-links { display: flex; gap: 28px; }
-.nav-link { color: var(--quarry); font-size: 15px; font-weight: 500; padding: 12px 4px; text-decoration: none; }
-.nav-link:hover { color: var(--heather); text-decoration: underline; text-underline-offset: 4px; }
-.actions { align-items: center; display: flex; gap: 14px; }
-
-.hero { align-items: center; display: grid; gap: 40px; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); padding-bottom: 96px; padding-top: 72px; }
-.copy { display: flex; flex-direction: column; gap: 28px; }
-h1 { font-size: 72px; font-weight: 900; letter-spacing: -.045em; line-height: .98; margin: 0; }
-.lead { color: var(--text-body); font-size: 20px; line-height: 1.55; margin: 0; max-width: 31em; }
-.ctas { display: flex; flex-wrap: wrap; gap: 14px; }
-.small { color: var(--text-muted); font-size: 15px; margin: 0; }
-
-/* The exploded stack of sheets: a site broken into its blocks */
-.stack-wrap { align-items: center; display: flex; height: 560px; justify-content: center; perspective: 2400px; }
-.stack { height: 240px; position: relative; transform: rotateX(58deg) rotateZ(-36deg); transform-style: preserve-3d; width: 360px; }
-.sheet3 {
-    animation: drop .9s cubic-bezier(.2, .8, .2, 1) both;
-    animation-delay: calc(var(--i) * 110ms + 150ms);
-    background: var(--white);
-    border-radius: 4px;
-    box-shadow: var(--sheet-edge), 10px 14px 24px rgb(46 52 69 / 18%);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    inset: 0;
-    padding: 22px 24px;
-    position: absolute;
-    transform: translateZ(calc(var(--i) * 58px));
-    transition: transform .45s cubic-bezier(.2, .8, .2, 1);
-}
-.stack-wrap:hover .sheet3 { transform: translateZ(calc(var(--i) * 84px)); }
-.sheet3 b { color: #23302c; font-size: 17px; }
-.sheet3 i { border-radius: 2px; display: block; }
-.sheet-tag { color: var(--heather); font-size: 13px; font-weight: 600; left: 0; position: absolute; top: -30px; white-space: nowrap; }
-.sheet3.picked { box-shadow: 0 0 0 3px var(--lichen), 4px 4px 0 3px var(--lichen-edge), 10px 14px 24px rgb(46 52 69 / 20%); }
-.sheet3.picked .sheet-tag { color: var(--quarry); }
-.s-footer { background: #23302c; justify-content: space-between; }
-.f-cols { display: flex; gap: 24px; }
-.f-cols div { display: flex; flex-direction: column; gap: 8px; }
-.f-cols i { background: #6e8a80; height: 7px; }
-.f-cols i.dim { background: #4a6158; }
-.w70 { width: 70px; } .w50 { width: 50px; } .w58 { width: 58px; } .w60 { width: 60px; } .w44 { width: 44px; }
-.f-copy { color: #9db3aa; font-size: 12px; }
-.inp1 { border: 1.5px solid #c3c8d1; height: 30px; }
-.inp2 { border: 1.5px solid #c3c8d1; height: 52px; }
-.sub { background: #2f5d50; height: 30px; width: 96px; }
-.sub.wide { height: 32px; width: 110px; }
-.s-services { gap: 14px; }
-.tiles { display: grid; flex: 1; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.tiles i { background: #e3ebe7; }
-.s-hero { background: #f1ede4; gap: 12px; justify-content: center; padding: 26px 24px; }
-.big { font-size: 26px !important; letter-spacing: -.02em; line-height: 1.05; }
-.s-header { align-items: center; flex-direction: row; height: 54px; justify-content: space-between; padding: 0 24px; }
-.s-header b { font-size: 15px; }
-.dots { display: flex; gap: 10px; }
-.dots i { background: #c3c8d1; height: 7px; width: 34px; }
-.dots i.on { background: #2f5d50; }
-@keyframes drop {
-    from { opacity: 0; transform: translateZ(calc(var(--i) * 58px + 420px)); }
-    to { opacity: 1; transform: translateZ(calc(var(--i) * 58px)); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .sheet3 { animation: none; transition: none; }
-    .stack-wrap:hover .sheet3 { transform: translateZ(calc(var(--i) * 58px)); }
-}
-
-.how { background: var(--mist); padding: 96px 0; }
 .steps { display: grid; gap: 32px; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
-.steps li { border-top: 3px solid var(--quarry); display: flex; flex-direction: column; gap: 12px; padding-top: 20px; }
-.steps .num { color: var(--heather); font-size: 40px; font-weight: 300; line-height: 1; }
-.steps b { font-size: 20px; }
+.steps li { border-top: 3px solid var(--quarry); display: flex; flex-direction: column; gap: 10px; padding-top: 20px; }
+.num { color: var(--heather); font-size: 40px; font-weight: 300; line-height: 1; }
+.steps b { font-size: 19px; }
 .steps span:last-child { color: var(--text-body); font-size: 16px; line-height: 1.55; }
-
-.strata { background: linear-gradient(#5b5773 0 3px, #8c93a3 3px 6px, #c3c8d1 6px 9px); height: 9px; }
-
-.split2 { align-items: center; display: grid; gap: 64px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.split2.top-align { align-items: start; }
-.included { background: var(--quarry); color: var(--mist); padding: 104px 0; }
-.included h2 { color: var(--white); }
-.included .intro p { color: #c3c8d1; }
-.incl { column-gap: 48px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
-.incl div { border-top: 1px solid rgb(230 233 238 / 16%); padding: 20px 0; }
-.incl dt { color: var(--white); font-size: 17px; font-weight: 700; }
-.incl dd { color: #c3c8d1; font-size: 15px; line-height: 1.55; margin: 6px 0 0; }
-
-.studios { padding: 104px 0; }
-.ticks { display: flex; flex-direction: column; font-size: 16px; gap: 12px; list-style: none; margin: 0; padding: 0; }
-.ticks li { padding-left: 34px; position: relative; }
-.ticks li::before { border-bottom: 2.4px solid var(--heather); border-left: 2.4px solid var(--heather); content: ''; height: 6px; left: 5px; position: absolute; top: 5px; transform: rotate(-45deg); width: 12px; }
-.sites-card { background: var(--white); border-radius: 10px; box-shadow: 0 0 0 1px #d4d8df, 3px 3px 0 #c3c8d1, 6px 6px 0 #8c93a3; padding: 8px; }
-.sites-head { color: var(--text-muted); font-size: 14px; font-weight: 600; padding: 14px 16px; }
-.site-row { align-items: center; border-top: 1px solid var(--line-soft); display: flex; gap: 14px; padding: 14px 16px; }
-.badge { align-items: center; border-radius: var(--radius); color: var(--white); display: flex; flex: none; font-size: 15px; font-weight: 800; height: 36px; justify-content: center; width: 36px; }
-.site-text { display: flex; flex: 1; flex-direction: column; min-width: 0; }
-.site-text b { font-size: 16px; }
-.site-text span { color: var(--text-muted); font-size: 14px; }
-.state { border-radius: 999px; font-size: 13px; font-weight: 600; padding: 4px 10px; }
-.state.live { background: #e3ebe7; color: #1f4a3e; }
-.state.wip { background: #fff1d6; color: var(--warn-text); }
-
-.pricing { background: var(--mist); padding: 104px 0; }
-.scroll { overflow-x: auto; }
-.price { border-collapse: collapse; min-width: 760px; width: 100%; }
-.price th, .price td { border-bottom: 1px solid #d4d8df; font-size: 15px; padding: 16px 20px; text-align: left; vertical-align: top; }
-.price thead th { border-bottom: 2px solid var(--quarry); vertical-align: bottom; }
-.price td:first-child { color: var(--text-muted); }
-.price .hl { background: #fff6e6; }
-.yearly { font-size: 13px; }
-.plan { display: flex; flex-direction: column; gap: 8px; }
-.plan b { font-size: 22px; }
-.amount { font-size: 32px; font-weight: 800; letter-spacing: -.02em; }
-.amount span { color: var(--text-muted); font-size: 15px; font-weight: 500; letter-spacing: 0; }
-.plan .btn { margin-top: 8px; }
-
-.faq { padding: 104px 0; }
-.faq h2 { max-width: 420px; }
-details { border-top: 1px solid #d4d8df; }
-details:last-child { border-bottom: 1px solid #d4d8df; }
-summary { cursor: pointer; display: flex; font-size: 19px; font-weight: 700; gap: 24px; justify-content: space-between; list-style: none; padding: 22px 0; }
-summary::-webkit-details-marker { display: none; }
-.pm { flex: none; font-size: 24px; font-weight: 400; line-height: 1; transition: transform .2s; }
-details[open] .pm { transform: rotate(45deg); }
-details p { color: var(--text-body); font-size: 16px; line-height: 1.6; margin: 0 0 22px; max-width: 36em; }
-
-.foot { background: var(--quarry); color: var(--mist); padding: 88px 0 48px; }
-.foot-cta { align-items: flex-start; display: flex; flex-direction: column; gap: 28px; }
-.foot-cta h2 { color: var(--white); font-size: 56px; font-weight: 900; letter-spacing: -.04em; line-height: 1; max-width: 640px; }
-.foot-grid { border-top: 1px solid rgb(230 233 238 / 16%); display: grid; gap: 32px; grid-template-columns: 2fr 1fr 1fr 1fr; padding-top: 40px; }
-.foot-brand { color: #c3c8d1; display: flex; flex-direction: column; font-size: 15px; gap: 8px; }
-.foot-logo { color: var(--white); font-size: 26px; font-weight: 900; letter-spacing: -.04em; }
-.foot nav { display: flex; flex-direction: column; }
-.foot-link { color: #c3c8d1; font-size: 15px; line-height: 2; text-decoration: none; }
-.foot-link:hover { color: var(--white); text-decoration: underline; }
-
-@media (max-width: 960px) {
-    .hero { grid-template-columns: minmax(0, 1fr); padding: 40px 0 56px; }
-    .stack-wrap { height: 420px; transform: scale(.78); }
-    .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .split2 { gap: 40px; grid-template-columns: minmax(0, 1fr); }
-    .nav-links { display: none; }
-}
-
-@media (max-width: 600px) {
-    .wrap { padding: 0 16px; }
-    .steps, .incl { grid-template-columns: minmax(0, 1fr); }
-    .stack-wrap { height: 340px; transform: scale(.62); }
-    h1 { font-size: 44px; }
-    h2 { font-size: 34px; }
-    .foot-cta h2 { font-size: 40px; }
-    .foot-grid { grid-template-columns: minmax(0, 1fr); }
-    .actions .nav-link { display: none; }
-}
+.more { font-size: 16px; font-weight: 700; margin: 28px 0 0; }
+.more a, .mk-head a { color: var(--heather); }
+.sectors { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); list-style: none; margin: 0; padding: 0; }
+.sectors a { height: 100%; box-sizing: border-box; background: var(--white); border-radius: 10px; box-shadow: 0 0 0 1px var(--line); color: inherit; display: grid; gap: 4px 12px; grid-template-columns: 1fr auto; padding: 20px 22px; text-decoration: none; }
+.sectors a:hover { box-shadow: 0 0 0 1px var(--quarry), 3px 3px 0 var(--lichen); }
+.sectors b { font-size: 18px; }
+.sectors span { color: var(--text-body); font-size: 15px; grid-column: 1; }
+.sectors i { align-self: center; color: var(--heather); font-style: normal; font-weight: 700; grid-column: 2; grid-row: 1 / 3; }
+@media (max-width: 960px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .steps { grid-template-columns: minmax(0, 1fr); } }
 </style>

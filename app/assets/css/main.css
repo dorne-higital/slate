@@ -130,3 +130,15 @@ a:hover { color: var(--heather); }
 /* Slate's own marketing site */
 .mk-wrap { margin: 0 auto; max-width: 1200px; padding: 0 40px; }
 @media (max-width: 600px) { .mk-wrap { padding: 0 16px; } }
+.mk-wrap .btn-xl, .mk-page .btn-xl { font-size: 17px; min-height: 54px; padding: 0 26px; }
+.mk-page .btn-outline { background: transparent; box-shadow: inset 0 0 0 1.5px var(--quarry); color: var(--quarry); }
+.mk-page .btn-outline:hover { background: var(--quarry); color: var(--paper); }
+.mk-section { padding: 88px 0; }
+.mk-section.tint { background: var(--mist); }
+.mk-section.dark { background: var(--quarry); color: var(--mist); }
+.mk-head { display: flex; flex-direction: column; gap: 14px; margin-bottom: 44px; max-width: 680px; }
+.mk-head h2 { font-size: clamp(30px, 3.6vw, 46px); font-weight: 800; letter-spacing: -.035em; line-height: 1.05; margin: 0; }
+.mk-head p { color: var(--text-body); font-size: 18px; line-height: 1.6; margin: 0; }
+.mk-section.dark .mk-head h2 { color: var(--white); }
+.mk-section.dark .mk-head p { color: #c3c8d1; }
+@media (max-width: 960px) { .mk-section { padding: 56px 0; } }

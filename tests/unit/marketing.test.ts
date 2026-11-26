@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { MARKETING_PAGES, marketingPage } from '../../shared/utils/marketing'
+import { MARKETING_PAGES, faqJsonLd, marketingPage } from '../../shared/utils/marketing'
 
 const SPEC_PATHS = [
     '/', '/features', '/features/editor', '/features/domains-and-email', '/features/forms', '/features/seo', '/features/integrations',
@@ -29,5 +29,15 @@ describe('marketing page registry', () => {
 
     it('every page names a share image under /og/', () => {
         MARKETING_PAGES.forEach(p => expect(p.image).toMatch(/^\/og\/[a-z0-9-]+\.png$/))
+    })
+})
+
+describe('structured data', () => {
+    it('faqJsonLd builds FAQPage', () => {
+        expect(faqJsonLd([{ q: 'A?', a: 'B.' }])).toEqual({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [{ '@type': 'Question', name: 'A?', acceptedAnswer: { '@type': 'Answer', text: 'B.' } }]
+        })
     })
 })

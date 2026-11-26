@@ -31,6 +31,17 @@ export function marketingPage(path: string): MarketingPage {
     return found
 }
 
+export interface FaqItem { q: string, a: string }
+
+/** FAQPage structured data, so Google can show the questions under the result. */
+export function faqJsonLd(items: FaqItem[]) {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: items.map(i => ({ '@type': 'Question', name: i.q, acceptedAnswer: { '@type': 'Answer', text: i.a } }))
+    }
+}
+
 export const marketingSections = (section: MarketingSection) => MARKETING_PAGES.filter(p => p.section === section)
 
 // Kept last: Nuxt's auto-import scanner drops exports that follow an exported array literal
