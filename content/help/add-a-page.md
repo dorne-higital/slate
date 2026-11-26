@@ -3,7 +3,7 @@ title: Add a page
 summary: Add a new page to your site, choose where it sits, and put it in your menu.
 area: pages
 order: 1
-related:
+related: add-a-block, reorder-blocks, page-in-menu-or-under-another
 popular: true
 ---
 Every page starts with a heading block, ready for you to add more.
@@ -19,6 +19,6 @@ Every page starts with a heading block, ready for you to add more.
 
 ## Tips
 
-- New pages are added to your header menu automatically, unless you’ve set up your menus by hand.
+- New pages are added to your header menu automatically, unless you’ve set up your menus by hand. See [Edit your menus](help:edit-your-menus).
 - To add a page under an existing one straight from the list, press the **+** next to that page.
 - Not ready to share it? Leave it unpublished: it shows as a draft in your Pages list.

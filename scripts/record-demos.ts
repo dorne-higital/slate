@@ -324,6 +324,122 @@ async function inspect(path: string, clicks: string[]) {
     await browser.close()
 }
 
+/** Screenshots for the help centre (public/help-img/<name>.png): each opens a screen and sets it up. */
+const SHOTS: Record<string, (d: Director) => Promise<void>> = {
+    'overview': async d => d.go(`/sites/${SITE}`),
+    'health': async (d) => {
+        await d.go(`/sites/${SITE}`)
+        await d.page.getByRole('button', { name: /Site health/ }).click()
+        await d.page.getByRole('heading', { name: /Site health/ }).scrollIntoViewIfNeeded()
+    },
+    'pages-new': async (d) => {
+        await d.go(`/sites/${SITE}/pages`)
+        await d.page.getByRole('button', { name: 'New page' }).click()
+        await d.page.getByLabel('Page title').fill('Prices')
+    },
+    'editor': async d => d.go(`/sites/${SITE}/pages/${await homeId()}`),
+    'editor-selected': async (d) => {
+        await d.go(`/sites/${SITE}/pages/${await homeId()}`)
+        await d.page.getByRole('button', { name: 'Select Services block' }).click()
+        await d.page.getByRole('button', { name: 'Select Services block' }).scrollIntoViewIfNeeded()
+    },
+    'editor-library': async (d) => {
+        await d.go(`/sites/${SITE}/pages/${await homeId()}`)
+        await d.page.locator('summary', { hasText: 'Proof and people' }).click()
+    },
+    'editor-section': async (d) => {
+        await d.go(`/sites/${SITE}/pages/${await homeId()}`)
+        await d.page.getByRole('button', { name: 'Select Services block' }).click()
+        const sec = d.page.locator('summary', { hasText: 'Section: background' })
+        await sec.scrollIntoViewIfNeeded()
+        await sec.click()
+        await sec.evaluate(el => el.scrollIntoView({ block: 'start' }))
+    },
+    'editor-history': async (d) => {
+        await d.go(`/sites/${SITE}/pages/${await homeId()}`)
+        await d.page.getByRole('button', { name: 'History', exact: true }).click()
+    },
+    'editor-phone': async (d) => {
+        await d.go(`/sites/${SITE}/pages/${await homeId()}`)
+        await d.page.getByRole('button', { name: 'Phone', exact: true }).click()
+    },
+    'theme': async d => d.go(`/sites/${SITE}/theme`),
+    'layout': async d => d.go(`/sites/${SITE}/layout`),
+    'menus': async d => d.go(`/sites/${SITE}/menus`),
+    'blog': async d => d.go(`/sites/${SITE}/blog`),
+    'projects': async d => d.go(`/sites/${SITE}/projects`),
+    'forms': async (d) => {
+        await d.go(`/sites/${SITE}/forms`)
+        await d.page.getByRole('button', { name: /Hannah Price/ }).click()
+    },
+    'form-editor': async (d) => {
+        await d.go(`/sites/${SITE}/forms`)
+        await d.page.getByRole('button', { name: 'Edit form' }).click()
+    },
+    'media': async d => d.go(`/sites/${SITE}/media`),
+    'domains-search': async (d) => {
+        await d.page.route('**/domains/search', route => route.fulfill({
+            json: { simulated: false, options: Object.entries(DOMAIN_PRICES).map(([tld, price], i) => ({ domain: `brambleandoak.${tld}`, tld, available: i !== 3, price: i !== 3 ? price : null, reason: i === 3 ? 'Already taken' : undefined })) }
+        }))
+        await d.go(`/sites/${SITE}/domains`)
+        await d.page.getByLabel('Domain you’d like').fill('brambleandoak')
+        await d.page.getByRole('button', { name: 'Search', exact: true }).click()
+    },
+    'domains-connect': async (d) => {
+        await d.go(`/sites/${SITE}/domains`)
+        await d.page.getByRole('button', { name: 'Connect a domain' }).click()
+    },
+    'seo': async (d) => {
+        await d.go(`/sites/${SITE}/seo`)
+        await d.page.getByRole('button', { name: 'Services', exact: true }).click()
+    },
+    'redirects': async (d) => {
+        await d.go(`/sites/${SITE}/seo`)
+        await d.page.getByPlaceholder(/old-page/).scrollIntoViewIfNeeded()
+        await d.page.getByPlaceholder(/old-page/).fill('/upholstery-services')
+        await d.page.getByPlaceholder(/new-page/).fill('/services')
+    },
+    'integrations': async d => d.go(`/sites/${SITE}/integrations`),
+    'integration-whatsapp': async (d) => {
+        await d.go(`/sites/${SITE}/integrations`)
+        await d.page.getByRole('button', { name: /WhatsApp/ }).first().click()
+    },
+    'people': async d => d.go(`/sites/${SITE}/people`),
+    'settings': async d => d.go(`/sites/${SITE}/settings`),
+    'billing': async d => d.go(`/sites/${SITE}/billing`)
+}
+async function homeId() {
+    return (await sql`select id from pages where site_id = ${SITE} and path = '/'`)[0]!.id as string
+}
+
+// --shots [name…]: the help centre screenshots
+if (process.argv[2] === '--shots') {
+    execFileSync('node', ['--env-file=.env', 'scripts/demo-site.mjs'], { stdio: 'ignore' })
+    const dir = resolve('public/help-img')
+    mkdirSync(dir, { recursive: true })
+    const only = process.argv.slice(3)
+    const { browser, context } = await newContext()
+    for (const [name, shot] of Object.entries(SHOTS)) {
+        if (only.length && !only.includes(name)) continue
+        const page = await context.newPage()
+        try {
+            await shot(director(page))
+            await page.waitForTimeout(900)
+            const raw = join(RAW, `${name}.png`)
+            mkdirSync(RAW, { recursive: true })
+            await page.screenshot({ path: raw })
+            execFileSync(ffmpeg!, ['-y', '-loglevel', 'error', '-i', raw, '-vf', 'scale=1280:-2', join(dir, `${name}.png`)])
+            console.log(`${name}: ok`)
+        } catch (err) {
+            console.error(`${name}: failed (${(err as Error).message.split('\n')[0]})`)
+        } finally {
+            await page.close()
+        }
+    }
+    await browser.close()
+    process.exit(0)
+}
+
 // --posters: just remake the posters from the videos already in public/videos
 if (process.argv[2] === '--posters') {
     for (const name of Object.keys(SCENES)) encode(null, name)
