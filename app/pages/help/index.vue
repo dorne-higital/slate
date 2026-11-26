@@ -2,7 +2,7 @@
 definePageMeta({ layout: 'marketing', middleware: 'marketing' })
 const page = useMarketingSeo('/help')
 const { comingSoon } = useRuntimeConfig().public
-const { me } = useMe()
+const { me, to: support, label: supportLabel } = await useHelpSupport()
 const plain = computed(() => !!comingSoon && !me.value?.isPlatformAdmin)
 const { data } = await useFetch('/api/help')
 const q = ref('')
@@ -10,7 +10,6 @@ const all = computed(() => (data.value?.areas ?? []).flatMap(a => a.articles.map
 const words = computed(() => q.value.toLowerCase().split(/\s+/).filter(Boolean))
 const matches = computed(() => words.value.length ? all.value.filter(a => words.value.every(w => `${a.title} ${a.summary} ${a.area}`.toLowerCase().includes(w))) : [])
 const popular = computed(() => all.value.filter(a => a.popular))
-const support = computed(() => me.value?.sites[0] ? `/sites/${me.value.sites[0].id}/support` : '/contact')
 </script>
 
 <template>
@@ -61,7 +60,7 @@ const support = computed(() => me.value?.sites[0] ? `/sites/${me.value.sites[0].
             <aside class="stuck">
                 <b>Can’t find what you need?</b>
                 <span>Ask us and a real person will reply, usually within a working day.</span>
-                <NuxtLink class="btn btn-dark" :to="support">{{ me?.sites[0] ? 'Ask in Support' : 'Contact us' }}</NuxtLink>
+                <NuxtLink class="btn btn-dark" :to="support">{{ supportLabel }}</NuxtLink>
             </aside>
         </div>
     </div>

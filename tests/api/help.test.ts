@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Client } from './helpers'
+import { afterAll } from 'vitest'
+import { Client, cleanUp, newAccount } from './helpers'
+
+afterAll(cleanUp)
 
 const COMING_SOON = process.env.TEST_COMING_SOON_URL
 
@@ -15,6 +18,12 @@ describe('help centre', () => {
         expect(article.text.match(/<h1[\s>]/g)?.length).toBe(1)
         expect(article.text).toContain('"@type":"HowTo"')
         expect(article.text).toContain('rel="canonical" href="https://slatecms.co.uk/help/add-a-page"')
+    })
+
+    it('sends signed-in people to their site’s Support page', async () => {
+        const ana = await newAccount('help-support')
+        const r = await ana.client.get('/help/add-a-page')
+        expect(r.text).toContain(`href="/sites/${ana.siteId}/support"`)
     })
 
     it('unknown articles are not found', async () => {
@@ -33,6 +42,9 @@ describe('help centre', () => {
             const r = await c.get(path)
             expect(r.status, path).toBe(200)
             expect(r.text, path).not.toContain('href="/pricing"')
+            // Contact isn't out yet either: the "still stuck" link must work for them
+            expect(r.text, path).not.toContain('href="/contact"')
+            expect(r.text, path).toContain('href="mailto:hello@slatecms.co.uk"')
         }
     })
 })

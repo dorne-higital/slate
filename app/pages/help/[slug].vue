@@ -19,9 +19,8 @@ useMarketingSeo(`/help/${slug}`, {
     }]
 })
 const { comingSoon } = useRuntimeConfig().public
-const { me } = useMe()
+const { me, to: support, label: supportLabel } = await useHelpSupport()
 const plain = computed(() => !!comingSoon && !me.value?.isPlatformAdmin)
-const support = computed(() => me.value?.sites[0] ? `/sites/${me.value.sites[0].id}/support` : '/contact')
 </script>
 
 <template>
@@ -45,7 +44,7 @@ const support = computed(() => me.value?.sites[0] ? `/sites/${me.value.sites[0].
             <aside class="stuck">
                 <b>Still stuck?</b>
                 <span>Ask us and a real person will reply, usually within a working day.</span>
-                <NuxtLink class="btn btn-dark" :to="support">{{ me?.sites[0] ? 'Ask in Support' : 'Contact us' }}</NuxtLink>
+                <NuxtLink class="btn btn-dark" :to="support">{{ supportLabel }}</NuxtLink>
             </aside>
         </div>
     </div>
