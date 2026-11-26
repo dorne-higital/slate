@@ -22,3 +22,19 @@ export async function pingIndexNow(site: typeof schema.sites.$inferSelect, paths
         signal: AbortSignal.timeout(8000)
     }).catch(() => {})
 }
+
+/**
+ * Pings IndexNow for pages of Slate's own site (slatecms.co.uk), such as a newly published guide.
+ * Does nothing before launch or when running locally.
+ */
+export async function pingMarketing(paths: string[]) {
+    const { appHost, comingSoon } = useRuntimeConfig().public
+    if (comingSoon || !paths.length || /localhost|127\.0\.0\.1/.test(appHost)) return
+    const key = await indexNowKey('marketing')
+    await fetch('https://api.indexnow.org/indexnow', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ host: appHost, key, keyLocation: `https://${appHost}/indexnow-key.txt`, urlList: paths.map(p => `https://${appHost}${p}`) }),
+        signal: AbortSignal.timeout(8000)
+    }).catch(() => {})
+}

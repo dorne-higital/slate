@@ -11,8 +11,17 @@ export default defineEventHandler(async (event) => {
 
     const site = await resolveTenant(event)
     if (!site) {
-        const host = useRuntimeConfig().public.appHost
-        return urlset((useRuntimeConfig().public.comingSoon ? [`/`] : [`/`, `/signup`]).map(p => ({ loc: `https://${host}${p}` })))
+        // Slate's own site: just the home page until launch, then every marketing page and live guide
+        const { appHost, comingSoon } = useRuntimeConfig().public
+        const base = `https://${appHost}`
+        if (comingSoon) return urlset([{ loc: `${base}/` }])
+        const guidesSite = await marketingSite()
+        const guides = guidesSite ? await livePosts(guidesSite.id, { limit: 500 }) : []
+        return urlset([
+            // No lastmod for coded pages: we can't know honestly when each last changed
+            ...MARKETING_PAGES.map(p => ({ loc: `${base}${p.path}` })),
+            ...guides.map(g => ({ loc: `${base}/guides/${g.slug}`, lastmod: g.publishedAt.slice(0, 10) }))
+        ])
     }
 
     const address = await liveAddress(site)

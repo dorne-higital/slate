@@ -43,6 +43,8 @@ export default defineEventHandler(async (event) => {
     // Newly live (not scheduled for later): tell search engines
     if (b.status === 'published' && post.status !== 'published' && updated!.publishedAt && updated!.publishedAt <= new Date()) {
         event.waitUntil?.(pingIndexNow(site, [`/blog/${updated!.slug}`]))
+        // Posts on the guides site are slatecms.co.uk/guides pages
+        if (site.id === useRuntimeConfig().marketingSiteId) event.waitUntil?.(pingMarketing([`/guides/${updated!.slug}`, '/guides']))
     }
     return toEditorPost(updated!)
 })

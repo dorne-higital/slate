@@ -154,3 +154,24 @@ describe.skipIf(!GUIDES_SITE)('contact form', () => {
         expect(statuses).toContain(429)
     })
 })
+
+describe('sitemap', () => {
+    const locs = (xml: string) => [...xml.matchAll(/<loc>https:\/\/[^/<]+([^<]*)<\/loc>/g)].map(m => m[1] || '/')
+
+    it('lists every marketing page and live guide once launched', async () => {
+        const r = await new Client().get('/sitemap.xml')
+        expect(r.status).toBe(200)
+        const paths = locs(r.text)
+        for (const p of MARKETING_PAGES) expect(paths, p.path).toContain(p.path)
+        if (GUIDES_SITE) {
+            const [guide] = await sql`select slug from posts where site_id = ${GUIDES_SITE} and status = 'published' and published_at <= now() limit 1`
+            if (guide) expect(paths).toContain(`/guides/${guide.slug}`)
+        }
+        expect(r.text).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/)
+    })
+
+    it.skipIf(!COMING_SOON)('lists only the home page while coming soon', async () => {
+        const r = await new Client(undefined, COMING_SOON).get('/sitemap.xml')
+        expect(locs(r.text)).toEqual(['/'])
+    })
+})
