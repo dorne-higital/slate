@@ -52,6 +52,8 @@ export default defineNuxtConfig({
         cloudflareZoneId: '',
         // Cloudflare Web Analytics site tag, for reading visitor numbers back (needs Account Analytics: Read on the domains token)
         cfAnalyticsSiteTag: '',
+        // Dan's private inbox for everything @slatecms.co.uk (Worker secret; never shown on a page)
+        slateMailTo: '',
         public: {
             // Cloudflare Turnstile site key (public). Empty = the check is switched off
             turnstileSiteKey: '',

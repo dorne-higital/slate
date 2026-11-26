@@ -101,6 +101,7 @@ const linkFor = (address: string) => `${address.includes('localhost') ? 'http' :
                 <h1>Slate dashboard</h1>
                 <p class="muted big">Everything across Slate. {{ ov?.live ? 'Payments are live.' : 'Payments are in Stripe test mode, so revenue here is test money.' }}</p>
             </div>
+            <AdminSlateEmail />
 
             <ul v-if="ov" class="kpis" aria-label="Key numbers">
                 <li class="panel kpi hi"><span>Monthly revenue</span><b>{{ formatPence(ov.billing.mrr) }}</b><small>{{ ov.billing.paying }} paying {{ ov.billing.paying === 1 ? 'account' : 'accounts' }}<template v-if="ov.billing.domainRevenueYear"> · domains {{ formatPence(ov.billing.domainRevenueYear) }}/yr</template></small></li>
