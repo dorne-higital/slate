@@ -86,7 +86,7 @@ useMarketingSeo('/', {
         <MkSplit
             eyebrow="The editor"
             title="Change anything by clicking it"
-            text="Every page is a stack of blocks. Click one to change its words and pictures, drag to reorder, and see it on a phone before you publish."
+            text="Every page is a stack of blocks. Click one to change its words and pictures, drag to reorder, and publish when you’re ready. Visitors only see changes once you publish."
             :points="['Over 30 blocks, styled to match your colours and fonts', 'Every publish is saved, so you can go back to any version', 'Several people can edit, each with their own login']"
             video="editor"
             video-caption="Adding, editing and reordering blocks."

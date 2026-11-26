@@ -62,7 +62,7 @@ export const MARKETING_PAGES: MarketingPage[] = [
     page({
         path: '/features/editor', section: 'features', navLabel: 'Editor and blocks',
         title: 'Page editor and blocks: build pages by clicking | Slate',
-        description: 'Build pages from ready-made blocks: heroes, services, galleries, prices and contact forms. Set your colours once, preview on a phone and undo any publish.',
+        description: 'Build pages from ready-made blocks: heroes, services, galleries, prices and contact forms. Set your colours once, and go back to any version you published.',
         h1: 'Build pages by putting blocks in order'
     }),
     page({

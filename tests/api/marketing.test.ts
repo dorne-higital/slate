@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest'
+import { MARKETING_PAGES, marketingPage } from '../../shared/utils/marketing'
 import { Client, TURNSTILE_TEST_TOKEN, cleanUp, makeAdmin, newAccount } from './helpers'
 
 afterAll(cleanUp)
@@ -24,4 +25,21 @@ describe.skipIf(!COMING_SOON)('coming soon', () => {
         expect(seen.status).toBe(200)
         expect(seen.text).toContain('Simple pricing with everything included')
     })
+})
+
+// Normal test server (coming soon off): every page of the site renders properly
+const pageChecks = (paths: string[]) => async () => {
+    const c = new Client()
+    for (const path of paths) {
+        const r = await c.get(path)
+        expect(r.status, path).toBe(200)
+        expect(r.text.match(/<h1[\s>]/g)?.length, `${path} has one h1`).toBe(1)
+        expect(r.text, path).toContain(`<title>${escapeHtml(marketingPage(path).title)}</title>`)
+        expect(r.text, path).toContain(`rel="canonical" href="https://slatecms.co.uk${path}"`)
+    }
+}
+const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+describe('marketing pages', () => {
+    it('feature pages render with one h1 and their own title', pageChecks(MARKETING_PAGES.filter(p => p.section === 'features').map(p => p.path)))
 })

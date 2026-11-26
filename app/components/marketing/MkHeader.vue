@@ -2,7 +2,7 @@
 // Slate's own site header, with mega menus for Features and Who it's for.
 // Menus are <details>, so they open before (or without) JavaScript; script just tidies up closing them.
 const MENU: Record<string, { icon: string, blurb: string }> = {
-    '/features/editor': { icon: 'star', blurb: 'Build pages from ready-made blocks, then undo any publish' },
+    '/features/editor': { icon: 'star', blurb: 'Build pages from ready-made blocks, and go back to any version' },
     '/features/domains-and-email': { icon: 'globe', blurb: 'Buy or connect a domain, with free email forwarding' },
     '/features/forms': { icon: 'chat', blurb: 'Quote and contact forms with an inbox and spam protection' },
     '/features/seo': { icon: 'chart', blurb: 'A health check that shows what to fix to get found' },
