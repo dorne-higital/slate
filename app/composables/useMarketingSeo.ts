@@ -3,11 +3,13 @@
  * all from the page registry (shared/utils/marketing.ts). Pages add their own structured data via extra.jsonLd.
  */
 export const useMarketingSeo = (path: string, extra: { jsonLd?: Record<string, unknown>[], title?: string, description?: string, image?: string } = {}) => {
-    const page = marketingPage(path)
+    // Pages outside the registry (a guide) pass their own title and description
+    const known = MARKETING_PAGES.find(p => p.path === path)
+    const page = known ?? marketingPage('/guides')
     const title = extra.title ?? page.title
     const description = extra.description ?? page.description
     const url = `${MARKETING_SITE}${path}`
-    const image = `${MARKETING_SITE}${extra.image ?? page.image}`
+    const image = extra.image ? (extra.image.startsWith('http') ? extra.image : `${MARKETING_SITE}${extra.image}`) : `${MARKETING_SITE}${page.image}`
 
     const crumbs: { name: string, url: string }[] = [{ name: 'Slate', url: MARKETING_SITE }]
     if (path !== '/') {
@@ -37,7 +39,7 @@ export const useMarketingSeo = (path: string, extra: { jsonLd?: Record<string, u
         ogTitle: title,
         ogDescription: description,
         ogUrl: url,
-        ogType: 'website',
+        ogType: known ? 'website' : 'article',
         ogSiteName: 'Slate',
         ogLocale: 'en_GB',
         ogImage: image,

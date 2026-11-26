@@ -24,6 +24,8 @@ export default defineNuxtConfig({
 
     runtimeConfig: {
         databaseUrl: '',
+        // The Slate site whose blog is slatecms.co.uk/guides and whose Contact form takes /contact messages
+        marketingSiteId: '',
         betterAuthSecret: '',
         // Cloudflare for SaaS (client custom domains). Token needs SSL and Certificates: Edit on the zone.
         cloudflareApiToken: '',
