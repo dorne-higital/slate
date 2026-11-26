@@ -21,7 +21,8 @@
         "test:api": "vitest run --config vitest.api.config.ts",
         "dev:test": "NUXT_TURNSTILE_SECRET=1x0000000000000000000000000000000AA NUXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA nuxt dev --port 3001",
         "og:images": "tsx scripts/share-images.ts",
-        "demos:record": "node --env-file=.env node_modules/tsx/dist/cli.mjs scripts/record-demos.ts"
+        "demos:record": "node --env-file=.env node_modules/tsx/dist/cli.mjs scripts/record-demos.ts",
+        "help:index": "node scripts/help-index.mjs"
     },
     "dependencies": {
         "@neon/config": "^1.14.6",
@@ -30,6 +31,7 @@
         "better-auth": "1.7.27",
         "drizzle-orm": "0.45.4",
         "fflate": "0.8.2",
+        "marked": "^18.3.0",
         "nuxt": "4.6.4",
         "sanitize-html": "2.18.2",
         "uqr": "0.1.3"

@@ -1,6 +1,15 @@
 // Slate: one Nuxt app, deployed as a single Cloudflare Worker.
 // Runtime config is filled from NUXT_* env vars (.env locally, Worker secrets in production).
+import { buildHelpIndex } from './scripts/help-index.mjs'
+
 export default defineNuxtConfig({
+    // Help articles (content/help/*.md) are bundled into a module before every build and dev start
+    hooks: {
+        'build:before': () => {
+            buildHelpIndex()
+        }
+    },
+
     // A second dev server (the API tests' one) needs its own build folder, or the two overwrite each other
     ...(process.env.SLATE_BUILD_DIR ? { buildDir: process.env.SLATE_BUILD_DIR } : {}),
     compatibilityDate: '2026-11-01',
