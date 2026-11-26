@@ -24,6 +24,27 @@ const { me } = useMe()
 const dashboard = computed(() => me.value?.isPlatformAdmin ? '/admin' : me.value?.sites[0] ? `/sites/${me.value.sites[0].id}` : '/sites')
 
 const root = ref<HTMLElement>()
+
+// Phone menu: a top level, and Features / Who it's for each on their own screen with a way back
+type MobView = 'main' | 'features' | 'for'
+const mobView = ref<MobView>('main')
+const mobMenu = ref<HTMLDetailsElement>()
+const featuresBtn = ref<HTMLButtonElement>()
+const sectorsBtn = ref<HTMLButtonElement>()
+const backBtn = ref<HTMLButtonElement>()
+function openMob(view: Exclude<MobView, 'main'>) {
+    mobView.value = view
+    nextTick(() => backBtn.value?.focus())
+}
+function backMob() {
+    const from = mobView.value
+    mobView.value = 'main'
+    nextTick(() => (from === 'features' ? featuresBtn.value : sectorsBtn.value)?.focus())
+}
+function onMobToggle(e: Event) {
+    onToggle(e)
+    if (!mobMenu.value?.open) mobView.value = 'main'
+}
 const closeAll = () => root.value?.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'))
 const route = useRoute()
 watch(() => route.fullPath, closeAll)
@@ -36,7 +57,10 @@ function outside(e: MouseEvent) {
     if (!root.value?.contains(e.target as Node)) closeAll()
 }
 function onKey(e: KeyboardEvent) {
-    if (e.key === 'Escape') closeAll()
+    if (e.key !== 'Escape') return
+    // In a phone sub-menu, Escape goes back a level first
+    if (mobMenu.value?.open && mobView.value !== 'main') backMob()
+    else closeAll()
 }
 onMounted(() => {
     document.addEventListener('click', outside)
@@ -113,23 +137,32 @@ onBeforeUnmount(() => {
                     <NuxtLink to="/signup" class="btn btn-lichen">Start free trial</NuxtLink>
                 </template>
 
-                <details class="dd mob" @toggle="onToggle">
+                <details ref="mobMenu" class="dd mob" @toggle="onMobToggle">
                     <summary aria-label="Menu"><span class="burger" aria-hidden="true"><i /><i /><i /></span></summary>
                     <div class="sheet">
-                        <p class="mh">Features</p>
-                        <NuxtLink v-for="f in features" :key="f.path" :to="f.path" class="mi">
-                            <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path :d="showcaseIcon(f.icon)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-                            <span class="mt"><b>{{ f.navLabel }}</b></span>
-                        </NuxtLink>
-                        <p class="mh">Who it’s for</p>
-                        <NuxtLink v-for="s in sectors" :key="s.path" :to="s.path" class="mi">
-                            <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path :d="showcaseIcon(s.icon)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
-                            <span class="mt"><b>{{ s.navLabel }}</b></span>
-                        </NuxtLink>
-                        <p class="mh">More</p>
-                        <NuxtLink to="/pricing" class="mi plain"><b>Pricing</b></NuxtLink>
-                        <NuxtLink to="/guides" class="mi plain"><b>Guides</b></NuxtLink>
-                        <NuxtLink v-if="!me" to="/login" class="mi plain"><b>Log in</b></NuxtLink>
+                        <!-- Top level: sections open their own screen -->
+                        <div v-if="mobView === 'main'" class="mv">
+                            <button ref="featuresBtn" type="button" class="mi drill" @click="openMob('features')"><b>Features</b><span class="chev-r" aria-hidden="true" /></button>
+                            <button ref="sectorsBtn" type="button" class="mi drill" @click="openMob('for')"><b>Who it’s for</b><span class="chev-r" aria-hidden="true" /></button>
+                            <NuxtLink to="/pricing" class="mi plain"><b>Pricing</b></NuxtLink>
+                            <NuxtLink to="/guides" class="mi plain"><b>Guides</b></NuxtLink>
+                            <NuxtLink v-if="!me" to="/login" class="mi plain"><b>Log in</b></NuxtLink>
+                            <NuxtLink v-if="!me" to="/signup" class="btn btn-lichen mob-cta">Start free trial</NuxtLink>
+                        </div>
+                        <!-- One section on its own, with a way back -->
+                        <div v-else class="mv sub">
+                            <button ref="backBtn" type="button" class="back" @click="backMob"><span class="chev-l" aria-hidden="true" />Menu</button>
+                            <p class="mh">{{ mobView === 'features' ? 'Features' : 'Who it’s for' }}</p>
+                            <NuxtLink v-for="f in (mobView === 'features' ? features : sectors)" :key="f.path" :to="f.path" class="mi">
+                                <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path :d="showcaseIcon(f.icon)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+                                <span class="mt"><b>{{ f.navLabel }}</b><span>{{ f.blurb }}</span></span>
+                            </NuxtLink>
+                            <NuxtLink v-if="mobView === 'features'" to="/features" class="mi plain all">All features →</NuxtLink>
+                            <template v-else>
+                                <p class="mh">Moving from somewhere else?</p>
+                                <NuxtLink v-for="c in compare" :key="c.path" :to="c.path" class="mi plain">{{ c.navLabel }}</NuxtLink>
+                            </template>
+                        </div>
                     </div>
                 </details>
             </div>
@@ -194,7 +227,22 @@ details[open] .car { margin-top: 3px; transform: rotate(225deg); }
 .sheet .mi { align-items: center; padding: 8px 12px; }
 .sheet .ic { height: 32px; width: 32px; }
 .mi.plain { padding: 10px 12px; }
-@media (prefers-reduced-motion: reduce) { .mega, .sheet { animation: none; } }
+.mv { display: flex; flex-direction: column; }
+.sub { animation: slide .2s ease-out; }
+@keyframes slide { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+.drill { align-items: center; background: none; border: 0; cursor: pointer; font: inherit; justify-content: space-between; padding: 14px 12px; text-align: left; width: 100%; }
+.drill b { font-size: 16px; }
+.chev-r, .chev-l { border-bottom: 2px solid currentColor; border-right: 2px solid currentColor; display: inline-block; height: 8px; width: 8px; }
+.chev-r { color: var(--text-muted); transform: rotate(-45deg); }
+.chev-l { margin-right: 10px; transform: rotate(135deg); }
+.back { align-items: center; background: none; border: 0; border-bottom: 1px solid var(--line-soft); color: var(--quarry); cursor: pointer; display: flex; font: inherit; font-size: 15px; font-weight: 700; margin-bottom: 4px; padding: 12px; text-align: left; }
+.back:hover, .drill:hover { background: var(--paper); }
+.back:focus-visible, .drill:focus-visible { outline: 3px solid var(--lichen-focus); }
+.sub .mi { align-items: flex-start; }
+.sub .mt span { font-size: 13.5px; }
+.all { color: var(--heather); font-weight: 700; }
+.mob-cta { margin: 10px 12px 4px; }
+@media (prefers-reduced-motion: reduce) { .mega, .sheet, .sub { animation: none; } }
 @media (max-width: 960px) {
     .links { display: none; }
     .mob { display: block; }
