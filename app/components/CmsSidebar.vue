@@ -3,7 +3,7 @@ const props = defineProps<{ siteId: string }>()
 const route = useRoute()
 const { me, signOut } = useMe()
 
-interface NavItem { key: string, label: string, icon: string, to?: string }
+interface NavItem { key: string, label: string, icon: string, to?: string, /** Outside the site's CMS: opens in a new tab */ external?: boolean }
 
 // Items without `to` are in the design but not built yet; they show as "soon".
 const groups: { title: string, items: NavItem[] }[] = [
@@ -30,7 +30,8 @@ const groups: { title: string, items: NavItem[] }[] = [
         { key: 'people', label: 'People', icon: 'M6.5 8a2.5 2.5 0 1 0 0-5a2.5 2.5 0 1 0 0 5M2 15c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4M12 8a2 2 0 1 0 0-4M13 11c1.8.3 3 1.6 3 4', to: '/people' },
         { key: 'settings', label: 'Settings', icon: 'M9 6.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.5 1.5M12.5 12.5L14 14M4 14l1.5-1.5M12.5 5.5L14 4', to: '/settings' },
         { key: 'billing', label: 'Billing', icon: 'M2 4h14v10H2zM2 8h14', to: '/billing' },
-        { key: 'support', label: 'Support', icon: 'M9 2.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 1 0 0-13M7 7a2 2 0 1 1 2.8 1.8c-.5.3-.8.7-.8 1.2M9 12.5v.1', to: '/support' }
+        { key: 'support', label: 'Support', icon: 'M9 2.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 1 0 0-13M7 7a2 2 0 1 1 2.8 1.8c-.5.3-.8.7-.8 1.2M9 12.5v.1', to: '/support' },
+        { key: 'help', label: 'Help', icon: 'M3 3h5a2 2 0 0 1 2 2v10a2 2 0 0 0-2-2H3zM15 3h-5a2 2 0 0 0-2 2v10a2 2 0 0 1 2-2h5z', to: '/help', external: true }
     ] }
 ]
 
@@ -61,7 +62,7 @@ const site = computed(() => me.value?.sites.find(s => s.id === props.siteId))
 const initials = computed(() => (me.value?.name ?? '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase())
 
 function isActive(item: NavItem) {
-    if (item.to === undefined) return false
+    if (item.to === undefined || item.external) return false
     const target = base.value + item.to
     return item.to === '' ? route.path === target : route.path.startsWith(target)
 }
@@ -88,7 +89,8 @@ function isActive(item: NavItem) {
                 <template v-for="item in group.items" :key="item.key">
                     <NuxtLink
                         v-if="item.to !== undefined"
-                        :to="base + item.to"
+                        :to="item.external ? item.to : base + item.to"
+                        :target="item.external ? '_blank' : undefined"
                         class="nv"
                         :class="{ on: isActive(item) }"
                         :aria-current="isActive(item) ? 'page' : undefined"

@@ -11,6 +11,20 @@ export interface HelpAreaInfo {
     screens: string[]
 }
 
+/** Which help area explains a CMS screen ('theme', 'editor'…), or null when none does. */
+export function helpAreaFor(screen: string): HelpArea | null {
+    return HELP_AREAS.find(a => a.screens.includes(screen))?.key ?? null
+}
+
+/** The CMS screen for a path: /sites/<id> → 'overview', /sites/<id>/pages/<page> → 'editor', else the first part. */
+export function cmsScreen(path: string): string {
+    const parts = path.split('?')[0]!.split('/').filter(Boolean)
+    if (parts[0] !== 'sites' || parts.length < 2) return ''
+    if (parts.length === 2) return 'overview'
+    if (parts[2] === 'pages' && parts.length > 3) return 'editor'
+    return parts[2]!
+}
+
 // Kept last: Nuxt's auto-import scanner drops exports that follow an exported array literal
 export const HELP_AREAS: HelpAreaInfo[] = [
     { key: 'getting-started', name: 'Getting started', blurb: 'Your first site, the dashboard and publishing', icon: 'star', screens: ['overview'] },

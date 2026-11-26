@@ -55,3 +55,18 @@ describe('help articles', () => {
         expect(helpArticle('nope')).toBeUndefined()
     })
 })
+
+describe('help from inside the CMS', () => {
+    it('every CMS screen maps to an area with articles, unknown screens map to null', async () => {
+        const { helpAreaFor, cmsScreen } = await import('../../shared/utils/helpAreas')
+        expect(helpAreaFor('theme')).toBe('look')
+        expect(helpAreaFor('nope')).toBeNull()
+        expect(cmsScreen('/sites/abc')).toBe('overview')
+        expect(cmsScreen('/sites/abc/pages')).toBe('pages')
+        expect(cmsScreen('/sites/abc/pages/123')).toBe('editor')
+        expect(cmsScreen('/sites/abc/blog/123')).toBe('blog')
+        for (const a of HELP_AREAS) {
+            for (const s of a.screens) expect(articles.some(x => x.area === helpAreaFor(s)), `${s} has articles`).toBe(true)
+        }
+    })
+})

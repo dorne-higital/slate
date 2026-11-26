@@ -346,6 +346,7 @@ async function deletePage() {
                 <button class="ib" type="button" aria-label="Undo" title="Undo (Ctrl/Cmd Z)" @click="undo">
                     <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5L3 9l4 4M3 9h9a5 5 0 0 1 0 10h-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
                 </button>
+                <CmsHelpLink screen="editor" class="ed-help" />
                 <button class="btn btn-ghost" type="button" @click="openHistory">History</button>
                 <a v-if="status === 'published' && loaded?.path !== '/_offline'" class="btn btn-ghost" :href="liveUrl" target="_blank" rel="noopener">View live</a>
                 <button class="btn btn-dark" type="button" :disabled="publishing || !unpublished" @click="publish">

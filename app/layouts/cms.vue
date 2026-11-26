@@ -27,6 +27,7 @@ const notice = computed(() => {
                 <NuxtLink v-if="site?.billing.youPay" :to="`/sites/${siteId}/billing`" class="btn btn-dark btn-sm">Choose a plan</NuxtLink>
             </div>
             <slot />
+            <footer class="cms-help"><CmsHelpLink /></footer>
         </main>
     </div>
 </template>
@@ -35,6 +36,7 @@ const notice = computed(() => {
 .cms { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
 .bill-note { align-items: center; background: var(--paper); border-radius: var(--radius-lg); display: flex; flex-wrap: wrap; font-size: 14px; gap: 12px; justify-content: space-between; padding: 12px 16px; }
 .bill-note.warn { background: #fbeceb; color: var(--danger); }
+.cms-help { border-top: 1px solid var(--line-soft); margin-top: auto; padding-top: 16px; }
 .cms-main { display: flex; flex-direction: column; gap: 24px; min-width: 0; padding: 28px 40px 48px; }
 
 @media (max-width: 860px) {
