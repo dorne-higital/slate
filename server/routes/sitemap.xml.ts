@@ -20,7 +20,8 @@ export default defineEventHandler(async (event) => {
         return urlset([
             // No lastmod for coded pages: we can't know honestly when each last changed
             ...MARKETING_PAGES.map(p => ({ loc: `${base}${p.path}` })),
-            ...guides.map(g => ({ loc: `${base}/guides/${g.slug}`, lastmod: g.publishedAt.slice(0, 10) }))
+            ...guides.map(g => ({ loc: `${base}/guides/${g.slug}`, lastmod: g.publishedAt.slice(0, 10) })),
+            ...helpArticles().map(a => ({ loc: `${base}/help/${a.slug}` }))
         ])
     }
 

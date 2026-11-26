@@ -183,6 +183,12 @@ export const MARKETING_PAGES: MarketingPage[] = [
     }),
 
     page({
+        path: '/help', section: 'company', navLabel: 'Help',
+        title: 'Help: how to use Slate, step by step',
+        description: 'Short how-to guides for every part of Slate: adding pages, moving blocks, changing colours, forms, domains, email, SEO and more, with pictures of each step.',
+        h1: 'How can we help?'
+    }),
+    page({
         path: '/about', section: 'company', navLabel: 'About',
         title: 'About Slate: a UK website builder made in Warrington',
         description: 'Slate is built and run in Warrington by Dan Horne, a web developer who wants small businesses to run their own website without paying an agency.',

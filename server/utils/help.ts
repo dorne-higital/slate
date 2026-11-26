@@ -4,7 +4,7 @@ import { HELP_FILES } from './helpFiles.generated'
 /**
  * Help centre articles: Markdown files in content/help, bundled at build time.
  * Frontmatter (between --- lines): title, summary, area, order, related (comma-separated slugs), popular.
- * In the body, [text](help:slug) links to another article and ![alt](shot:name) shows public/help/name.png.
+ * In the body, [text](help:slug) links to another article and ![alt](shot:name) shows public/help-img/name.png.
  */
 export interface HelpArticle {
     slug: string
@@ -28,7 +28,7 @@ export function parseHelpArticle(slug: string, source: string): HelpArticle {
     })) as Record<string, string>
     const body = m[2]!
         .replace(/\]\(help:([a-z0-9-]+)\)/g, '](/help/$1)')
-        .replace(/!\[([^\]]*)\]\(shot:([a-z0-9-]+)\)/g, '![$1](/help/$2.png)')
+        .replace(/!\[([^\]]*)\]\(shot:([a-z0-9-]+)\)/g, '![$1](/help-img/$2.png)')
     const tokens = marked.lexer(body)
     const list = tokens.find(t => t.type === 'list' && (t as { ordered?: boolean }).ordered) as { items: { text: string }[] } | undefined
     const plain = (s: string) => s.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/[*_`]/g, '').split('\n')[0]!.trim()

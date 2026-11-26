@@ -41,9 +41,9 @@ describe('help articles', () => {
         }
     })
 
-    it('every shot: image exists in public/help', () => {
+    it('every shot: image exists in public/help-img', () => {
         for (const a of articles) {
-            for (const m of a.html.matchAll(/src="\/help\/([a-z0-9-]+\.png)"/g)) expect(existsSync(`public/help/${m[1]}`), `${a.slug} uses ${m[1]}`).toBe(true)
+            for (const m of a.html.matchAll(/src="\/help-img\/([a-z0-9-]+\.png)"/g)) expect(existsSync(`public/help-img/${m[1]}`), `${a.slug} uses ${m[1]}`).toBe(true)
             expect(a.html, a.slug).not.toContain('shot:')
         }
     })

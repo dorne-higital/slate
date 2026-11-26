@@ -4,7 +4,7 @@ const cols = [
     { title: 'Features', pages: [...marketingSections('features'), marketingPage('/pricing')] },
     { title: 'Who it’s for', pages: marketingSections('for') },
     { title: 'Compare', pages: marketingSections('compare') },
-    { title: 'Slate', pages: [marketingPage('/guides'), marketingPage('/about'), marketingPage('/contact'), marketingPage('/privacy'), marketingPage('/terms')] }
+    { title: 'Slate', pages: [marketingPage('/guides'), marketingPage('/help'), marketingPage('/about'), marketingPage('/contact'), marketingPage('/privacy'), marketingPage('/terms')] }
 ]
 const year = new Date().getFullYear()
 </script>

@@ -4,7 +4,7 @@ import { MARKETING_PAGES, faqJsonLd, marketingPage } from '../../shared/utils/ma
 const SPEC_PATHS = [
     '/', '/features', '/features/editor', '/features/domains-and-email', '/features/forms', '/features/seo', '/features/integrations',
     '/websites-for', '/websites-for/trades', '/websites-for/salons-and-clinics', '/websites-for/shops-and-cafes', '/websites-for/clubs-and-charities', '/websites-for/freelancers-and-studios',
-    '/pricing', '/compare/wix', '/compare/squarespace', '/compare/wordpress', '/guides', '/about', '/contact', '/privacy', '/terms'
+    '/pricing', '/compare/wix', '/compare/squarespace', '/compare/wordpress', '/guides', '/help', '/about', '/contact', '/privacy', '/terms'
 ]
 
 describe('marketing page registry', () => {

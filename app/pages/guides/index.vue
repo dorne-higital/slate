@@ -38,6 +38,12 @@ const when = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: '
                 </li>
             </ul>
         </section>
+        <section class="mk-wrap help-link">
+            <NuxtLink to="/help" class="hl">
+                <span><b>Looking for how to do something in Slate?</b><span>Step-by-step help for adding pages, moving blocks, forms, domains and more.</span></span>
+                <span class="go">Visit the help centre <span aria-hidden="true">→</span></span>
+            </NuxtLink>
+        </section>
         <MkCta />
     </div>
 </template>
@@ -51,7 +57,7 @@ h1 { font-size: clamp(40px, 5.4vw, 64px); font-weight: 900; letter-spacing: -.04
 .cats a { border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); color: var(--quarry); font-size: 15px; font-weight: 600; padding: 8px 16px; text-decoration: none; }
 .cats a:hover { box-shadow: inset 0 0 0 1px var(--quarry); }
 .cats a.on { background: var(--quarry); box-shadow: none; color: var(--white); }
-.list { padding-bottom: 88px; }
+.list { padding-bottom: 48px; }
 .none { color: var(--text-muted); font-size: 18px; }
 .grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); list-style: none; margin: 0; padding: 0; }
 .grid a { background: var(--white); border-radius: 12px; box-shadow: 0 0 0 1px var(--line); color: inherit; display: flex; flex-direction: column; height: 100%; overflow: hidden; text-decoration: none; }
@@ -66,4 +72,10 @@ h1 { font-size: clamp(40px, 5.4vw, 64px); font-weight: 900; letter-spacing: -.04
 .meta b { font-size: 20px; letter-spacing: -.01em; line-height: 1.25; }
 .sum { color: var(--text-body); font-size: 15.5px; line-height: 1.55; }
 time { color: var(--text-muted); font-size: 14px; margin-top: auto; }
+.help-link { padding-bottom: 88px; }
+.hl { align-items: center; background: var(--white); border-radius: 12px; box-shadow: 0 0 0 1px var(--line); color: inherit; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; padding: 24px 28px; text-decoration: none; }
+.hl:hover { box-shadow: 0 0 0 1px var(--quarry), 4px 4px 0 var(--lichen); }
+.hl b { display: block; font-size: 19px; }
+.hl > span:first-child span { color: var(--text-body); font-size: 15.5px; }
+.go { color: var(--heather); font-weight: 700; }
 </style>
