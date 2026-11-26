@@ -43,3 +43,10 @@ const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 describe('marketing pages', () => {
     it('feature pages render with one h1 and their own title', pageChecks(MARKETING_PAGES.filter(p => p.section === 'features').map(p => p.path)))
 })
+
+describe('sector pages', () => {
+    it('render with one h1 and their own title', pageChecks(MARKETING_PAGES.filter(p => p.section === 'for').map(p => p.path)))
+    it('unknown sectors are not found', async () => {
+        expect((await new Client().get('/for/plumbers')).status).toBe(404)
+    })
+})

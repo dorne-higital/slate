@@ -41,3 +41,25 @@ describe('structured data', () => {
         })
     })
 })
+
+describe('sector pages', () => {
+    it('every sector has a matching starter layout and a registry page', async () => {
+        const { SECTORS } = await import('../../shared/utils/marketingSectors')
+        const { STARTER_LAYOUTS } = await import('../../shared/utils/starterLayouts')
+        expect(SECTORS.map(s => `/for/${s.slug}`).sort()).toEqual(MARKETING_PAGES.filter(p => p.section === 'for').map(p => p.path).sort())
+        for (const s of SECTORS) expect(STARTER_LAYOUTS.some(l => l.id === s.layoutId), s.slug).toBe(true)
+    })
+
+    it('sector pages are genuinely different', async () => {
+        const { SECTORS } = await import('../../shared/utils/marketingSectors')
+        const problems = SECTORS.flatMap(s => s.problems.map(p => p.title))
+        const questions = SECTORS.flatMap(s => s.faq.map(f => f.q))
+        expect(new Set(problems).size).toBe(problems.length)
+        expect(new Set(questions).size).toBe(questions.length)
+        for (const s of SECTORS) {
+            expect(s.problems.length, s.slug).toBeGreaterThanOrEqual(3)
+            expect(s.features.length, s.slug).toBeGreaterThanOrEqual(4)
+            expect(s.faq.length, s.slug).toBeGreaterThanOrEqual(4)
+        }
+    })
+})
