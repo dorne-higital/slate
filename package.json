@@ -20,7 +20,8 @@
         "test": "vitest run",
         "test:api": "vitest run --config vitest.api.config.ts",
         "dev:test": "NUXT_TURNSTILE_SECRET=1x0000000000000000000000000000000AA NUXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA nuxt dev --port 3001",
-        "og:images": "tsx scripts/share-images.ts"
+        "og:images": "tsx scripts/share-images.ts",
+        "demos:record": "node --env-file=.env node_modules/tsx/dist/cli.mjs scripts/record-demos.ts"
     },
     "dependencies": {
         "@neon/config": "^1.14.6",

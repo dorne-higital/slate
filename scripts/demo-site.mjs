@@ -55,6 +55,9 @@ try {
     console.log('Made the demo account')
 }
 
+// The demo address is made up, so mark it confirmed (local dev database only) to keep the reminder out of the videos
+await sql`update "user" set email_verified = true where email = ${email}`
+
 // ── Pictures: drawn in the browser, so there's nothing to license ──
 const out = resolve('.demo/images')
 mkdirSync(out, { recursive: true })
@@ -101,7 +104,13 @@ const PICTURES = [
     ['swatches', 'Fabric swatches on the workbench', `<!doctype html><html><body style="margin:0;width:1200px;height:900px;background:#E9E1D3;display:grid;grid-template-columns:repeat(3,1fr);gap:36px;padding:90px;box-sizing:border-box">${Object.values(FABRICS).map(c => `<div style="${weave(c)};border-radius:10px;box-shadow:0 14px 30px #0002"></div>`).join('')}</body></html>`]
 ]
 const uploaded = {}
+const existing = await sql`select filename, key from media where site_id = ${siteId}`
 for (const [name, alt, html] of PICTURES) {
+    const had = existing.find(m => m.filename === `${name}.png`)
+    if (had) {
+        uploaded[name] = { url: `/media/${had.key}`, alt }
+        continue
+    }
     const htmlFile = join(out, `${name}.html`)
     const png = join(out, `${name}.png`)
     writeFileSync(htmlFile, html)
@@ -114,10 +123,16 @@ for (const [name, alt, html] of PICTURES) {
     if (m.id) await api('PATCH', `/api/sites/${siteId}/media/${m.id}`, { alt }).catch(() => {})
     uploaded[name] = { url: m.url, alt }
 }
-console.log(`Uploaded ${Object.keys(uploaded).length} pictures`)
+console.log(`Pictures ready (${PICTURES.length - existing.length > 0 ? 'uploaded new ones' : 'reused'})`)
 
 // ── Look ──
 await api('PUT', `/api/sites/${siteId}/theme`, { primary: '#2F5D50', dark: '#23302C', soft: '#F1EDE4', text: '#4A544F', background: '#FFFFFF', headingFont: 'Fraunces', bodyFont: 'Schibsted Grotesk', corners: 'soft', footerColour: 'dark' })
+
+// ── Start every recording from the same place ──
+await sql`delete from redirects where site_id = ${siteId}`
+await sql`update sites set integrations = '{}'::jsonb, seo = '{}'::jsonb where id = ${siteId}`
+await sql`update pages set seo_description = null where site_id = ${siteId}`
+await sql`delete from page_versions where site_id = ${siteId}`
 
 // ── Pages ──
 const id = () => crypto.randomUUID()
