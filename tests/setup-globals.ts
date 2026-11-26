@@ -16,5 +16,6 @@ import * as showcaseIcons from '../shared/utils/showcaseIcons'
 import * as sharedTypes from '../shared/types'
 import * as marketing from '../shared/utils/marketing'
 import * as marketingSectors from '../shared/utils/marketingSectors'
+import * as marketingCompare from '../shared/utils/marketingCompare'
 
-Object.assign(globalThis, blockTypes, domainPrices, fontCatalogue, forms, googleFonts, menus, plans, projects, siteTheme, slugify, roles, showcaseIcons, sharedTypes, integrations, systemPages, marketing, marketingSectors)
+Object.assign(globalThis, blockTypes, domainPrices, fontCatalogue, forms, googleFonts, menus, plans, projects, siteTheme, slugify, roles, showcaseIcons, sharedTypes, integrations, systemPages, marketing, marketingSectors, marketingCompare)

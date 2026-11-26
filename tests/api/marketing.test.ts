@@ -43,6 +43,7 @@ const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 describe('marketing pages', () => {
     it('feature pages render with one h1 and their own title', pageChecks(MARKETING_PAGES.filter(p => p.section === 'features').map(p => p.path)))
     it('home and pricing render with one h1 and their own title', pageChecks(['/', '/pricing']))
+    it('comparison pages render with one h1 and their own title', pageChecks(MARKETING_PAGES.filter(p => p.section === 'compare').map(p => p.path)))
 })
 
 describe('sector pages', () => {

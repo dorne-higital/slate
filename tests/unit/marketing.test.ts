@@ -80,3 +80,20 @@ describe('pricing structured data', () => {
         })
     })
 })
+
+describe('comparison pages', () => {
+    it('every comparison is dated and sourced', async () => {
+        const { RIVALS } = await import('../../shared/utils/marketingCompare')
+        expect(RIVALS.map(r => `/compare/${r.slug}`).sort()).toEqual(MARKETING_PAGES.filter(p => p.section === 'compare').map(p => p.path).sort())
+        for (const r of RIVALS) {
+            expect(r.checked, r.slug).toBe('26 Nov 2026')
+            expect(r.sources.length, r.slug).toBeGreaterThanOrEqual(1)
+            for (const s of r.sources) expect(r.domains.some(d => new URL(s.url).hostname.endsWith(d)), `${r.slug} source ${s.url}`).toBe(true)
+            for (const row of r.rows) {
+                expect(row.slate.trim(), `${r.slug}: ${row.topic}`).not.toBe('')
+                expect(row.rival.trim(), `${r.slug}: ${row.topic}`).not.toBe('')
+            }
+            expect(r.fit.slate.length && r.fit.rival.length, r.slug).toBeTruthy()
+        }
+    })
+})
