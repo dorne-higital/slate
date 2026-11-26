@@ -31,7 +31,7 @@
         // Built-in visitor stats for client sites (Cloudflare Web Analytics site "sites.slatecms.co.uk"). Both are public values
         "NUXT_PUBLIC_CF_BEACON_TOKEN": "41acff31d11841698d9318abc222bad0",
         "NUXT_CF_ANALYTICS_SITE_TAG": "c08aac4dbc0a46bcb6e17a7f0bd3962b",
-        "NUXT_PUBLIC_COMING_SOON": "true",
+        "NUXT_PUBLIC_COMING_SOON": "false",
         "NUXT_MARKETING_SITE_ID": "e992bdaf-18ed-443d-9fe3-059852a41a21",
         "NUXT_PUBLIC_SITES_DOMAIN": "slatecms.co.uk",
         "NUXT_PUBLIC_CNAME_TARGET": "sites.slatecms.co.uk",
