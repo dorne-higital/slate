@@ -113,31 +113,37 @@ export const MARKETING_PAGES: MarketingPage[] = [
     }),
 
     page({
-        path: '/for/trades', section: 'for', navLabel: 'Trades',
+        path: '/websites-for', section: 'for', navLabel: 'All businesses',
+        title: 'Websites for UK small businesses, by trade | Slate',
+        description: 'Slate has a starting layout and advice for trades, salons and clinics, shops and cafés, clubs and charities, and freelancers. Find yours.',
+        h1: 'A website made for your kind of business'
+    }),
+    page({
+        path: '/websites-for/trades', section: 'for', navLabel: 'Trades',
         title: 'Websites for plumbers, electricians and builders | Slate',
         description: 'A website that wins quote requests: your services, areas you cover, photos of your work and a quote form that lands in your inbox. Live in an afternoon.',
         h1: 'A website that brings in quote requests for your trade'
     }),
     page({
-        path: '/for/salons-and-clinics', section: 'for', navLabel: 'Salons and clinics',
+        path: '/websites-for/salons-and-clinics', section: 'for', navLabel: 'Salons and clinics',
         title: 'Websites for salons, therapists and clinics | Slate',
         description: 'A calm, professional site for your salon or clinic: treatments and prices, your team, online booking through Calendly or Fresha, and a privacy page.',
         h1: 'A website that fills your appointment book'
     }),
     page({
-        path: '/for/shops-and-cafes', section: 'for', navLabel: 'Shops and cafés',
+        path: '/websites-for/shops-and-cafes', section: 'for', navLabel: 'Shops and cafés',
         title: 'Websites for local shops, cafés and bakeries | Slate',
         description: 'A website for your shop or café: opening hours, what’s on the menu, a map and directions, news on the blog and a WhatsApp button so customers can just ask.',
         h1: 'A website that brings people through your door'
     }),
     page({
-        path: '/for/clubs-and-charities', section: 'for', navLabel: 'Clubs and charities',
+        path: '/websites-for/clubs-and-charities', section: 'for', navLabel: 'Clubs and charities',
         title: 'Websites for clubs, charities and community groups | Slate',
         description: 'A website for your club, charity or group: fixtures and events, news, how to join or volunteer, a sign-up form and a login for each person who edits.',
         h1: 'A website your whole committee can keep up to date'
     }),
     page({
-        path: '/for/freelancers-and-studios', section: 'for', navLabel: 'Freelancers and studios',
+        path: '/websites-for/freelancers-and-studios', section: 'for', navLabel: 'Freelancers and studios',
         title: 'Build client websites on Slate: for studios | Slate',
         description: 'Build and run websites for your clients from one login. Hand over editing safely, connect their domains, and stop looking after plugins and hosting.',
         h1: 'Build client sites without looking after servers'

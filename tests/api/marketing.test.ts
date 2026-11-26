@@ -55,7 +55,7 @@ describe('marketing pages', () => {
 describe('sector pages', () => {
     it('render with one h1 and their own title', pageChecks(MARKETING_PAGES.filter(p => p.section === 'for').map(p => p.path)))
     it('unknown sectors are not found', async () => {
-        expect((await new Client().get('/for/plumbers')).status).toBe(404)
+        expect((await new Client().get('/websites-for/plumbers')).status).toBe(404)
     })
 })
 
@@ -184,7 +184,7 @@ describe('structured data', () => {
             '/': ['Organization', 'WebSite', 'FAQPage'],
             '/pricing': ['BreadcrumbList', 'SoftwareApplication', 'FAQPage'],
             '/features/editor': ['BreadcrumbList', 'FAQPage'],
-            '/for/trades': ['BreadcrumbList', 'FAQPage'],
+            '/websites-for/trades': ['BreadcrumbList', 'FAQPage'],
             ...(guide ? { [`/guides/${guide}`]: ['BreadcrumbList', 'Article'] } : {})
         }
         for (const [path, types] of Object.entries(expected)) {
@@ -196,5 +196,16 @@ describe('structured data', () => {
             }
             expect(blocks.map(b => b['@type']).sort(), path).toEqual([...types].sort())
         }
+    })
+})
+
+describe('old addresses', () => {
+    it('sends /for pages to /websites-for', async () => {
+        const c = new Client()
+        const a = await c.get('/for')
+        expect(a.status).toBe(301)
+        const b = await c.get('/for/trades')
+        expect(b.status).toBe(301)
+        expect((await c.get('/websites-for')).status).toBe(200)
     })
 })

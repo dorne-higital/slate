@@ -8,6 +8,8 @@ export interface Sector {
     slug: SectorSlug
     /** id in STARTER_LAYOUTS */
     layoutId: string
+    /** Line icon key (SHOWCASE_ICONS) for cards and menus */
+    icon: string
     eyebrow: string
     lead: string
     problems: { title: string, text: string }[]
@@ -23,6 +25,7 @@ export const sector = (slug: string) => SECTORS.find(s => s.slug === slug)
 export const SECTORS: Sector[] = [
     {
         slug: 'trades',
+        icon: 'shield',
         layoutId: 'trade',
         eyebrow: 'For plumbers, electricians, builders and decorators',
         lead: 'Most people check your website before they ring. Show them the work you do, the areas you cover and how to get a quote, then let the quote requests come to your phone.',
@@ -54,6 +57,7 @@ export const SECTORS: Sector[] = [
     },
     {
         slug: 'salons-and-clinics',
+        icon: 'heart',
         layoutId: 'practice',
         eyebrow: 'For hair and beauty salons, therapists and clinics',
         lead: 'Give people everything they want to know before they book: your treatments and prices, who they’ll see, and a booking button that works at eleven at night.',
@@ -85,6 +89,7 @@ export const SECTORS: Sector[] = [
     },
     {
         slug: 'shops-and-cafes',
+        icon: 'gift',
         layoutId: 'shop',
         eyebrow: 'For independent shops, cafés, bakeries and makers',
         lead: 'Tell people what’s good today, when you’re open and how to find you. Simple to keep up to date, so your site is never the one with last year’s hours.',
@@ -115,6 +120,7 @@ export const SECTORS: Sector[] = [
     },
     {
         slug: 'clubs-and-charities',
+        icon: 'people',
         layoutId: 'club',
         eyebrow: 'For sports clubs, charities and community groups',
         lead: 'A site the whole committee can keep up to date, each with their own login. Share fixtures and events, post news, and make it easy for people to join, volunteer or donate.',
@@ -146,6 +152,7 @@ export const SECTORS: Sector[] = [
     },
     {
         slug: 'freelancers-and-studios',
+        icon: 'camera',
         layoutId: 'studio',
         eyebrow: 'For designers, developers and small agencies',
         lead: 'Build websites for your clients on Slate and stop looking after hosting, plugins and updates. Hand over editing safely, connect their domains, and keep every site in one login.',

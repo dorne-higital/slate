@@ -18,7 +18,7 @@ const included = [
     { icon: 'bolt', title: 'Integrations', text: 'Google Analytics, Search Console, Calendly, WhatsApp, Mailchimp and Slack by pasting a code.', to: '/features/integrations' },
     { icon: 'shield', title: 'Hosting that looks after itself', text: 'Fast pages from Cloudflare’s network, HTTPS on every address, and nothing to update.' }
 ]
-const sectors = marketingSections('for')
+const sectors = marketingSections('for').filter(p => p.path !== '/websites-for')
 const faqs: FaqItem[] = [
     { q: 'Do I need to know how to code?', a: 'No. You build pages by adding blocks and typing into them, and set your colours and fonts once for the whole site. If you can use email, you can use Slate.' },
     { q: 'Can I use a domain I already own?', a: 'Yes. Keep it wherever you bought it: Slate shows you the records to add, checks them and sets up HTTPS for you. Or buy a new one inside Slate and it’s connected automatically.' },

@@ -3,10 +3,10 @@ definePageMeta({ layout: 'marketing', middleware: 'marketing' })
 const route = useRoute()
 const s = sector(String(route.params.sector))
 if (!s) throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
-const path = `/for/${s.slug}`
+const path = `/websites-for/${s.slug}`
 const page = useMarketingSeo(path, { jsonLd: [faqJsonLd(s.faq)] })
 const layout = findStarterLayout(s.layoutId)
-const others = marketingSections('for').filter(p => p.path !== path)
+const others = marketingSections('for').filter(p => p.path !== path && p.path !== '/websites-for')
 </script>
 
 <template>

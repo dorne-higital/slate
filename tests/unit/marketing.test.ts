@@ -3,7 +3,7 @@ import { MARKETING_PAGES, faqJsonLd, marketingPage } from '../../shared/utils/ma
 
 const SPEC_PATHS = [
     '/', '/features', '/features/editor', '/features/domains-and-email', '/features/forms', '/features/seo', '/features/integrations',
-    '/for/trades', '/for/salons-and-clinics', '/for/shops-and-cafes', '/for/clubs-and-charities', '/for/freelancers-and-studios',
+    '/websites-for', '/websites-for/trades', '/websites-for/salons-and-clinics', '/websites-for/shops-and-cafes', '/websites-for/clubs-and-charities', '/websites-for/freelancers-and-studios',
     '/pricing', '/compare/wix', '/compare/squarespace', '/compare/wordpress', '/guides', '/about', '/contact', '/privacy', '/terms'
 ]
 
@@ -46,7 +46,7 @@ describe('sector pages', () => {
     it('every sector has a matching starter layout and a registry page', async () => {
         const { SECTORS } = await import('../../shared/utils/marketingSectors')
         const { STARTER_LAYOUTS } = await import('../../shared/utils/starterLayouts')
-        expect(SECTORS.map(s => `/for/${s.slug}`).sort()).toEqual(MARKETING_PAGES.filter(p => p.section === 'for').map(p => p.path).sort())
+        expect(SECTORS.map(s => `/websites-for/${s.slug}`).sort()).toEqual(MARKETING_PAGES.filter(p => p.section === 'for' && p.path !== '/websites-for').map(p => p.path).sort())
         for (const s of SECTORS) expect(STARTER_LAYOUTS.some(l => l.id === s.layoutId), s.slug).toBe(true)
     })
 

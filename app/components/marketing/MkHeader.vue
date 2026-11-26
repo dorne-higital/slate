@@ -7,15 +7,15 @@ const MENU: Record<string, { icon: string, blurb: string }> = {
     '/features/forms': { icon: 'chat', blurb: 'Quote and contact forms with an inbox and spam protection' },
     '/features/seo': { icon: 'chart', blurb: 'A health check that shows what to fix to get found' },
     '/features/integrations': { icon: 'bolt', blurb: 'Analytics, booking, WhatsApp, Mailchimp and more' },
-    '/for/trades': { icon: 'shield', blurb: 'Plumbers, electricians, builders and decorators' },
-    '/for/salons-and-clinics': { icon: 'heart', blurb: 'Hair, beauty, therapists and clinics' },
-    '/for/shops-and-cafes': { icon: 'gift', blurb: 'Local shops, cafés, bakeries and makers' },
-    '/for/clubs-and-charities': { icon: 'people', blurb: 'Sports clubs, charities and community groups' },
-    '/for/freelancers-and-studios': { icon: 'camera', blurb: 'Designers and agencies building client sites' }
+    '/websites-for/trades': { icon: 'shield', blurb: 'Plumbers, electricians, builders and decorators' },
+    '/websites-for/salons-and-clinics': { icon: 'heart', blurb: 'Hair, beauty, therapists and clinics' },
+    '/websites-for/shops-and-cafes': { icon: 'gift', blurb: 'Local shops, cafés, bakeries and makers' },
+    '/websites-for/clubs-and-charities': { icon: 'people', blurb: 'Sports clubs, charities and community groups' },
+    '/websites-for/freelancers-and-studios': { icon: 'camera', blurb: 'Designers and agencies building client sites' }
 }
 const withMeta = (pages: MarketingPage[]) => pages.map(p => ({ ...p, ...MENU[p.path]! }))
 const features = withMeta(marketingSections('features').filter(p => p.path !== '/features'))
-const sectors = withMeta(marketingSections('for'))
+const sectors = withMeta(marketingSections('for').filter(p => p.path !== '/websites-for'))
 const compare = marketingSections('compare')
 // Bound, not literal: the poster is a static file made by the demo recorder, not a bundled asset
 const tourPoster = '/videos/tour.webp'
@@ -124,6 +124,7 @@ onBeforeUnmount(() => {
                                 </div>
                             </div>
                             <div class="side">
+                                <NuxtLink to="/websites-for" class="cmp all-biz">Every kind of business <span aria-hidden="true">→</span></NuxtLink>
                                 <p class="mh">Moving from somewhere else?</p>
                                 <NuxtLink v-for="c in compare" :key="c.path" :to="c.path" class="cmp">{{ c.navLabel }} <span aria-hidden="true">→</span></NuxtLink>
                                 <NuxtLink to="/guides" class="cmp muted-link">Guides for small business websites <span aria-hidden="true">→</span></NuxtLink>
@@ -169,6 +170,7 @@ onBeforeUnmount(() => {
                             </NuxtLink>
                             <NuxtLink v-if="mobView === 'features'" to="/features" class="mi plain all">All features →</NuxtLink>
                             <template v-else>
+                                <NuxtLink to="/websites-for" class="mi plain all">Every kind of business →</NuxtLink>
                                 <p class="mh">Moving from somewhere else?</p>
                                 <NuxtLink v-for="c in compare" :key="c.path" :to="c.path" class="mi plain">{{ c.navLabel }}</NuxtLink>
                             </template>
@@ -237,6 +239,7 @@ details[open] .car { margin-top: 3px; transform: rotate(225deg); }
 .cmp:hover span { transform: translateX(3px); }
 .cmp span { transition: transform .12s; }
 .muted-link { color: var(--text-body); font-weight: 500; }
+.all-biz { border-bottom: 1px solid var(--line); border-top: 0; color: var(--heather); margin-bottom: 14px; padding-top: 0; }
 
 .acts { align-items: center; display: flex; gap: 8px; margin-left: auto; }
 .mob { display: none; position: relative; }
