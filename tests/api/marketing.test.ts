@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { MARKETING_PAGES, marketingPage } from '../../shared/utils/marketing'
-import { Client, TURNSTILE_TEST_TOKEN, cleanUp, makeAdmin, newAccount } from './helpers'
+import { Client, TURNSTILE_TEST_TOKEN, cleanUp, makeAdmin, newAccount, sql } from './helpers'
 
 afterAll(cleanUp)
 
@@ -14,6 +14,11 @@ describe.skipIf(!COMING_SOON)('coming soon', () => {
         const anon = await visitor.get('/pricing')
         expect(anon.status).toBe(302)
         expect(anon.text + JSON.stringify(anon)).not.toContain('Simple pricing with everything included')
+
+        // Privacy and terms stay public, but without menus to pages that aren't out yet
+        const privacy = await visitor.get('/privacy')
+        expect(privacy.status).toBe(200)
+        expect(privacy.text).not.toContain('href="/pricing"')
 
         // Sign-ups are closed while coming soon is on: make the account on the normal server, log in here
         const admin = await newAccount('mk-admin')
@@ -43,6 +48,7 @@ const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 describe('marketing pages', () => {
     it('feature pages render with one h1 and their own title', pageChecks(MARKETING_PAGES.filter(p => p.section === 'features').map(p => p.path)))
     it('home, pricing and guides render with one h1 and their own title', pageChecks(['/', '/pricing', '/guides']))
+    it('about, contact and legal pages render with one h1 and their own title', pageChecks(['/about', '/contact', '/privacy', '/terms']))
     it('comparison pages render with one h1 and their own title', pageChecks(MARKETING_PAGES.filter(p => p.section === 'compare').map(p => p.path)))
 })
 
@@ -97,5 +103,54 @@ describe.skipIf(!GUIDES_SITE)('guides', () => {
         expect((await new Client().get(`/api/marketing/guides/${later}`)).status).toBe(404)
         expect((await new Client().get(`/guides/${draft}`)).status).toBe(404)
         expect((await new Client().get('/api/marketing/guides/no-such-guide')).status).toBe(404)
+    })
+})
+
+describe.skipIf(!GUIDES_SITE)('contact form', () => {
+    type Field = { id: string, label: string, kind: string }
+    let fields: Field[] = []
+    const answers = (over: Record<string, string> = {}) => Object.fromEntries(fields.map(f => [f.id, over[f.label] ?? (f.kind === 'email' ? 'someone@example.com' : `Test ${f.label}`)]))
+    const send = (c: Client, body: Record<string, unknown>) => c.post('/api/marketing/contact', { startedAt: Date.now() - 10_000, turnstile: TURNSTILE_TEST_TOKEN, ...body })
+    const replies = async () => (await sql`select count(*)::int n from form_replies where site_id = ${GUIDES_SITE}`)[0]!.n as number
+
+    beforeAll(async () => {
+        const r = await new Client().get('/api/marketing/contact')
+        expect(r.status).toBe(200)
+        fields = r.json.fields
+        expect(fields.map(f => f.kind)).toEqual(expect.arrayContaining(['email', 'textarea']))
+    })
+    afterAll(async () => {
+        await sql`delete from form_replies where site_id = ${GUIDES_SITE} and data::text like '%Test Message%'`
+    })
+
+    it('stores a message in the guides site inbox', async () => {
+        const before = await replies()
+        const r = await send(new Client(), { answers: answers() })
+        expect(r.status, r.text.slice(0, 200)).toBe(200)
+        expect(await replies()).toBe(before + 1)
+    })
+
+    it('says which field is wrong', async () => {
+        const email = fields.find(f => f.kind === 'email')!
+        const r = await send(new Client(), { answers: answers({ [email.label]: '' }) })
+        expect(r.status).toBe(400)
+        expect(r.json.data.fieldId).toBe(email.id)
+    })
+
+    it('quietly drops bots', async () => {
+        const before = await replies()
+        expect((await send(new Client(), { answers: answers(), website: 'http://spam.example' })).status).toBe(200)
+        expect(await replies()).toBe(before)
+    })
+
+    it('needs the bot check', async () => {
+        expect((await send(new Client(), { answers: answers(), turnstile: '' })).status).toBe(400)
+    })
+
+    it('limits repeated messages from one sender', async () => {
+        const c = new Client()
+        const statuses: number[] = []
+        for (let i = 0; i < 6; i++) statuses.push((await send(c, { answers: answers() })).status)
+        expect(statuses).toContain(429)
     })
 })

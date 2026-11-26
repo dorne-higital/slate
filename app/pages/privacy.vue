@@ -1,6 +1,6 @@
 <script setup lang="ts">
-useHead({ title: 'Privacy policy · Slate' })
-useSeoMeta({ description: 'How Slate collects, uses and protects personal information.' })
+definePageMeta({ layout: 'marketing', middleware: 'marketing' })
+useMarketingSeo('/privacy')
 </script>
 
 <template>

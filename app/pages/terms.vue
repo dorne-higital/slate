@@ -1,6 +1,6 @@
 <script setup lang="ts">
-useHead({ title: 'Terms of service · Slate' })
-useSeoMeta({ description: 'The terms for using Slate: plans, payments, domains, your content and cancelling.' })
+definePageMeta({ layout: 'marketing', middleware: 'marketing' })
+useMarketingSeo('/terms')
 const plans = PLANS
 </script>
 
