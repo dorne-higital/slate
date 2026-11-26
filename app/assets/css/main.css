@@ -126,3 +126,7 @@ a:hover { color: var(--heather); }
 .dr-before::before, .dr-after::after { background: var(--quarry); border-radius: 2px; content: ''; height: 3px; left: 0; pointer-events: none; position: absolute; right: 0; z-index: 2; }
 .dr-before::before { top: -2px; }
 .dr-after::after { bottom: -2px; }
+
+/* Slate's own marketing site */
+.mk-wrap { margin: 0 auto; max-width: 1200px; padding: 0 40px; }
+@media (max-width: 600px) { .mk-wrap { padding: 0 16px; } }

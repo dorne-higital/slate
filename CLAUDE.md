@@ -30,6 +30,7 @@ Tests:
 yarn test           # unit tests (tests/unit): shared rules, no server or database
 yarn dev:test       # dev server with Cloudflare's Turnstile test keys (needed by the API tests)
 yarn test:api       # end-to-end API tests (tests/api) against yarn dev:test and the dev database; cleans up after itself
+# Marketing coming-soon tests also need a server with NUXT_PUBLIC_COMING_SOON=true (e.g. port 3003) and TEST_COMING_SOON_URL set; they skip otherwise
 ```
 
 ## Databases

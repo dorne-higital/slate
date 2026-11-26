@@ -36,3 +36,5 @@ dist/
 .wrangler/
 .nuxt-test
 .env.backup-*
+.superpowers/
+.nuxt-test2

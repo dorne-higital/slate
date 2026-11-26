@@ -23,17 +23,17 @@ export const testEmail = (label: string) => `test+${label}-${run}-${++n}@example
 /** A visitor with its own cookies. */
 export class Client {
     cookies = new Map<string, string>()
-    constructor(public hostHeader?: string) {}
+    constructor(public hostHeader?: string, public base = BASE) {}
     /** Node's http module rather than fetch, because fetch won't send a custom Host header (needed to visit a client site). */
     req(method: string, path: string, body?: unknown, headers: Record<string, string> = {}): Promise<{ status: number, json: any, text: string }> {
-        const url = new URL(path, BASE)
+        const url = new URL(path, this.base)
         const data = body === undefined ? undefined : JSON.stringify(body)
         return new Promise((resolve, reject) => {
             const r = request(url, {
                 method,
                 headers: {
                     'content-type': 'application/json',
-                    'origin': BASE,
+                    'origin': this.base,
                     ...(this.hostHeader ? { host: this.hostHeader } : {}),
                     ...(this.cookies.size ? { cookie: [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ') } : {}),
                     ...(data ? { 'content-length': String(Buffer.byteLength(data)) } : {}),
@@ -70,8 +70,8 @@ export class Client {
 const made: string[] = []
 
 /** Signs up a new person with their own site. */
-export async function newAccount(label: string) {
-    const c = new Client()
+export async function newAccount(label: string, base = BASE) {
+    const c = new Client(undefined, base)
     const email = testEmail(label)
     const r = await c.post('/api/signup', { name: `Test ${label}`, email, password: 'correct-horse-battery', siteName: `Test ${label} ${run}`, layout: 'blank', country: 'GB', turnstile: TURNSTILE_TEST_TOKEN })
     if (r.status !== 200) throw new Error(`Sign-up failed (${r.status}): ${r.text.slice(0, 200)}. Is the dev server running with yarn dev:test?`)

@@ -1,8 +1,5 @@
 <script setup lang="ts">
-useHead({
-    title: 'Slate: build your website, run it from one place',
-    meta: [{ name: 'description', content: 'Slate gives you a page editor, forms, a blog and hosting in one account. Start from a layout, change anything by moving blocks around, and publish to your own domain.' }]
-})
+useMarketingSeo('/')
 const { me, ensure } = useMe()
 await ensure()
 const dashboard = computed(() => me.value?.isPlatformAdmin ? '/admin' : me.value?.sites[0] ? `/sites/${me.value.sites[0].id}` : '/signup')
@@ -60,26 +57,8 @@ const sheets = [
 
 <template>
     <div class="mk">
-        <header class="top">
-            <div class="wrap bar">
-                <NuxtLink to="/" aria-label="Slate home" class="home-link"><BrandMark /></NuxtLink>
-                <nav class="nav-links" aria-label="Main">
-                    <a class="nav-link" href="#how">How it works</a>
-                    <a class="nav-link" href="#included">What’s included</a>
-                    <a class="nav-link" href="#studios">For studios</a>
-                    <a class="nav-link" href="#pricing">Pricing</a>
-                </nav>
-                <div class="actions">
-                    <NuxtLink v-if="me" class="btn btn-dark" :to="dashboard">Go to your site</NuxtLink>
-                    <template v-else>
-                        <NuxtLink class="nav-link" to="/login">Log in</NuxtLink>
-                        <NuxtLink class="btn btn-dark" to="/signup">Start your site</NuxtLink>
-                    </template>
-                </div>
-            </div>
-        </header>
 
-        <main id="top">
+        <div id="top">
             <section class="wrap hero">
                 <div class="copy">
                     <h1>Build your website. Run it from one place.</h1>
@@ -210,27 +189,10 @@ const sheets = [
                     </div>
                 </div>
             </section>
-        </main>
+        </div>
 
         <div class="strata" aria-hidden="true" />
 
-        <footer class="foot">
-            <div class="wrap col">
-                <div class="foot-cta">
-                    <h2>Start with a blank slate.</h2>
-                    <NuxtLink class="btn btn-lichen btn-xl" to="/signup">Start your site</NuxtLink>
-                </div>
-                <div class="foot-grid">
-                    <div class="foot-brand">
-                        <span class="foot-logo">slate</span>
-                        <span>Made in the UK.</span>
-                    </div>
-                    <nav aria-label="Product"><a class="foot-link" href="#how">How it works</a><a class="foot-link" href="#included">Features</a><a class="foot-link" href="#pricing">Pricing</a><a class="foot-link" href="#studios">For studios</a></nav>
-                    <nav aria-label="Account"><NuxtLink class="foot-link" to="/login">Log in</NuxtLink><NuxtLink class="foot-link" to="/signup">Sign up</NuxtLink></nav>
-                    <nav aria-label="Legal"><NuxtLink class="foot-link" to="/privacy">Privacy</NuxtLink><NuxtLink class="foot-link" to="/terms">Terms</NuxtLink></nav>
-                </div>
-            </div>
-        </footer>
     </div>
 </template>
 
