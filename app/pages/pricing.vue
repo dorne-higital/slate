@@ -23,7 +23,8 @@ const included = ['Hosting on Cloudflare’s network', 'HTTPS on every address',
             <p class="lead">One monthly price covers your hosting, HTTPS, forms and support. Try everything free for {{ TRIAL_DAYS }} days, with no card needed.</p>
         </section>
 
-        <section class="mk-wrap plans">
+        <section class="mk-wrap plans" aria-labelledby="plans-h">
+            <h2 id="plans-h" class="visually-hidden">Plans</h2>
             <MkPlans />
         </section>
 

@@ -57,7 +57,9 @@ function onToggle(e: Event) {
     if (d.open) root.value?.querySelectorAll('details[open]').forEach(o => o !== d && o.removeAttribute('open'))
 }
 function outside(e: MouseEvent) {
-    if (!root.value?.contains(e.target as Node)) closeAll()
+    // composedPath is fixed when the tap happens: the tapped button may already have been swapped out
+    // (opening a phone sub-menu replaces it), so checking e.target against the page now would get it wrong
+    if (root.value && !e.composedPath().includes(root.value)) closeAll()
 }
 function onKey(e: KeyboardEvent) {
     if (e.key !== 'Escape') return

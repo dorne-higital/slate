@@ -152,3 +152,6 @@ every button row can be regular buttons or app store badges (links set once in S
 9. [x] Page history: every publish kept (last 30), restore as draft from the editor's History button
 10. [x] Site health on Overview: score plus fixes (broken links, unpublished changes, descriptions, share images, privacy policy, waiting replies, big images, alt text, domain, icon, Search Console)
 11. [ ] Later, no extra cost: monthly "how your site did" email; image resizing at upload
+12. [x] Marketing site (behind coming soon): home, 6 feature pages, 5 "who it's for" pages, pricing, 3 comparisons, guides (from the "Slate guides" site's blog), about, contact (into that site's inbox), legal. Mega menus, full-screen phone menu, share images, structured data, sitemap, IndexNow. Design: docs/superpowers/specs/2026-11-26-marketing-site-design.md
+13. [x] Demo videos: `yarn dev:test`, then `node --env-file=.env scripts/demo-site.mjs` and `yarn demos:record` (re-run when the CMS changes). Share images: `yarn og:images`
+14. [ ] Launch: set NUXT_PUBLIC_COMING_SOON to "false" in wrangler.jsonc and deploy; submit https://slatecms.co.uk/sitemap.xml in Search Console; email the waiting list with LAUNCH25; check page speed on the live site
