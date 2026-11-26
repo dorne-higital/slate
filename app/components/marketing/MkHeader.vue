@@ -41,6 +41,10 @@ function backMob() {
     mobView.value = 'main'
     nextTick(() => (from === 'features' ? featuresBtn.value : sectorsBtn.value)?.focus())
 }
+// Any link in the phone menu closes it, even one to the page you're already on (no route change to catch)
+function onSheetClick(e: MouseEvent) {
+    if ((e.target as Element).closest('a')) closeAll()
+}
 function onMobToggle(e: Event) {
     onToggle(e)
     const open = !!mobMenu.value?.open
@@ -146,7 +150,7 @@ onBeforeUnmount(() => {
 
                 <details ref="mobMenu" class="dd mob" @toggle="onMobToggle">
                     <summary aria-label="Menu"><span class="burger" aria-hidden="true"><i /><i /><i /></span></summary>
-                    <div class="sheet" role="dialog" aria-modal="true" aria-label="Menu">
+                    <div class="sheet" role="dialog" aria-modal="true" aria-label="Menu" @click="onSheetClick">
                         <div class="sheet-top">
                             <NuxtLink to="/" aria-label="Slate home" class="home"><BrandMark /></NuxtLink>
                             <button type="button" class="close" aria-label="Close menu" @click="closeAll"><span aria-hidden="true" /></button>

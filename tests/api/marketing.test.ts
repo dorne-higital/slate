@@ -15,6 +15,13 @@ describe.skipIf(!COMING_SOON)('coming soon', () => {
         expect(anon.status).toBe(302)
         expect(anon.text + JSON.stringify(anon)).not.toContain('Simple pricing with everything included')
 
+        // Every kind of marketing page, real or not, goes to the coming-soon home page
+        for (const path of ['/guides', '/guides/anything', '/websites-for', '/websites-for/trades', '/websites-for/nope', '/compare/wix', '/features/editor', '/about', '/contact']) {
+            expect((await visitor.get(path)).status, path).toBe(302)
+        }
+        const sitemap = await visitor.get('/sitemap.xml')
+        expect(sitemap.text.match(/<loc>/g)?.length).toBe(1)
+
         // Privacy and terms stay public, but without menus to pages that aren't out yet
         const privacy = await visitor.get('/privacy')
         expect(privacy.status).toBe(200)
@@ -103,6 +110,16 @@ describe.skipIf(!GUIDES_SITE)('guides', () => {
         expect((await new Client().get(`/api/marketing/guides/${later}`)).status).toBe(404)
         expect((await new Client().get(`/guides/${draft}`)).status).toBe(404)
         expect((await new Client().get('/api/marketing/guides/no-such-guide')).status).toBe(404)
+    })
+
+    it('sends a renamed guide’s old address to the new one', async () => {
+        const slug = await post(`Renamed guide ${stamp}`, { status: 'published' })
+        const old = `old-guide-${stamp}`
+        const r = await editor.post(`/api/sites/${GUIDES_SITE}/redirects`, { from: `/blog/${old}`, to: `/blog/${slug}` })
+        expect(r.status, r.text.slice(0, 200)).toBe(200)
+        const moved = await new Client().get(`/guides/${old}`)
+        expect(moved.status).toBe(301)
+        await sql`delete from redirects where site_id = ${GUIDES_SITE} and from_path = ${`/blog/${old}`}`
     })
 })
 
