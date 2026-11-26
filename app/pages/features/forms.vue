@@ -17,7 +17,7 @@ const grid = {
 const faqs: FaqItem[] = [
     { q: 'Where do form replies go?', a: 'To your Slate inbox and by email to the people you choose. On Business and Studio plans they can also go to Slack, Discord, Mailchimp, Brevo or a webhook.' },
     { q: 'Do I need a cookie banner for forms?', a: 'No. Slate’s forms and spam protection don’t use cookies. You will need a privacy page explaining what you collect, and Slate’s site health check reminds you.' },
-    { q: 'How many forms can I have?', a: 'One on Starter, and up to ten per site on Business and Studio. Replies are unlimited.' },
+    { q: 'How many forms can I have?', a: 'Up to three on Starter, and up to twenty per site on Business and Studio. Replies are unlimited.' },
     { q: 'Can I take bookings?', a: 'Use a form for booking requests, or connect Calendly to let people pick a time themselves.' }
 ]
 </script>

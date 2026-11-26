@@ -34,16 +34,16 @@ const GB = 1024 ** 3
 
 export const PLANS: PlanInfo[] = [
     {
-        key: 'starter', name: 'Starter', tagline: 'For a simple site', monthly: 1500, yearly: 15000,
-        limits: { sites: 1, pagesPerSite: 10, formsPerSite: 1, peoplePerSite: 1, storageBytes: 1 * GB, blog: false, integrations: ['ga4', 'plausible', 'whatsapp', 'googleVerify', 'bingVerify', 'stats'], slateBadge: true, extraSiteMonthly: null, support: 'Email' }
+        key: 'starter', name: 'Starter', tagline: 'Everything a small business site needs', monthly: 1500, yearly: 15000,
+        limits: { sites: 1, pagesPerSite: 20, formsPerSite: 3, peoplePerSite: 2, storageBytes: 5 * GB, blog: true, integrations: ['ga4', 'plausible', 'whatsapp', 'calendly', 'googleVerify', 'bingVerify', 'stats'], slateBadge: false, extraSiteMonthly: null, support: 'Email' }
     },
     {
         key: 'business', name: 'Business', tagline: 'Most small businesses pick this', monthly: 2900, yearly: 29000,
-        limits: { sites: 1, pagesPerSite: 50, formsPerSite: 10, peoplePerSite: 3, storageBytes: 10 * GB, blog: true, integrations: 'all', slateBadge: false, extraSiteMonthly: null, support: 'Priority' }
+        limits: { sites: 1, pagesPerSite: 100, formsPerSite: 20, peoplePerSite: 5, storageBytes: 25 * GB, blog: true, integrations: 'all', slateBadge: false, extraSiteMonthly: null, support: 'Priority' }
     },
     {
         key: 'studio', name: 'Studio', tagline: 'For designers and agencies', monthly: 4900, yearly: 49000,
-        limits: { sites: 5, pagesPerSite: 50, formsPerSite: 10, peoplePerSite: 10, storageBytes: 25 * GB, blog: true, integrations: 'all', slateBadge: false, extraSiteMonthly: 600, support: 'Priority' }
+        limits: { sites: 5, pagesPerSite: 100, formsPerSite: 20, peoplePerSite: 10, storageBytes: 50 * GB, blog: true, integrations: 'all', slateBadge: false, extraSiteMonthly: 600, support: 'Priority' }
     }
 ]
 
@@ -104,12 +104,10 @@ export function planRowsFor(): { label: string, values: string[] }[] {
         { label: 'Websites', values: PLANS.map(p => p.limits.extraSiteMonthly ? `${p.limits.sites}, then ${formatPence(p.limits.extraSiteMonthly)}/mo each` : '1') },
         { label: 'Pages per site', values: PLANS.map(p => `Up to ${p.limits.pagesPerSite}`) },
         { label: 'Forms and replies inbox', values: PLANS.map(p => n(p.limits.formsPerSite, 'form', 'forms')) },
-        { label: 'Blog', values: PLANS.map(p => p.limits.blog ? 'Yes' : 'No') },
         { label: 'People who can edit', values: PLANS.map(p => p.limits.peoplePerSite === 1 ? 'Just you' : `Up to ${p.limits.peoplePerSite} per site`) },
         { label: 'Images and files', values: PLANS.map(p => `${formatGB(p.limits.storageBytes)}${p.limits.sites > 1 ? ' shared' : ''}`) },
         { label: 'Your own domain', values: PLANS.map(p => p.limits.sites > 1 ? 'Yes, on every site' : 'Yes') },
-        { label: 'Integrations', values: PLANS.map(p => p.limits.integrations === 'all' ? 'All' : 'Analytics, search and WhatsApp') },
-        { label: 'Slate branding', values: PLANS.map(p => p.limits.slateBadge ? 'Small link in your footer' : 'None') },
+        { label: 'Integrations', values: PLANS.map(p => p.limits.integrations === 'all' ? 'All' : 'Analytics, search, WhatsApp and Calendly') },
         { label: 'Support', values: PLANS.map(p => p.limits.support) }
     ]
 }
@@ -121,11 +119,9 @@ export function planFeatures(p: PlanInfo): string[] {
         l.extraSiteMonthly ? `${l.sites} websites, extra ones ${formatPence(l.extraSiteMonthly)}/mo` : '1 website',
         `Up to ${l.pagesPerSite} pages per site`,
         l.formsPerSite === 1 ? '1 form' : `Up to ${l.formsPerSite} forms`,
-        l.blog ? 'Blog' : 'No blog',
         l.peoplePerSite === 1 ? 'Just you editing' : `Up to ${l.peoplePerSite} editors per site`,
         `${formatGB(l.storageBytes)} for images and files`,
-        l.integrations === 'all' ? 'All integrations' : 'Analytics, search and WhatsApp integrations',
-        l.slateBadge ? 'Small “Made with Slate” link' : 'No Slate branding',
+        l.integrations === 'all' ? 'All integrations' : 'Analytics, search, WhatsApp and Calendly',
         `${l.support} support`
     ]
 }

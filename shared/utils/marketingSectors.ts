@@ -178,7 +178,7 @@ export const SECTORS: Sector[] = [
             { q: 'Can I manage several client websites from one account?', a: 'Yes. The Studio plan includes five sites, with extra sites available for a monthly fee each, all switched between from one login.' },
             { q: 'Can my client own their site?', a: 'Yes. Invite them as an owner or admin, or keep ownership yourself and make them an editor. You decide who sees billing.' },
             { q: 'Can I build custom blocks for a client?', a: 'Slate’s blocks are built into the platform. If you need something specific, tell us: new blocks are added to Slate over time, for everyone.' },
-            { q: 'Is there a white-label option?', a: 'Business and Studio sites show no Slate branding at all. The editing dashboard itself is Slate-branded.' }
+            { q: 'Is there a white-label option?', a: 'No plan shows Slate branding on your site. The editing dashboard itself is Slate-branded.' }
         ]
     }
 ]

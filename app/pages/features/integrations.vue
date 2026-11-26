@@ -9,7 +9,7 @@ const sections = [
     { eyebrow: 'No plugins', title: 'Paste a code, and it’s connected', text: 'Each integration is a card with plain instructions: where to find your code, and where to paste it. There’s nothing to install, nothing to update and nothing that can break your site.', points: ['Turn any integration off with one click', 'Works on every page automatically', 'Tracking tools that need consent only run once a visitor agrees'], video: 'integrations', videoCaption: 'Connecting WhatsApp, then the button on the live site.' }
 ]
 const faqs: FaqItem[] = [
-    { q: 'Which integrations come with every plan?', a: 'Google Analytics, Plausible, Search Console, Bing, visitor stats and the WhatsApp button come with every plan. Business and Studio include all of them.' },
+    { q: 'Which integrations come with every plan?', a: 'Google Analytics, Plausible, Search Console, Bing, visitor stats, the WhatsApp button and Calendly booking come with every plan. Business and Studio include all of them.' },
     { q: 'Do I need a cookie banner?', a: 'Only for tools that track people, like Google Analytics or the Meta Pixel. Slate shows a consent banner for those automatically. Slate’s own visitor stats don’t need one.' },
     { q: 'Can I connect something that isn’t listed?', a: 'Form replies can go to any service through a webhook, including Zapier and Make. Tell us what else you’d like to see.' }
 ]

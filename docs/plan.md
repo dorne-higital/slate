@@ -27,7 +27,8 @@ Designs: https://claude.ai/artifact/6iSQ4irmSJSQ9vXm2ap5fG
   banner for GA/Meta, cross-site request protection on the CMS API. Mailchimp, Kit, Stripe: coming soon
 - [x] Media library (R2): upload by button or drag and drop (done: blocks in editor incl. from library, pages list; browser check of the drag still to do), file type checked from the bytes (no SVG/HTML),
   10 MB limit, alt text, search, delete; Choose image in block fields and post covers. Drag-and-drop upload checked in the browser (25 Nov)
-- [x] Billing (Stripe, test mode): Starter £15 / Business £29 / Studio £49 a month (were £9/£19/£39 until 25 Nov 2026), yearly = 2 months free,
+- [x] Billing (Stripe, test mode): Starter £15 / Business £29 / Studio £49 a month (were £9/£19/£39 until 25 Nov 2026), yearly = 2 months free.
+  Since 26 Nov 2026 every plan has a blog and no Slate branding; Starter 20 pages, 3 forms, 2 people, 5 GB, Calendly; Business 100 pages, 20 forms, 5 people, 25 GB; Studio the same with 5 sites, 10 people, 50 GB.
   14-day trial with Business features, no card. Billed per person (Studio covers up to 10 sites).
   Checkout, customer portal, signed webhook, invoices; plan limits on pages, forms, blog, people,
   integrations and sites; sites pause publicly when a trial ends unpaid. New site / Your sites page.

@@ -14,9 +14,24 @@ describe('plans', () => {
         expect(limitsFor('trial', null)).toEqual(findPlan('business')!.limits)
         expect(limitsFor('expired', null)).toEqual(findPlan('starter')!.limits)
     })
-    it('keeps Starter’s Slate badge and drops it on paid-up plans', () => {
-        expect(findPlan('starter')!.limits.slateBadge).toBe(true)
-        expect(findPlan('business')!.limits.slateBadge).toBe(false)
+    it('gives every plan a blog and no Slate branding', () => {
+        for (const p of PLANS) {
+            expect(p.limits.blog, p.key).toBe(true)
+            expect(p.limits.slateBadge, p.key).toBe(false)
+        }
+    })
+    it('gives Starter enough for a real small business site', () => {
+        const l = findPlan('starter')!.limits
+        expect(l.pagesPerSite).toBeGreaterThanOrEqual(15)
+        expect(l.formsPerSite).toBeGreaterThanOrEqual(3)
+        expect(l.peoplePerSite).toBeGreaterThanOrEqual(2)
+        expect(l.integrations).toContain('calendly')
+    })
+    it('keeps each plan at least as generous as the one below', () => {
+        for (let i = 1; i < PLANS.length; i++) {
+            const [a, b] = [PLANS[i - 1]!.limits, PLANS[i]!.limits]
+            for (const k of ['sites', 'pagesPerSite', 'formsPerSite', 'peoplePerSite', 'storageBytes'] as const) expect(b[k], `${PLANS[i]!.key} ${k}`).toBeGreaterThanOrEqual(a[k])
+        }
     })
     it('formats pence', () => {
         expect(formatPence(900)).toBe('£9')

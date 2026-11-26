@@ -12,7 +12,7 @@ const faqs: FaqItem[] = [
 const page = useMarketingSeo('/pricing', { jsonLd: [pricingJsonLd(), faqJsonLd(faqs)] })
 const rows = planRowsFor()
 const domains = Object.entries(DOMAIN_PRICES).map(([tld, pence]) => ({ tld: `.${tld}`, price: formatPence(pence) }))
-const included = ['Hosting on Cloudflare’s network', 'HTTPS on every address', 'A free slatecms.co.uk address', 'Your own domain', 'The full editor and every block', 'Page history', 'Visitor stats without cookies', 'Site health and SEO tools', 'Spam protection on forms', 'Updates, forever']
+const included = ['Hosting on Cloudflare’s network', 'HTTPS on every address', 'A free slatecms.co.uk address', 'Your own domain', 'The full editor and every block', 'A blog', 'No Slate branding on your site', 'Page history', 'Visitor stats without cookies', 'Site health and SEO tools', 'Spam protection on forms', 'Updates, forever']
 </script>
 
 <template>
