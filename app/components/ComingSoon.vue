@@ -13,7 +13,7 @@ async function send() {
     state.value = 'sending'
     error.value = ''
     try {
-        await $fetch('/api/public/interest', { method: 'POST', body: { ...form, turnstile: await turnstile.value?.token() ?? token.value } })
+        await $fetch('/api/public/interest', { method: 'POST', body: { ...form, source: savedVisitSource(), turnstile: await turnstile.value?.token() ?? token.value } })
         state.value = 'done'
     } catch (err) {
         error.value = (err as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'That didn’t send. Check your connection and try again.'

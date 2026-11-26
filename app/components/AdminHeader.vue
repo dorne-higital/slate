@@ -3,6 +3,14 @@ const { me, signOut } = useMe()
 // Tickets waiting on Slate, for the badge
 const { data: waiting } = useAsyncData('admin-support-waiting', () => $fetch<unknown[]>('/api/admin/support', { query: { status: 'open' } }).then(r => r.length).catch(() => 0), { server: false, lazy: true })
 // Kinds of server error in the last day
+// Your own visits to slatecms.co.uk shouldn't count in Marketing stats: this browser is now left out
+onMounted(() => {
+    try {
+        localStorage.setItem('slate-no-track', '1')
+    } catch {
+        // Storage blocked
+    }
+})
 const { data: errors } = useAsyncData('admin-error-count', () => $fetch<{ n: number }>('/api/admin/errors/count').then(r => r.n).catch(() => 0), { server: false, lazy: true })
 </script>
 
@@ -12,6 +20,7 @@ const { data: errors } = useAsyncData('admin-error-count', () => $fetch<{ n: num
         <span class="tag">Platform admin</span>
         <nav aria-label="Admin" class="nav">
             <NuxtLink to="/admin" class="nav-link" exact-active-class="on">Dashboard</NuxtLink>
+            <NuxtLink to="/admin/marketing" class="nav-link" active-class="on">Marketing</NuxtLink>
             <NuxtLink to="/admin/billing" class="nav-link" active-class="on">Billing</NuxtLink>
             <NuxtLink to="/admin/errors" class="nav-link" active-class="on">Errors<span v-if="errors" class="badge">{{ errors }}</span></NuxtLink>
             <NuxtLink to="/admin/domains" class="nav-link" active-class="on">Domains</NuxtLink>

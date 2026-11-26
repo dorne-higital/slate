@@ -1,4 +1,5 @@
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
+import type { VisitSource } from '../shared/utils/attribution'
 import type { TicketCategory, TicketSeverity } from '../shared/utils/supportTypes'
 import type { Block, MenuItem, MenuSlot, PageStatus, ProjectMeta, SiteConnections, SiteIntegrations, SiteRole, SiteSeo, SiteSocials, SiteTheme } from '../shared/types'
 import type { DomainOrderStatus } from '../shared/utils/domainPrices'
@@ -14,6 +15,8 @@ export const user = pgTable('user', {
     image: text('image'),
     // Never settable from the app. Promote someone with a manual SQL UPDATE.
     isPlatformAdmin: boolean('is_platform_admin').notNull().default(false),
+    // Where they first came from before signing up (shared/utils/attribution.ts)
+    signupSource: jsonb('signup_source').$type<VisitSource>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 })
@@ -389,5 +392,7 @@ export const interestSignups = pgTable('interest_signups', {
     email: text('email').notNull().unique(),
     name: text('name'),
     business: text('business'),
+    // Where they first came from (shared/utils/attribution.ts)
+    source: jsonb('source').$type<VisitSource>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 })

@@ -46,7 +46,7 @@ async function create() {
     busy.value = true
     error.value = ''
     try {
-        const { siteId, slug } = await $fetch('/api/signup', { method: 'POST', body: { ...form, ...(inviteToken ? { invite: inviteToken } : {}), ...(signupKey ? { key: signupKey } : {}), turnstile: await turnstile.value?.token() ?? turnstileToken.value } })
+        const { siteId, slug } = await $fetch('/api/signup', { method: 'POST', body: { ...form, source: savedVisitSource(), ...(inviteToken ? { invite: inviteToken } : {}), ...(signupKey ? { key: signupKey } : {}), turnstile: await turnstile.value?.token() ?? turnstileToken.value } })
         await refresh()
         if (inviteToken || !slug) return await navigateTo(`/sites/${siteId}`)
         createdSiteId.value = siteId

@@ -41,6 +41,8 @@ useMarketingSeo('/privacy')
 
         <h2>Cookies</h2>
         <p>On slatecms.co.uk and the Slate dashboard we use only the cookies needed to keep you logged in and secure. We don’t use advertising or tracking cookies. Our bot check (Cloudflare Turnstile) runs on the sign-up, login and password reset pages to stop automated abuse.</p>
+        <h2>How we count visits to slatecms.co.uk</h2>
+        <p>We count visits with Cloudflare Web Analytics, which uses no cookies and doesn’t identify you. To learn which websites and pages bring people to Slate, your browser also remembers the website you first came from and the first page you saw. Nothing else is kept, and it’s only sent to us if you join the waiting list or sign up, when we save it with your details. To remove it, clear your browser’s data for slatecms.co.uk.</p>
 
         <h2>Who we share information with</h2>
         <p>We use these companies to run Slate. Each only gets what it needs for its job, under a contract that requires it to protect the information.</p>

@@ -176,6 +176,13 @@
       "when": 1795640110819,
       "tag": "0024_robust_bushwacker",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1795706134051,
+      "tag": "0025_sharp_miss_america",
+      "breakpoints": true
     }
   ]
 }

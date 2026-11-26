@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm'
 interface SignupBody {
     name?: string
     email?: string
@@ -6,6 +7,8 @@ interface SignupBody {
     layout?: string
     /** Joining someone else's site from an invitation link: no new site is made */
     invite?: string
+    /** Where they first came from, saved by the browser */
+    source?: unknown
     /** Cloudflare Turnstile token */
     turnstile?: string
     /** Private sign-up link (signupLink.ts) while Slate is coming soon */
@@ -47,6 +50,8 @@ export default defineEventHandler(async (event) => {
     }
     for (const cookie of signedUp.headers.getSetCookie()) appendResponseHeader(event, 'set-cookie', cookie)
     const userId = signedUp.response.user.id
+    const source = cleanSource(body.source)
+    if (source) await useDb().update(schema.user).set({ signupSource: source }).where(eq(schema.user.id, userId))
 
     if (joining) {
         const { siteId } = await acceptInvite(body.invite!, userId)
