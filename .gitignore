@@ -38,3 +38,4 @@ dist/
 .env.backup-*
 .superpowers/
 .nuxt-test2
+.demo/
