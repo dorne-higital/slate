@@ -26,6 +26,7 @@ const when = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: '
                     <NuxtLink :to="`/guides/${g.slug}`">
                         <span class="cover">
                             <img v-if="g.coverImage" :src="g.coverImage" alt="" loading="lazy" width="800" height="450">
+                            <span v-else class="ph" aria-hidden="true"><BrandMark :size="20" /><span>{{ g.category?.name ?? 'Guide' }}</span></span>
                         </span>
                         <span class="meta">
                             <span v-if="g.category" class="cat">{{ g.category.name }}</span>
@@ -57,6 +58,9 @@ h1 { font-size: clamp(40px, 5.4vw, 64px); font-weight: 900; letter-spacing: -.04
 .grid a:hover { box-shadow: 0 0 0 1px var(--quarry), 4px 4px 0 var(--lichen); }
 .cover { aspect-ratio: 16 / 9; background: linear-gradient(135deg, var(--mist), #d4d8df); display: block; }
 .cover img { display: block; height: 100%; object-fit: cover; width: 100%; }
+.ph { background: linear-gradient(transparent calc(100% - 9px), #5b5773 calc(100% - 9px) calc(100% - 6px), #8c93a3 calc(100% - 6px) calc(100% - 3px), #c3c8d1 calc(100% - 3px)), var(--quarry); box-sizing: border-box; display: flex; flex-direction: column; height: 100%; justify-content: space-between; padding: 22px 24px 30px; }
+.ph :deep(.brand) { color: var(--white); }
+.ph > span:last-child { color: var(--lichen); font-size: 26px; font-weight: 900; letter-spacing: -.03em; }
 .meta { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px 24px; }
 .cat { color: var(--heather); font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .meta b { font-size: 20px; letter-spacing: -.01em; line-height: 1.25; }

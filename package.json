@@ -19,7 +19,8 @@
         "stripe:setup": "node --env-file=.env --experimental-strip-types --no-warnings scripts/stripe-setup.ts",
         "test": "vitest run",
         "test:api": "vitest run --config vitest.api.config.ts",
-        "dev:test": "NUXT_TURNSTILE_SECRET=1x0000000000000000000000000000000AA NUXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA nuxt dev --port 3001"
+        "dev:test": "NUXT_TURNSTILE_SECRET=1x0000000000000000000000000000000AA NUXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA nuxt dev --port 3001",
+        "og:images": "tsx scripts/share-images.ts"
     },
     "dependencies": {
         "@neon/config": "^1.14.6",
@@ -36,6 +37,7 @@
         "@types/sanitize-html": "^2.16.2",
         "dotenv": "^18.0.10",
         "drizzle-kit": "0.31.11",
+        "tsx": "4.23.15",
         "typescript": "5.9.3",
         "vitest": "3.2.4",
         "vue-tsc": "^3.3.14",

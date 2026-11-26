@@ -7414,6 +7414,7 @@ __metadata:
     fflate: "npm:0.8.2"
     nuxt: "npm:4.6.4"
     sanitize-html: "npm:2.18.2"
+    tsx: "npm:4.23.15"
     typescript: "npm:5.9.3"
     uqr: "npm:0.1.3"
     vitest: "npm:3.2.4"
@@ -7785,7 +7786,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:^4.21.0":
+"tsx@npm:4.23.15, tsx@npm:^4.21.0":
   version: 4.23.15
   resolution: "tsx@npm:4.23.15"
   dependencies:

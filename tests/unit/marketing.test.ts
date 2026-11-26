@@ -97,3 +97,17 @@ describe('comparison pages', () => {
         }
     })
 })
+
+describe('share images', () => {
+    it('every page’s share image exists at 1200×630', async () => {
+        const { readFileSync, existsSync } = await import('node:fs')
+        const images = [...new Set([...MARKETING_PAGES.map(p => p.image), '/og/example-danhorne.png', '/og/example-dobiedash.png'])]
+        for (const img of images) {
+            const file = `public${img}`
+            expect(existsSync(file), file).toBe(true)
+            const png = readFileSync(file)
+            // PNG header: width and height are the big-endian numbers at bytes 16 and 20
+            expect([png.readUInt32BE(16), png.readUInt32BE(20)], file).toEqual([1200, 630])
+        }
+    })
+})
