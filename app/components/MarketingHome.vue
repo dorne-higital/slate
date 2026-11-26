@@ -101,15 +101,6 @@ useMarketingSeo('/', {
             video-caption="The site health check and the SEO page."
         />
 
-        <section class="mk-section tint">
-            <div class="mk-wrap">
-                <div class="mk-head">
-                    <h2>Made with Slate</h2>
-                    <p>Real websites, built and run on Slate.</p>
-                </div>
-                <MkExamples />
-            </div>
-        </section>
 
         <section class="mk-section">
             <div class="mk-wrap">

@@ -1,5 +1,4 @@
-// Makes the 1200×630 share images for every page of slatecms.co.uk (public/og/), plus screenshots of
-// real sites made with Slate for the "Made with Slate" cards. Uses the Chrome you already have.
+// Makes the 1200×630 share images for every page of slatecms.co.uk (public/og/). Uses the Chrome you already have.
 //
 //   yarn og:images            every image
 //   yarn og:images home       just /og/home.png (names without .png)
@@ -73,10 +72,4 @@ for (const p of MARKETING_PAGES) {
     made++
 }
 
-// Real sites made with Slate: the top of each home page, at share-image size
-for (const [name, url] of [['example-danhorne', 'https://www.danhorne.co.uk/'], ['example-dobiedash', 'https://www.dobiedash.co.uk/']] as const) {
-    if (!wanted(name)) continue
-    shoot(url, join(OUT, `${name}.png`), 1200, 630)
-    made++
-}
 console.log(`Made ${made} image${made === 1 ? '' : 's'} in public/og`)

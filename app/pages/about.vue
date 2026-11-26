@@ -30,12 +30,6 @@ const beliefs = [
                 <MkFeatureGrid :items="beliefs" :columns="2" />
             </div>
         </section>
-        <section class="mk-section">
-            <div class="mk-wrap">
-                <div class="mk-head"><h2>Made with Slate</h2><p>Websites already running on Slate.</p></div>
-                <MkExamples />
-            </div>
-        </section>
         <MkCta title="Try it for yourself." />
     </div>
 </template>
