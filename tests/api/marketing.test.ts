@@ -175,3 +175,26 @@ describe('sitemap', () => {
         expect(locs(r.text)).toEqual(['/'])
     })
 })
+
+describe('structured data', () => {
+    it('structured data is valid JSON with @context and @type', async () => {
+        const c = new Client()
+        const guide = GUIDES_SITE ? (await sql`select slug from posts where site_id = ${GUIDES_SITE} and status = 'published' and published_at <= now() limit 1`)[0]?.slug : null
+        const expected: Record<string, string[]> = {
+            '/': ['Organization', 'WebSite', 'FAQPage'],
+            '/pricing': ['BreadcrumbList', 'SoftwareApplication', 'FAQPage'],
+            '/features/editor': ['BreadcrumbList', 'FAQPage'],
+            '/for/trades': ['BreadcrumbList', 'FAQPage'],
+            ...(guide ? { [`/guides/${guide}`]: ['BreadcrumbList', 'Article'] } : {})
+        }
+        for (const [path, types] of Object.entries(expected)) {
+            const html = (await c.get(path)).text
+            const blocks = [...html.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]!))
+            for (const b of blocks) {
+                expect(b['@context'], path).toBe('https://schema.org')
+                expect(typeof b['@type'], path).toBe('string')
+            }
+            expect(blocks.map(b => b['@type']).sort(), path).toEqual([...types].sort())
+        }
+    })
+})

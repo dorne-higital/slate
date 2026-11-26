@@ -43,7 +43,10 @@ function backMob() {
 }
 function onMobToggle(e: Event) {
     onToggle(e)
-    if (!mobMenu.value?.open) mobView.value = 'main'
+    const open = !!mobMenu.value?.open
+    if (!open) mobView.value = 'main'
+    // Full-screen menu: the page behind shouldn't scroll
+    document.documentElement.style.overflow = open ? 'hidden' : ''
 }
 const closeAll = () => root.value?.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'))
 const route = useRoute()
@@ -67,6 +70,7 @@ onMounted(() => {
     document.addEventListener('keydown', onKey)
 })
 onBeforeUnmount(() => {
+    document.documentElement.style.overflow = ''
     document.removeEventListener('click', outside)
     document.removeEventListener('keydown', onKey)
 })
@@ -139,7 +143,12 @@ onBeforeUnmount(() => {
 
                 <details ref="mobMenu" class="dd mob" @toggle="onMobToggle">
                     <summary aria-label="Menu"><span class="burger" aria-hidden="true"><i /><i /><i /></span></summary>
-                    <div class="sheet">
+                    <div class="sheet" role="dialog" aria-modal="true" aria-label="Menu">
+                        <div class="sheet-top">
+                            <NuxtLink to="/" aria-label="Slate home" class="home"><BrandMark /></NuxtLink>
+                            <button type="button" class="close" aria-label="Close menu" @click="closeAll"><span aria-hidden="true" /></button>
+                        </div>
+                        <div class="sheet-body">
                         <!-- Top level: sections open their own screen -->
                         <div v-if="mobView === 'main'" class="mv">
                             <button ref="featuresBtn" type="button" class="mi drill" @click="openMob('features')"><b>Features</b><span class="chev-r" aria-hidden="true" /></button>
@@ -147,7 +156,6 @@ onBeforeUnmount(() => {
                             <NuxtLink to="/pricing" class="mi plain"><b>Pricing</b></NuxtLink>
                             <NuxtLink to="/guides" class="mi plain"><b>Guides</b></NuxtLink>
                             <NuxtLink v-if="!me" to="/login" class="mi plain"><b>Log in</b></NuxtLink>
-                            <NuxtLink v-if="!me" to="/signup" class="btn btn-lichen mob-cta">Start free trial</NuxtLink>
                         </div>
                         <!-- One section on its own, with a way back -->
                         <div v-else class="mv sub">
@@ -163,6 +171,14 @@ onBeforeUnmount(() => {
                                 <NuxtLink v-for="c in compare" :key="c.path" :to="c.path" class="mi plain">{{ c.navLabel }}</NuxtLink>
                             </template>
                         </div>
+                        </div>
+                        <div class="sheet-foot">
+                            <NuxtLink v-if="me" :to="dashboard" class="btn btn-lichen btn-xl">Go to your sites</NuxtLink>
+                            <template v-else>
+                                <NuxtLink to="/signup" class="btn btn-lichen btn-xl">Start your free trial</NuxtLink>
+                                <span>{{ TRIAL_DAYS }} days free. No card needed.</span>
+                            </template>
+                        </div>
                     </div>
                 </details>
             </div>
@@ -172,6 +188,8 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .mk-top { background: rgb(247 248 250 / 94%); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line-soft); position: sticky; top: 0; z-index: 50; }
+/* A blur makes fixed children position inside the header, so drop it while the full-screen menu is open */
+.mk-top:has(.mob[open]) { backdrop-filter: none; }
 .mk-bar { align-items: center; display: flex; gap: 24px; min-height: 72px; }
 .home { text-decoration: none; }
 .links { align-items: center; display: flex; flex: 1; gap: 4px; margin-left: 16px; }
@@ -222,14 +240,30 @@ details[open] .car { margin-top: 3px; transform: rotate(225deg); }
 .mob { display: none; position: relative; }
 .burger { display: flex; flex-direction: column; gap: 4px; width: 20px; }
 .burger i { background: currentColor; border-radius: 2px; height: 2px; }
-.sheet { animation: drop .18s ease-out; background: var(--white); border-radius: 12px; box-shadow: 0 0 0 1px var(--line), 0 18px 40px rgb(46 52 69 / 18%); display: flex; flex-direction: column; max-height: calc(100vh - 90px); overflow: auto; padding: 8px 8px 12px; position: absolute; right: 0; top: calc(100% + 8px); width: min(340px, calc(100vw - 32px)); }
-.sheet .mh { margin: 14px 12px 4px; }
-.sheet .mi { align-items: center; padding: 8px 12px; }
-.sheet .ic { height: 32px; width: 32px; }
+.sheet { animation: slide-in .28s cubic-bezier(.2, .8, .2, 1); background: var(--white); display: flex; flex-direction: column; inset: 0; position: fixed; z-index: 100; }
+@keyframes slide-in { from { transform: translateX(100%); } to { transform: none; } }
+.sheet-top { align-items: center; border-bottom: 1px solid var(--line-soft); display: flex; flex: none; justify-content: space-between; min-height: 72px; padding: 0 16px; }
+.close { align-items: center; background: var(--mist); border: 0; border-radius: 50%; cursor: pointer; display: flex; height: 44px; justify-content: center; position: relative; width: 44px; }
+.close span::before, .close span::after { background: var(--quarry); border-radius: 2px; content: ''; height: 2px; left: 12px; position: absolute; top: 21px; width: 20px; }
+.close span::before { transform: rotate(45deg); }
+.close span::after { transform: rotate(-45deg); }
+.close:focus-visible { outline: 3px solid var(--lichen-focus); }
+.sheet-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 12px 8px; }
+.sheet-foot { border-top: 1px solid var(--line-soft); display: flex; flex: none; flex-direction: column; gap: 8px; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); text-align: center; }
+.sheet-foot span { color: var(--text-muted); font-size: 14px; }
+.sheet .mh { margin: 18px 12px 6px; }
+.sheet .mv > .mi { border-bottom: 1px solid var(--line-soft); border-radius: 0; }
+.sheet .drill, .sheet .mi.plain { font-size: 20px; justify-content: center; min-height: 60px; padding: 0 12px; }
+.sheet .drill { justify-content: space-between; }
+.sheet .mi.plain { align-items: flex-start; flex-direction: column; }
+.sheet .sub .mi.plain { font-size: 17px; font-weight: 600; min-height: 48px; }
+.sheet .drill b, .sheet .mi.plain b { font-size: 20px; font-weight: 700; }
+.sheet .sub .mi { border-bottom: 0; border-radius: 10px; padding: 12px; }
+.sheet .sub .mt b { font-size: 17px; }
 .mi.plain { padding: 10px 12px; }
 .mv { display: flex; flex-direction: column; }
 .sub { animation: slide .2s ease-out; }
-@keyframes slide { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+@keyframes slide { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
 .drill { align-items: center; background: none; border: 0; cursor: pointer; font: inherit; justify-content: space-between; padding: 14px 12px; text-align: left; width: 100%; }
 .drill b { font-size: 16px; }
 .chev-r, .chev-l { border-bottom: 2px solid currentColor; border-right: 2px solid currentColor; display: inline-block; height: 8px; width: 8px; }
@@ -241,7 +275,7 @@ details[open] .car { margin-top: 3px; transform: rotate(225deg); }
 .sub .mi { align-items: flex-start; }
 .sub .mt span { font-size: 13.5px; }
 .all { color: var(--heather); font-weight: 700; }
-.mob-cta { margin: 10px 12px 4px; }
+
 @media (prefers-reduced-motion: reduce) { .mega, .sheet, .sub { animation: none; } }
 @media (max-width: 960px) {
     .links { display: none; }
