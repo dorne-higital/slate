@@ -6,7 +6,7 @@ export const useMarketingSeo = (path: string, extra: { jsonLd?: Record<string, u
     const page = marketingPage(path)
     const title = extra.title ?? page.title
     const description = extra.description ?? page.description
-    const url = `${MARKETING_SITE}${path === '/' ? '' : path}`
+    const url = `${MARKETING_SITE}${path}`
     const image = `${MARKETING_SITE}${extra.image ?? page.image}`
 
     const crumbs: { name: string, url: string }[] = [{ name: 'Slate', url: MARKETING_SITE }]

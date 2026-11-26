@@ -1,3 +1,5 @@
+import { PLANS } from './plans'
+
 /**
  * Every page of Slate's own marketing site, in one place. The header, footer, sitemap and each
  * page's SEO tags all read from here, so a page's title and description are only ever written once.
@@ -39,6 +41,26 @@ export function faqJsonLd(items: FaqItem[]) {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
         mainEntity: items.map(i => ({ '@type': 'Question', name: i.q, acceptedAnswer: { '@type': 'Answer', text: i.a } }))
+    }
+}
+
+/** SoftwareApplication with the price range, from the real plans, for the pricing page. */
+export function pricingJsonLd() {
+    const monthly = PLANS.map(p => p.monthly / 100)
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        'name': 'Slate',
+        'applicationCategory': 'BusinessApplication',
+        'operatingSystem': 'Web',
+        'url': MARKETING_SITE,
+        'offers': {
+            '@type': 'AggregateOffer',
+            'priceCurrency': 'GBP',
+            'lowPrice': Math.min(...monthly).toFixed(2),
+            'highPrice': Math.max(...monthly).toFixed(2),
+            'offerCount': PLANS.length
+        }
     }
 }
 

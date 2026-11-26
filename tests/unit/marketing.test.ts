@@ -63,3 +63,20 @@ describe('sector pages', () => {
         }
     })
 })
+
+describe('pricing structured data', () => {
+    it('pricing structured data matches the plans', async () => {
+        const { pricingJsonLd } = await import('../../shared/utils/marketing')
+        const { PLANS } = await import('../../shared/utils/plans')
+        const monthly = PLANS.map(p => p.monthly / 100)
+        const d = pricingJsonLd() as { '@type': string, 'offers': Record<string, unknown> }
+        expect(d['@type']).toBe('SoftwareApplication')
+        expect(d.offers).toMatchObject({
+            '@type': 'AggregateOffer',
+            'priceCurrency': 'GBP',
+            'lowPrice': Math.min(...monthly).toFixed(2),
+            'highPrice': Math.max(...monthly).toFixed(2),
+            'offerCount': PLANS.length
+        })
+    })
+})
