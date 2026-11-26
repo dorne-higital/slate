@@ -37,12 +37,14 @@ export const RIVALS: Rival[] = [
             { label: 'Wix plans and pricing', url: 'https://www.wix.com/plans' }
         ],
         rows: [
-            { topic: 'Price', slate: slatePrice(), rival: 'From US$17 a month billed yearly for Light, up to US$159 for Business Elite (Wix’s published US prices; prices vary by country)' },
+            { topic: 'Price', slate: slatePrice(), rival: 'Light £9, Core £16, Business £25 and Business Elite £119 a month, as shown on Wix’s UK plans page' },
+            { topic: 'Free plan', slate: `No, but a ${TRIAL_DAYS}-day free trial with everything included`, rival: 'Yes, £0, without your own domain' },
+            { topic: 'Domain', slate: `Buy one from ${formatPence(Math.min(...Object.values(DOMAIN_PRICES)))} a year, or connect yours free`, rival: 'Free for the first year on paid plans' },
             { topic: 'Taking payments', slate: 'Not built in: Slate is for showing your business and bringing in enquiries', rival: 'Core plan and above' },
             { topic: 'Design', slate: 'Ready-made blocks that follow your colours and fonts, so pages stay consistent', rival: 'Drag anything anywhere on the page, with hundreds of templates' },
             { topic: 'Add-ons', slate: 'Integrations by pasting a code; nothing to install', rival: 'A large app market, some of it paid' },
             { topic: 'Where it’s from', slate: 'Built and supported in the UK, data stored in London', rival: 'A large international company' },
-            { topic: 'VAT', slate: 'Not VAT registered, so no VAT is added', rival: 'Prices shown before tax' }
+            { topic: 'VAT', slate: 'Not VAT registered, so no VAT is added', rival: 'Check Wix’s checkout for tax' }
         ],
         fit: {
             slate: ['You want a clean, professional site without designing every pixel', 'You’d rather have fewer choices and a site that’s hard to break', 'UK-based support and data matter to you'],
