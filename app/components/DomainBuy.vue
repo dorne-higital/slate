@@ -148,7 +148,7 @@ const statusText: Record<DomainOrderStatus, string> = {
                     <button v-if="canBuy && o.canForward" class="btn btn-ghost btn-sm" type="button" :aria-expanded="!!fwd[o.id]?.open" @click="toggleForwarding(o.id)">Email forwarding</button>
                     <button v-if="canBuy && (o.status === 'active' || o.status === 'cancelled') && !transfer[o.id]" class="btn btn-plain btn-sm" type="button" @click="getTransfer(o.id)">Move to another provider</button>
                     <div v-if="fwd[o.id]?.open" class="move fwd">
-                        <p><b>Email forwarding</b> sends mail for {{ o.domain }} to an inbox you already have, free. To send as that address too, use your email provider’s “send mail as” setting.</p>
+                        <p><b>Email forwarding</b> sends mail for {{ o.domain }} to an inbox you already have, free. After you press Add, you’ll get an email from Cloudflare at that inbox: press its link to switch the address on. <a href="/help/email-forwarding" target="_blank" rel="noopener">Step-by-step help</a></p>
                         <p v-if="fwd[o.id]!.busy && !fwd[o.id]!.loaded" class="muted small">Loading…</p>
                         <ul v-if="fwd[o.id]!.list.length" class="fwd-list">
                             <li v-for="f in fwd[o.id]!.list" :key="f.id">

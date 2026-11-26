@@ -8,7 +8,7 @@ const steps = [
     { title: 'Create your account', text: `Name your site and it’s live straight away on a free ${freeDomain} address.` },
     { title: 'Pick a starting layout', text: 'Pages already in place for a trade, a salon, a shop, a club or a studio. Or start blank.' },
     { title: 'Make it yours', text: 'Click any block to change the words and pictures. Set your colours and fonts once.' },
-    { title: 'Add your domain and publish', text: 'Buy a domain inside Slate or connect yours. HTTPS and email forwarding are set up for you.' }
+    { title: 'Add your domain and publish', text: 'Buy a domain inside Slate or connect yours. HTTPS is set up for you, and a free hello@ address takes a minute.' }
 ]
 const included = [
     { icon: 'star', title: 'Page editor and blocks', text: 'Heroes, services, galleries, prices, reviews and forms, ready to fill in. Undo any publish.', to: '/features/editor' },
@@ -22,7 +22,7 @@ const sectors = marketingSections('for').filter(p => p.path !== '/websites-for')
 const faqs: FaqItem[] = [
     { q: 'Do I need to know how to code?', a: 'No. You build pages by adding blocks and typing into them, and set your colours and fonts once for the whole site. If you can use email, you can use Slate.' },
     { q: 'Can I use a domain I already own?', a: 'Yes. Keep it wherever you bought it: Slate shows you the records to add, checks them and sets up HTTPS for you. Or buy a new one inside Slate and it’s connected automatically.' },
-    { q: 'Do I get an email address with my domain?', a: 'Domains bought through Slate come with free email forwarding, so messages to hello@yourbusiness.co.uk arrive in the inbox you already use.' },
+    { q: 'Do I get an email address with my domain?', a: 'Yes, free with domains bought through Slate. In Domains, press Email forwarding, choose an address like hello@yourbusiness.co.uk and the inbox it should go to, such as your Gmail. Confirm the email you’re sent and you’re done: messages to hello@ arrive in the inbox you already use. Step-by-step help is at slatecms.co.uk/help/email-forwarding.' },
     { q: 'What happens if I cancel?', a: 'Your site goes offline at the end of your billing period. You can download everything before then as one file: pages, blog posts, images and form replies.' },
     { q: 'Where is my data kept?', a: 'Your pages, posts and form replies are stored in London. Pages are served to visitors from Cloudflare’s network, close to wherever they are, and every site’s content is kept separate.' },
     { q: 'Is there a contract?', a: `No. Pay monthly or yearly and cancel whenever you like. The first ${TRIAL_DAYS} days are free and you don’t need a card to start.` }
